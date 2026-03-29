@@ -10,7 +10,8 @@ export const useSocket = () => {
   useEffect(() => {
     if (!user) return;
     if (!socketInstance) {
-      socketInstance = io('/', { withCredentials: true, transports: ['websocket', 'polling'] });
+      const socketUrl = import.meta.env.VITE_API_URL || 'https://major-gin9.onrender.com';
+      socketInstance = io(socketUrl, { withCredentials: true, transports: ['websocket', 'polling'] });
     }
     socketRef.current = socketInstance;
     socketInstance.emit('user:join', String(user.id));
