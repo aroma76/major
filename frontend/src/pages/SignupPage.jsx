@@ -2,7 +2,16 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
-const DEPARTMENTS = ['Engineering', 'Management', 'Pharmacy', 'Arts'];
+const DEPARTMENTS = [
+  'Faculty of Engineering & Technology',
+  'Faculty of Computer Technology',
+  'Faculty of Commerce and Management',
+  'Faculty of Nursing',
+  'Faculty of Paramedical Sciences',
+  'Faculty of Pharmaceutical Science',
+  'Faculty of Science',
+  'Faculty of Humanities and Social Sciences'
+];
 const SEMESTERS = [1,2,3,4,5,6,7,8];
 
 export default function SignupPage() {

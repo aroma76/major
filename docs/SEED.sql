@@ -3,37 +3,37 @@
 
 -- Admin (password: Admin@1234)
 INSERT INTO users (name, email, password, role, department) VALUES
-('Admin ADTU', 'admin@adtu.in', '$2a$12$K8HFS.kMqnJqFWQ.Ggo9HOXIfnr8b7EpFyuX8TPG8F5l0bWH.g9HS', 'admin', 'Engineering');
+('Admin ADTU', 'admin@adtu.in', '$2a$12$K8HFS.kMqnJqFWQ.Ggo9HOXIfnr8b7EpFyuX8TPG8F5l0bWH.g9HS', 'admin', 'Faculty of Engineering & Technology');
 
 -- Faculty (password: Faculty@1234)
 INSERT INTO users (name, email, password, role, department) VALUES
-('Dr. Priya Sharma', 'priya@adtu.in', '$2a$12$K8HFS.kMqnJqFWQ.Ggo9HOXIfnr8b7EpFyuX8TPG8F5l0bWH.g9HS', 'faculty', 'Engineering'),
-('Prof. Aman Das',   'aman@adtu.in',  '$2a$12$K8HFS.kMqnJqFWQ.Ggo9HOXIfnr8b7EpFyuX8TPG8F5l0bWH.g9HS', 'faculty', 'Management'),
-('Dr. Nisha Borah',  'nisha@adtu.in', '$2a$12$K8HFS.kMqnJqFWQ.Ggo9HOXIfnr8b7EpFyuX8TPG8F5l0bWH.g9HS', 'faculty', 'Pharmacy');
+('Dr. Priya Sharma', 'priya@adtu.in', '$2a$12$K8HFS.kMqnJqFWQ.Ggo9HOXIfnr8b7EpFyuX8TPG8F5l0bWH.g9HS', 'faculty', 'Faculty of Engineering & Technology'),
+('Prof. Aman Das',   'aman@adtu.in',  '$2a$12$K8HFS.kMqnJqFWQ.Ggo9HOXIfnr8b7EpFyuX8TPG8F5l0bWH.g9HS', 'faculty', 'Faculty of Commerce and Management'),
+('Dr. Nisha Borah',  'nisha@adtu.in', '$2a$12$K8HFS.kMqnJqFWQ.Ggo9HOXIfnr8b7EpFyuX8TPG8F5l0bWH.g9HS', 'faculty', 'Faculty of Pharmaceutical Science');
 
 -- Student Records (School Database Mock)
 INSERT INTO student_records (roll_number, name, semester, department) VALUES
-('ADTU-CS-21-001', 'Rahul Barua', 5, 'Engineering'),
-('ADTU-CS-21-002', 'Sneha Kalita', 5, 'Engineering'),
-('ADTU-CS-21-003', 'Biplab Gogoi', 5, 'Engineering'),
-('ADTU-MG-22-010', 'Ritu Das', 3, 'Management'),
-('ADTU-PH-20-005', 'Kamal Ahmed', 7, 'Pharmacy');
+('ADTU/202125/BTECH/014', 'Aarav Sharma', 5, 'Faculty of Engineering & Technology'),
+('ADTU/202125/BTECH/015', 'Sneha Kalita', 5, 'Faculty of Engineering & Technology'),
+('ADTU/202125/BTECH/016', 'Biplab Gogoi', 5, 'Faculty of Engineering & Technology'),
+('ADTU/202124/BBA/045', 'Ritu Das', 3, 'Faculty of Commerce and Management'),
+('ADTU/202226/BPHARM/022', 'Kamal Ahmed', 7, 'Faculty of Pharmaceutical Science');
 
 -- Students (password: Student@1234)
 INSERT INTO users (name, email, password, role, department, semester, roll_number) VALUES
-('Rahul Barua',  'rahul@adtu.in',  '$2a$12$K8HFS.kMqnJqFWQ.Ggo9HOXIfnr8b7EpFyuX8TPG8F5l0bWH.g9HS', 'student', 'Engineering', 5, 'ADTU-CS-21-001'),
-('Sneha Kalita', 'sneha@adtu.in',  '$2a$12$K8HFS.kMqnJqFWQ.Ggo9HOXIfnr8b7EpFyuX8TPG8F5l0bWH.g9HS', 'student', 'Engineering', 5, 'ADTU-CS-21-002'),
-('Biplab Gogoi', 'biplab@adtu.in', '$2a$12$K8HFS.kMqnJqFWQ.Ggo9HOXIfnr8b7EpFyuX8TPG8F5l0bWH.g9HS', 'student', 'Engineering', 5, 'ADTU-CS-21-003'),
-('Ritu Das',     'ritu@adtu.in',   '$2a$12$K8HFS.kMqnJqFWQ.Ggo9HOXIfnr8b7EpFyuX8TPG8F5l0bWH.g9HS', 'student', 'Management', 3, 'ADTU-MG-22-010'),
-('Kamal Ahmed',  'kamal@adtu.in',  '$2a$12$K8HFS.kMqnJqFWQ.Ggo9HOXIfnr8b7EpFyuX8TPG8F5l0bWH.g9HS', 'student', 'Pharmacy', 7, 'ADTU-PH-20-005');
+('Aarav Sharma',  'aarav@adtu.in',  '$2a$12$K8HFS.kMqnJqFWQ.Ggo9HOXIfnr8b7EpFyuX8TPG8F5l0bWH.g9HS', 'student', 'Faculty of Engineering & Technology', 5, 'ADTU/202125/BTECH/014'),
+('Sneha Kalita',  'sneha@adtu.in',  '$2a$12$K8HFS.kMqnJqFWQ.Ggo9HOXIfnr8b7EpFyuX8TPG8F5l0bWH.g9HS', 'student', 'Faculty of Engineering & Technology', 5, 'ADTU/202125/BTECH/015'),
+('Biplab Gogoi',  'biplab@adtu.in', '$2a$12$K8HFS.kMqnJqFWQ.Ggo9HOXIfnr8b7EpFyuX8TPG8F5l0bWH.g9HS', 'student', 'Faculty of Engineering & Technology', 5, 'ADTU/202125/BTECH/016'),
+('Ritu Das',      'ritu@adtu.in',   '$2a$12$K8HFS.kMqnJqFWQ.Ggo9HOXIfnr8b7EpFyuX8TPG8F5l0bWH.g9HS', 'student', 'Faculty of Commerce and Management', 3, 'ADTU/202124/BBA/045'),
+('Kamal Ahmed',   'kamal@adtu.in',  '$2a$12$K8HFS.kMqnJqFWQ.Ggo9HOXIfnr8b7EpFyuX8TPG8F5l0bWH.g9HS', 'student', 'Faculty of Pharmaceutical Science', 7, 'ADTU/202226/BPHARM/022');
 
 -- Subjects
 INSERT INTO subjects (name, code, department, semester, faculty_id) VALUES
-('Data Structures and Algorithms', 'CS501', 'Engineering', 5, 2),
-('Database Management Systems',    'CS502', 'Engineering', 5, 2),
-('Computer Networks',              'CS503', 'Engineering', 5, 3),
-('Principles of Management',       'MB301', 'Management',  3, 3),
-('Pharmaceutical Chemistry',       'PH701', 'Pharmacy',    7, 4);
+('Data Structures and Algorithms', 'CS501', 'Faculty of Engineering & Technology', 5, 2),
+('Database Management Systems',    'CS502', 'Faculty of Engineering & Technology', 5, 2),
+('Computer Networks',              'CS503', 'Faculty of Engineering & Technology', 5, 3),
+('Principles of Management',       'MB301', 'Faculty of Commerce and Management',  3, 3),
+('Pharmaceutical Chemistry',       'PH701', 'Faculty of Pharmaceutical Science',    7, 4);
 
 -- Enrollments
 INSERT INTO enrollments (user_id, subject_id) VALUES
