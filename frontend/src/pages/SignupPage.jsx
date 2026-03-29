@@ -8,7 +8,7 @@ const SEMESTERS = [1,2,3,4,5,6,7,8];
 export default function SignupPage() {
   const { register } = useAuth();
   const navigate = useNavigate();
-  const [form, setForm] = useState({ name:'', email:'', password:'', role:'student', department:'', semester:'' });
+  const [form, setForm] = useState({ name:'', email:'', password:'', role:'student', department:'', semester:'', roll_number:'' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -37,25 +37,34 @@ export default function SignupPage() {
             <div><label className="text-sm font-medium text-surface-700 block mb-1.5">Full Name</label><input type="text" className="input" placeholder="Rahul Sharma" {...field('name')} required /></div>
             <div><label className="text-sm font-medium text-surface-700 block mb-1.5">Email</label><input type="email" className="input" placeholder="you@adtu.in" {...field('email')} required /></div>
             <div><label className="text-sm font-medium text-surface-700 block mb-1.5">Password</label><input type="password" className="input" placeholder="Min. 8 characters" {...field('password')} required minLength={8} /></div>
-            <div className="grid grid-cols-2 gap-3">
-              <div><label className="text-sm font-medium text-surface-700 block mb-1.5">Role</label>
-                <select className="input" {...field('role')} required>
-                  {['student','faculty'].map(r => <option key={r} value={r}>{r.charAt(0).toUpperCase()+r.slice(1)}</option>)}
-                </select>
-              </div>
-              <div><label className="text-sm font-medium text-surface-700 block mb-1.5">Semester</label>
-                <select className="input" {...field('semester')}>
-                  <option value="">Select</option>
-                  {SEMESTERS.map(s => <option key={s} value={s}>Semester {s}</option>)}
-                </select>
-              </div>
-            </div>
-            <div><label className="text-sm font-medium text-surface-700 block mb-1.5">Department</label>
-              <select className="input" {...field('department')}>
-                <option value="">Select Department</option>
-                {DEPARTMENTS.map(d => <option key={d} value={d}>{d}</option>)}
+            <div><label className="text-sm font-medium text-surface-700 block mb-1.5">Role</label>
+              <select className="input" {...field('role')} required>
+                {['student','faculty'].map(r => <option key={r} value={r}>{r.charAt(0).toUpperCase()+r.slice(1)}</option>)}
               </select>
             </div>
+            
+            {form.role === 'student' ? (
+              <div>
+                <label className="text-sm font-medium text-surface-700 block mb-1.5">Roll Number</label>
+                <input type="text" className="input" placeholder="e.g. ADTU-001" {...field('roll_number')} required />
+                <p className="text-xs text-primary-600 mt-1">Your semester and department will be automatically fetched from school records.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-3">
+                <div><label className="text-sm font-medium text-surface-700 block mb-1.5">Department</label>
+                  <select className="input" {...field('department')} required>
+                    <option value="">Select</option>
+                    {DEPARTMENTS.map(d => <option key={d} value={d}>{d}</option>)}
+                  </select>
+                </div>
+                <div><label className="text-sm font-medium text-surface-700 block mb-1.5">Semester</label>
+                  <select className="input" {...field('semester')}>
+                    <option value="">Select</option>
+                    {SEMESTERS.map(s => <option key={s} value={s}>Semester {s}</option>)}
+                  </select>
+                </div>
+              </div>
+            )}
             <button type="submit" className="btn-primary w-full py-3 mt-2" disabled={loading}>{loading ? 'Creating account...' : 'Create Account'}</button>
           </form>
           <p className="text-center text-sm text-surface-500 mt-6">Already have an account? <Link to="/login" className="text-primary-600 font-medium hover:underline">Sign in</Link></p>

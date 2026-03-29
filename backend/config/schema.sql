@@ -2,12 +2,22 @@
 -- ADTU Academic Collaboration System - PostgreSQL Schema
 -- ============================================================
 
+CREATE TABLE IF NOT EXISTS student_records (
+  id           SERIAL PRIMARY KEY,
+  roll_number  VARCHAR(100) UNIQUE NOT NULL,
+  name         VARCHAR(255) NOT NULL,
+  semester     INT NOT NULL,
+  department   VARCHAR(255) NOT NULL,
+  created_at   TIMESTAMPTZ DEFAULT NOW()
+);
+
 CREATE TABLE IF NOT EXISTS users (
   id         SERIAL PRIMARY KEY,
   name       VARCHAR(255) NOT NULL,
   email      VARCHAR(255) UNIQUE NOT NULL,
   password   VARCHAR(255) NOT NULL,
   role       VARCHAR(50) NOT NULL DEFAULT 'student' CHECK (role IN ('student', 'faculty', 'admin')),
+  roll_number VARCHAR(100) UNIQUE,
   department VARCHAR(255),
   semester   INT,
   avatar_url VARCHAR(500),
