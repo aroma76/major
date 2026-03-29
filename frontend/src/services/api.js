@@ -12,7 +12,9 @@ api.interceptors.response.use((res) => res, (err) => {
   if (err.response?.status === 401) {
     localStorage.removeItem('adtu_token');
     localStorage.removeItem('adtu_user');
-    window.location.href = '/login';
+    if (window.location.pathname !== '/login' && window.location.pathname !== '/signup') {
+      window.location.href = '/login';
+    }
   }
   return Promise.reject(err);
 });
