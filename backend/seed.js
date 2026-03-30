@@ -94,7 +94,7 @@ async function seed() {
     // Wipe existing data cleanly (so seed can be re-run any time)
     await pool.query(`
       TRUNCATE TABLE 
-        assignment_submissions, assignments, announcements, messages,
+        assignment_submissions, assignments, announcements, messages, notes,
         files, enrollments, channels, batches, users, programmes, faculties
       RESTART IDENTITY CASCADE
     `);
@@ -197,11 +197,27 @@ async function seed() {
         await pool.query(`INSERT INTO messages (channel_id, sender_id, content) VALUES ($1,$2,$3)`, [channelId, cseStudents.rows[1].id, `Are we having lab for this today?`]);
 
         // Add Assignment
-        await pool.query(`INSERT INTO assignments (channel_id, created_by, title, description, due_date) VALUES ($1,$2,$3,$4, NOW() + INTERVAL '7 days')`,
+        const rAssign = await pool.query(`INSERT INTO assignments (channel_id, created_by, title, description, due_date) VALUES ($1,$2,$3,$4, NOW() + INTERVAL '7 days') RETURNING id`,
           [channelId, teacherId, `Assignment 1: Introduction`, `Please submit your PDF assignment detailing concepts from Unit 1.`]
         );
+        const assignId = rAssign.rows[0].id;
+
+        // Mock Submission for the first student
+        await pool.query(`INSERT INTO assignment_submissions (assignment_id, student_id, status) VALUES ($1,$2,'submitted')`,
+          [assignId, cseStudents.rows[0].id]
+        );
+
+        // Add Mock File with description
+        await pool.query(`INSERT INTO files (channel_id, uploaded_by, title, description, file_name, file_url, file_type, file_size) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
+          [channelId, teacherId, `Unit 1 Notes`, `Complete PDF for Unit 1.`, `Unit_1_Notes.pdf`, `https://example.com/notes.pdf`, `application/pdf`, 1024000]
+        );
+
+        // Add Mock Note
+        await pool.query(`INSERT INTO notes (channel_id, created_by, title, content) VALUES ($1,$2,$3,$4)`,
+          [channelId, cseStudents.rows[0].id, `Exam Prep Tips`, `Focus on trees, graphs, and the latest algorithms covered in class.`]
+        );
       }
-      console.log('✅ Seeded CSE Channels, Enrollements, Messages, Announcements, Assignments');
+      console.log('✅ Seeded CSE Channels, Enrollments, Messages, Announcements, Assignments, Files, Notes');
     }
 
     console.log('🎉 SEED COMPLETED SUCCESSFULLY');

@@ -73,5 +73,10 @@ export const notificationAPI = {
   markAllRead: () => api.put('/notifications/read-all'),
   delete: (id) => api.delete(`/notifications/${id}`),
 };
+export const notesAPI = {
+  getByChannel: (sid) => api.get(`/channels/${sid}/notes`),
+  create: (sid, data) => api.post(`/channels/${sid}/notes`, data),
+  delete: (sid, nid) => api.delete(`/channels/${sid}/notes/${nid}`),
+};
 
 export default api;

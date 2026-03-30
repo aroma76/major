@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { channelAPI, messageAPI, assignmentAPI, announcementAPI, fileAPI } from '../services/api';
+import { channelAPI, messageAPI, assignmentAPI, announcementAPI, fileAPI, notesAPI } from '../services/api';
 import { io } from 'socket.io-client';
 
 const SUBJ_COLORS = ['#6C63FF','#4ECDC4','#FFD93D','#FF6B6B','#FF63B8','#4ECDC4','#888780'];
@@ -40,11 +40,13 @@ export default function SubjectPage() {
   const { id } = useParams();
   const { user } = useAuth();
   const [channel, setChannel] = useState(null);
+  const [allChannelsCount, setAllChannelsCount] = useState(0);
   const [tab, setTab] = useState('dashboard');
   const [messages, setMessages] = useState([]);
   const [assignments, setAssignments] = useState([]);
   const [announcements, setAnnouncements] = useState([]);
   const [files, setFiles] = useState([]);
+  const [notes, setNotes] = useState([]);
   const [chatMsg, setChatMsg] = useState('');
   const chatEndRef = useRef(null);
   const socketRef = useRef(null);
@@ -55,11 +57,13 @@ export default function SubjectPage() {
   // Load channel data
   useEffect(() => {
     if (!id) return;
+    channelAPI.getAll().then(r => setAllChannelsCount(r.data.channels?.length || 0)).catch(() => {});
     channelAPI.getById(id).then(r => setChannel(r.data.channel)).catch(() => {});
     messageAPI.getByChannel(id).then(r => setMessages(r.data.messages || [])).catch(() => {});
     assignmentAPI.getByChannel(id).then(r => setAssignments(r.data.assignments || [])).catch(() => {});
     announcementAPI.getByChannel(id).then(r => setAnnouncements(r.data.announcements || [])).catch(() => {});
     fileAPI.getByChannel(id).then(r => setFiles(r.data.files || [])).catch(() => {});
+    notesAPI.getByChannel(id).then(r => setNotes(r.data.notes || [])).catch(() => {});
   }, [id]);
 
   useEffect(() => {
@@ -86,7 +90,7 @@ export default function SubjectPage() {
     } catch {}
   };
 
-  const pendingAssign = assignments.filter(a => !a.my_submission && new Date(a.due_date) > new Date());
+  const pendingAssign = assignments.filter(a => !a.submission_status && new Date(a.due_date) > new Date());
   const pinnedAnn = announcements[0]; // Assuming first is pinned
 
   return (
@@ -135,7 +139,7 @@ export default function SubjectPage() {
               {[
                 { num: files.length, label: 'Files uploaded', color: '#6C63FF' },
                 { num: pendingAssign.length, label: 'Pending tasks', color: '#4ECDC4' },
-                { num: 7, label: 'Subjects this semester', color: '#FFD93D' }
+                { num: allChannelsCount, label: 'Subjects this semester', color: '#FFD93D' }
               ].map((s, i) => (
                 <div key={i} style={{ background: '#1A1D27', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 14, padding: '20px', position: 'relative', overflow: 'hidden' }}>
                   <div style={{ position: 'absolute', width: 60, height: 60, borderRadius: '50%', top: -10, right: 10, background: s.color, opacity: 0.1 }} />
@@ -175,23 +179,21 @@ export default function SubjectPage() {
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                     {assignments.slice(0, 4).map((a, i) => {
-                      const isDone = Boolean(a.my_submission);
+                      const isDone = Boolean(a.submission_status);
                       const due = fmtDue(a.due_date);
-                      // In original pic there's a done assignment. Mocking first item as done to match UI.
-                      const forceDone = i === 0; 
                       return (
                         <div key={a.id} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                          {forceDone ? (
+                          {isDone ? (
                             <div style={{ width: 18, height: 18, borderRadius: 4, background: '#4ECDC4', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#000" strokeWidth="3"><path d="M20 6L9 17l-5-5"/></svg>
                             </div>
                           ) : (
                             <div style={{ width: 18, height: 18, borderRadius: 4, border: '1.5px solid rgba(255,255,255,0.1)' }} />
                           )}
-                          <div style={{ flex: 1, fontSize: 13, color: forceDone ? '#5A6070' : '#F0F0F5', textDecoration: forceDone ? 'line-through' : 'none' }}>
+                          <div style={{ flex: 1, fontSize: 13, color: isDone ? '#5A6070' : '#F0F0F5', textDecoration: isDone ? 'line-through' : 'none' }}>
                             {a.title}
                           </div>
-                          {forceDone ? (
+                          {isDone ? (
                             <div style={{ fontSize: 10, fontWeight: 600, background: 'rgba(78,205,196,0.1)', color: '#4ECDC4', padding: '2px 8px', borderRadius: 6 }}>Done</div>
                           ) : (
                             <div style={{ fontSize: 10, fontWeight: 600, background: due.label === 'Overdue' ? 'rgba(255,107,107,0.1)' : 'rgba(255,217,61,0.1)', color: due.label === 'Overdue' ? '#FF6B6B' : '#FFD93D', padding: '2px 8px', borderRadius: 6 }}>{due.label}</div>
@@ -284,6 +286,27 @@ export default function SubjectPage() {
               </div>
 
             </div>
+          </div>
+        )}
+
+        {/* ── NOTES TAB ── */}
+        {tab === 'notes' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+              <div style={{ fontSize: 16, fontWeight: 600, color: '#F0F0F5' }}>Shared Notes</div>
+            </div>
+            {notes.map(n => (
+              <div key={n.id} style={{ background: '#1A1D27', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 14, padding: '20px' }}>
+                <div style={{ fontSize: 15, fontWeight: 600, color: '#4ECDC4', marginBottom: 8 }}>{n.title}</div>
+                <div style={{ fontSize: 13.5, color: '#9096A8', lineHeight: 1.6, marginBottom: 16, whiteSpace: 'pre-wrap' }}>{n.content}</div>
+                <div style={{ fontSize: 11, color: '#5A6070' }}>
+                  By {n.author_name} · {new Date(n.created_at).toLocaleDateString('en-US', {day:'numeric', month:'short'})}
+                </div>
+              </div>
+            ))}
+            {notes.length === 0 && (
+              <div style={{ textAlign: 'center', padding: '40px 0', color: '#5A6070', fontSize: 13 }}>No notes shared yet.</div>
+            )}
           </div>
         )}
       </div>
