@@ -8,6 +8,8 @@ import DashboardPage     from './pages/DashboardPage';
 import SubjectPage       from './pages/SubjectPage';
 import NotificationsPage from './pages/NotificationsPage';
 import ProfilePage       from './pages/ProfilePage';
+import AllFilesPage      from './pages/AllFilesPage';
+import CalendarPage      from './pages/CalendarPage';
 import Layout            from './components/Layout';
 
 function PrivateRoute({ children }) {
@@ -30,6 +32,8 @@ function AppRoutes() {
         <Route path="channels/:id"  element={<SubjectPage />} />
         <Route path="notifications" element={<NotificationsPage />} />
         <Route path="profile"       element={<ProfilePage />} />
+        <Route path="all-files"     element={<AllFilesPage />} />
+        <Route path="calendar"      element={<CalendarPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

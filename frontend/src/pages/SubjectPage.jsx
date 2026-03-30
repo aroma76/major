@@ -48,6 +48,8 @@ export default function SubjectPage() {
   const [files, setFiles] = useState([]);
   const [notes, setNotes] = useState([]);
   const [chatMsg, setChatMsg] = useState('');
+  const [chatFile, setChatFile] = useState(null);
+  const chatFileRef = useRef(null);
   const chatEndRef = useRef(null);
   const socketRef = useRef(null);
 
@@ -79,12 +81,15 @@ export default function SubjectPage() {
   useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
 
   const sendMessage = async () => {
-    if (!chatMsg.trim()) return;
+    if (!chatMsg.trim() && !chatFile) return;
     const text = chatMsg;
+    const file = chatFile;
     setChatMsg('');
+    setChatFile(null);
     try {
       const fd = new FormData();
-      fd.append('content', text);
+      if (text) fd.append('content', text);
+      if (file) fd.append('file', file);
       const r = await messageAPI.send(id, fd);
       setMessages(prev => [...prev, r.data.message]);
     } catch {}
@@ -94,7 +99,7 @@ export default function SubjectPage() {
   const pinnedAnn = announcements[0]; // Assuming first is pinned
 
   return (
-    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', background: '#13161E' }}>
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', background: '#0D0F14' }}>
       
       {/* ── HEADER ── */}
       <div style={{ padding: '20px 24px', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -108,10 +113,10 @@ export default function SubjectPage() {
           </div>
         )}
         <div style={{ marginLeft: 'auto', display: 'flex', gap: 12 }}>
-          <button style={{ width: 36, height: 36, background: '#1A1D27', border: 'none', borderRadius: 10, color: '#9096A8', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+          <button style={{ width: 36, height: 36, background: '#13161E', border: 'none', borderRadius: 10, color: '#5A6070', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
             <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
           </button>
-          <button style={{ width: 36, height: 36, background: '#1A1D27', border: 'none', borderRadius: 10, color: '#9096A8', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+          <button style={{ width: 36, height: 36, background: '#13161E', border: 'none', borderRadius: 10, color: '#5A6070', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
             <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
           </button>
         </div>
@@ -141,7 +146,7 @@ export default function SubjectPage() {
                 { num: pendingAssign.length, label: 'Pending tasks', color: '#4ECDC4' },
                 { num: allChannelsCount, label: 'Subjects this semester', color: '#FFD93D' }
               ].map((s, i) => (
-                <div key={i} style={{ background: '#1A1D27', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 14, padding: '20px', position: 'relative', overflow: 'hidden' }}>
+                <div key={i} style={{ background: '#13161E', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 14, padding: '20px', position: 'relative', overflow: 'hidden' }}>
                   <div style={{ position: 'absolute', width: 60, height: 60, borderRadius: '50%', top: -10, right: 10, background: s.color, opacity: 0.1 }} />
                   <div style={{ fontSize: 32, fontWeight: 700, fontFamily: 'Syne, sans-serif', color: s.color, lineHeight: 1, marginBottom: 8 }}>{s.num}</div>
                   <div style={{ fontSize: 13, color: '#5A6070' }}>{s.label}</div>
@@ -151,7 +156,7 @@ export default function SubjectPage() {
 
             {/* PINNED ANNOUNCEMENT */}
             {pinnedAnn && (
-              <div style={{ background: '#151421', border: '1px solid rgba(108,99,255,0.15)', borderRadius: 14, padding: '16px 20px' }}>
+              <div style={{ background: '#11131E', border: '1px solid rgba(108,99,255,0.15)', borderRadius: 14, padding: '16px 20px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
                   <span style={{ fontSize: 14 }}>📢</span>
                   <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '1px', color: '#A9A4FF', textTransform: 'uppercase' }}>Pinned Announcement</span>
@@ -172,7 +177,7 @@ export default function SubjectPage() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                 
                 {/* Assignments Card */}
-                <div style={{ background: '#1A1D27', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 14, padding: '20px' }}>
+                <div style={{ background: '#13161E', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 14, padding: '20px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
                     <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: '1px', color: '#5A6070', textTransform: 'uppercase' }}>Assignments</div>
                     <div style={{ fontSize: 11, color: '#6C63FF', cursor: 'pointer' }}>See all</div>
@@ -206,7 +211,7 @@ export default function SubjectPage() {
                 </div>
 
                 {/* Recent Files Card */}
-                <div style={{ background: '#1A1D27', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 14, padding: '20px' }}>
+                <div style={{ background: '#13161E', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 14, padding: '20px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
                     <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: '1px', color: '#5A6070', textTransform: 'uppercase' }}>Recent Files</div>
                     <div style={{ fontSize: 11, color: '#6C63FF', cursor: 'pointer' }}>See all</div>
@@ -233,7 +238,7 @@ export default function SubjectPage() {
               </div>
 
               {/* RIGHT COL: CHAT PANEL */}
-              <div style={{ background: '#1A1D27', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 14, display: 'flex', flexDirection: 'column', height: '600px' }}>
+              <div style={{ background: '#13161E', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 14, display: 'flex', flexDirection: 'column', height: '600px' }}>
                 <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                   <div style={{ fontSize: 14, fontWeight: 600, color: '#F0F0F5', marginBottom: 4 }}>
                     {channel?.subject_name?.split(' ')[0] || 'Channel'} — Chat
@@ -261,8 +266,19 @@ export default function SubjectPage() {
                             {isCR && <span style={{ background: 'rgba(108,99,255,0.15)', color: '#A9A4FF', fontSize: 9, padding: '2px 6px', borderRadius: 4, fontWeight: 600 }}>CR</span>}
                             <span style={{ fontSize: 11, color: '#5A6070', marginLeft: 'auto' }}>{fmtDate(m.created_at)}</span>
                           </div>
+                          {m.file_url && (
+                            <div style={{ marginBottom: m.content ? 8 : 0 }}>
+                              {m.file_url.match(/\.(jpeg|jpg|gif|png)$/) != null ? (
+                                <img src={m.file_url} alt="attachment" style={{ maxWidth: 200, borderRadius: 8, border: '1px solid rgba(255,255,255,0.1)' }} />
+                              ) : (
+                                <a href={m.file_url} target="_blank" rel="noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: '#1A1D27', padding: '8px 12px', borderRadius: 8, color: '#4ECDC4', textDecoration: 'none', fontSize: 12, border: '1px solid rgba(78,205,196,0.2)' }}>
+                                  📎 {m.file_name || 'View Attachment'}
+                                </a>
+                              )}
+                            </div>
+                          )}
                           {m.content && (
-                            <div style={{ background: '#20242F', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '0 12px 12px 12px', padding: '10px 14px', fontSize: 13, color: '#9096A8', lineHeight: 1.5 }}>
+                            <div style={{ background: '#1A1D27', border: '1px solid rgba(255,255,255,0.03)', borderRadius: '0 12px 12px 12px', padding: '10px 14px', fontSize: 13, color: '#9096A8', lineHeight: 1.5, wordBreak: 'break-word' }}>
                               {m.content}
                             </div>
                           )}
@@ -275,13 +291,28 @@ export default function SubjectPage() {
 
                 {/* Input Area */}
                 <div style={{ padding: '16px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-                  <input
-                    value={chatMsg}
-                    onChange={e => setChatMsg(e.target.value)}
-                    onKeyDown={e => e.key === 'Enter' && sendMessage()}
-                    placeholder="Type a message..."
-                    style={{ width: '100%', background: '#20242F', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, padding: '12px 16px', fontSize: 13, color: '#fff', outline: 'none', fontFamily: 'DM Sans, sans-serif' }}
-                  />
+                  {chatFile && (
+                    <div style={{ padding: '6px 12px', background: 'rgba(108,99,255,0.1)', borderRadius: 6, display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 11, color: '#A9A4FF', marginBottom: 8 }}>
+                      📎 {chatFile.name}
+                      <button onClick={() => setChatFile(null)} style={{ background:'none', border:'none', color:'#A9A4FF', cursor:'pointer' }}>✕</button>
+                    </div>
+                  )}
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <input type="file" ref={chatFileRef} style={{ display: 'none' }} onChange={e => setChatFile(e.target.files[0])} />
+                    <button onClick={() => chatFileRef.current.click()} style={{ width: 44, height: 44, borderRadius: 8, background: '#1A1D27', border: '1px solid rgba(255,255,255,0.05)', color: '#9096A8', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      📎
+                    </button>
+                    <input
+                      value={chatMsg}
+                      onChange={e => setChatMsg(e.target.value)}
+                      onKeyDown={e => e.key === 'Enter' && sendMessage()}
+                      placeholder="Type a message..."
+                      style={{ flex: 1, background: '#1A1D27', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 8, padding: '12px 16px', fontSize: 13, color: '#fff', outline: 'none', fontFamily: 'DM Sans, sans-serif' }}
+                    />
+                    <button onClick={sendMessage} style={{ width: 44, height: 44, borderRadius: 8, background: '#6C63FF', border: 'none', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      ➤
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -296,7 +327,7 @@ export default function SubjectPage() {
               <div style={{ fontSize: 16, fontWeight: 600, color: '#F0F0F5' }}>Shared Notes</div>
             </div>
             {notes.map(n => (
-              <div key={n.id} style={{ background: '#1A1D27', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 14, padding: '20px' }}>
+              <div key={n.id} style={{ background: '#13161E', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 14, padding: '20px' }}>
                 <div style={{ fontSize: 15, fontWeight: 600, color: '#4ECDC4', marginBottom: 8 }}>{n.title}</div>
                 <div style={{ fontSize: 13.5, color: '#9096A8', lineHeight: 1.6, marginBottom: 16, whiteSpace: 'pre-wrap' }}>{n.content}</div>
                 <div style={{ fontSize: 11, color: '#5A6070' }}>
@@ -307,6 +338,85 @@ export default function SubjectPage() {
             {notes.length === 0 && (
               <div style={{ textAlign: 'center', padding: '40px 0', color: '#5A6070', fontSize: 13 }}>No notes shared yet.</div>
             )}
+          </div>
+        )}
+
+        {/* ── ASSIGNMENTS TAB ── */}
+        {tab === 'assignments' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+              <div style={{ fontSize: 16, fontWeight: 600, color: '#F0F0F5' }}>Course Assignments</div>
+              {(user.role === 'admin' || user.role === 'faculty') && (
+                <button style={{ background: '#6C63FF', border: 'none', borderRadius: 8, padding: '8px 16px', color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>+ Create Assignment</button>
+              )}
+            </div>
+            {assignments.map(a => {
+              const isDone = Boolean(a.submission_status);
+              const due = fmtDue(a.due_date);
+              return (
+                <div key={a.id} style={{ background: '#13161E', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 14, padding: '24px', display: 'flex', gap: 24 }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
+                      <div style={{ fontSize: 16, fontWeight: 600, color: '#F0F0F5' }}>{a.title}</div>
+                      {isDone ? (
+                        <div style={{ fontSize: 10, fontWeight: 700, background: 'rgba(78,205,196,0.1)', color: '#4ECDC4', padding: '4px 8px', borderRadius: 6, textTransform: 'uppercase' }}>Completed</div>
+                      ) : (
+                        <div style={{ fontSize: 10, fontWeight: 700, background: due.label === 'Overdue' ? 'rgba(255,107,107,0.1)' : 'rgba(255,217,61,0.1)', color: due.label === 'Overdue' ? '#FF6B6B' : '#FFD93D', padding: '4px 8px', borderRadius: 6, textTransform: 'uppercase' }}>Due: {due.label}</div>
+                      )}
+                    </div>
+                    <div style={{ fontSize: 14, color: '#9096A8', lineHeight: 1.6, marginBottom: 16 }}>{a.description}</div>
+                    <div style={{ fontSize: 11, color: '#5A6070' }}>Max Marks: {a.max_marks} · Created By: {a.created_by_name}</div>
+                  </div>
+                  {user.role === 'student' && (
+                    <div style={{ width: 200, flexShrink: 0, borderLeft: '1px solid rgba(255,255,255,0.05)', paddingLeft: 24, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                      {isDone ? (
+                        <div style={{ textAlign: 'center' }}>
+                          <div style={{ fontSize: 32, marginBottom: 4 }}>🎉</div>
+                          <div style={{ fontSize: 13, color: '#4ECDC4', fontWeight: 600 }}>Successfully Submitted</div>
+                        </div>
+                      ) : (
+                        <button style={{ width: '100%', padding: '12px 0', background: 'rgba(108,99,255,0.1)', border: '1px solid rgba(108,99,255,0.3)', borderRadius: 8, color: '#A9A4FF', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+                          Submit Work
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+            {assignments.length === 0 && <div style={{ textAlign: 'center', padding: '40px 0', color: '#5A6070', fontSize: 13 }}>No assignments posted yet.</div>}
+          </div>
+        )}
+
+        {/* ── FILES TAB ── */}
+        {tab === 'files' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+              <div style={{ fontSize: 16, fontWeight: 600, color: '#F0F0F5' }}>Course Materials</div>
+              {(user.role === 'admin' || user.role === 'faculty') && (
+                <button style={{ background: '#4ECDC4', border: 'none', borderRadius: 8, padding: '8px 16px', color: '#000', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>+ Upload File</button>
+              )}
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 16 }}>
+              {files.map(f => {
+                const fi = fileIcon(f.file_url || f.file_name || '');
+                return (
+                  <div key={f.id} style={{ background: '#13161E', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 14, padding: '20px', display: 'flex', gap: 16, alignItems: 'center' }}>
+                    <div className={fi.cls} style={{ width: 48, height: 48, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 700, flexShrink: 0 }}>
+                      {fi.label}
+                    </div>
+                    <div style={{ flex: 1, overflow: 'hidden' }}>
+                      <div style={{ fontSize: 14, fontWeight: 600, color: '#F0F0F5', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden', marginBottom: 4 }}>
+                        <a href={f.file_url} target="_blank" rel="noreferrer" style={{ color: 'inherit', textDecoration: 'none' }}>{f.file_name}</a>
+                      </div>
+                      <div style={{ fontSize: 12, color: '#5A6070', marginBottom: 4, whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>{f.description || 'No description'}</div>
+                      <div style={{ fontSize: 11, color: '#5A6070' }}>{fmtSize(f.file_size)} · Uploaded by {f.uploaded_by_name}</div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            {files.length === 0 && <div style={{ textAlign: 'center', padding: '40px 0', color: '#5A6070', fontSize: 13 }}>No files uploaded yet.</div>}
           </div>
         )}
       </div>

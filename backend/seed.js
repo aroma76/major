@@ -111,7 +111,9 @@ async function seed() {
     let csTeacher2 = null;
 
     // 2. Faculties & Programmes
+    let facIndex = 0;
     for (const fac of facultiesData) {
+      facIndex++;
       const { rows: fRows } = await pool.query(`INSERT INTO faculties (name, color_code) VALUES ($1, $2) RETURNING id`, [fac.name, fac.color]);
       const facultyId = fRows[0].id;
 
@@ -130,7 +132,7 @@ async function seed() {
 
         // Generate 2 teachers per faculty (to save on seed time just generating once per faculty)
         if (!facultyTeacherCreated) {
-          const facAcronym = fac.name.split(' ').map(w => w[0]).join('').substring(0, 4);
+          const facAcronym = fac.name.split(' ').map(w => w[0]).join('').substring(0, 4) + facIndex;
           const t1 = await pool.query(`INSERT INTO users (name, email, roll_number, password, role, programme_id) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`, [`Dr. Manoj Sarma`, `manoj.sarma.${facAcronym}@adtu.in`, `TCH-${facAcronym}-01`, hashedDob, 'faculty', progId]);
           const t2 = await pool.query(`INSERT INTO users (name, email, roll_number, password, role, programme_id) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`, [`Prof. Anita Gogoi`, `anita.gogoi.${facAcronym}@adtu.in`, `TCH-${facAcronym}-02`, hashedDob, 'faculty', progId]);
           if(prog.code === 'btech-cse') { csTeacher1 = t1.rows[0].id; csTeacher2 = t2.rows[0].id; }
