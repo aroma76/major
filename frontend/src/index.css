@@ -1,31 +1,100 @@
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  * { box-sizing: border-box; }
-  body { @apply font-sans bg-surface-50 text-surface-900 antialiased; margin: 0; padding: 0; }
-  ::-webkit-scrollbar { width: 6px; height: 6px; }
-  ::-webkit-scrollbar-track { @apply bg-surface-100; }
-  ::-webkit-scrollbar-thumb { @apply bg-surface-300 rounded-full; }
-  ::-webkit-scrollbar-thumb:hover { @apply bg-surface-400; }
+:root {
+  --bg: #0D0F14;
+  --bg2: #13161E;
+  --bg3: #1A1D27;
+  --bg4: #20242F;
+  --border: rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.12);
+  --accent: #6C63FF;
+  --accent2: #4ECDC4;
+  --accent3: #FF6B6B;
+  --accent4: #FFD93D;
+  --text: #F0F0F5;
+  --text2: #9096A8;
+  --text3: #5A6070;
+  --green: #4ECDC4;
+  --amber: #FFD93D;
+  --red: #FF6B6B;
+  --purple: #6C63FF;
+  --pink: #FF63B8;
+  --r: 12px;
+  --r2: 8px;
 }
 
-@layer components {
-  .btn-primary   { @apply bg-primary-600 hover:bg-primary-700 text-white font-medium px-4 py-2 rounded-lg transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed; }
-  .btn-secondary { @apply bg-surface-100 hover:bg-surface-200 text-surface-700 font-medium px-4 py-2 rounded-lg transition-all duration-200 active:scale-95; }
-  .btn-danger    { @apply bg-red-600 hover:bg-red-700 text-white font-medium px-4 py-2 rounded-lg transition-all duration-200 active:scale-95; }
-  .card          { @apply bg-white rounded-xl shadow-sm border border-surface-100 p-5; }
-  .input         { @apply w-full px-4 py-2.5 rounded-lg border border-surface-200 bg-white text-surface-900 placeholder-surface-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 text-sm; }
-  .badge         { @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium; }
-  .badge-blue    { @apply badge bg-blue-100 text-blue-800; }
-  .badge-green   { @apply badge bg-green-100 text-green-800; }
-  .badge-red     { @apply badge bg-red-100 text-red-800; }
-  .badge-yellow  { @apply badge bg-yellow-100 text-yellow-800; }
-  .badge-gray    { @apply badge bg-surface-100 text-surface-600; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
 }
 
-@keyframes slideUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-.msg-appear { animation: slideUp 0.2s ease-out; }
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-.page-enter { animation: fadeIn 0.3s ease-out; }
+/* ── Scrollbars ── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+
+/* ── Reuse classes ── */
+.font-syne { font-family: 'Syne', sans-serif; }
+
+/* ── Animations ── */
+@keyframes pulse-orb {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.1); opacity: 0.7; }
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes msg-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-slideUp { animation: slideUp 0.55s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.animate-fadeIn  { animation: fadeIn 0.3s ease-out; }
+.animate-msg     { animation: msg-in 0.2s ease-out; }
+.animate-blink   { animation: blink 2s infinite; }
+.animate-pulse-orb { animation: pulse-orb 6s ease-in-out infinite; }
+.animate-pulse-orb-rev { animation: pulse-orb 8s ease-in-out infinite reverse; }
+
+/* ── Avatar colors ── */
+.av-purple { background: rgba(108,99,255,0.25); color: #A9A4FF; }
+.av-teal   { background: rgba(78,205,196,0.25); color: #4ECDC4; }
+.av-amber  { background: rgba(255,217,61,0.25); color: #FFD93D; }
+.av-pink   { background: rgba(255,99,184,0.25); color: #FF63B8; }
+.av-coral  { background: rgba(255,107,107,0.25); color: #FF6B6B; }
+.av-teacher { background: rgba(255,217,61,0.2); color: #FFD93D; }
+
+/* ── Status pill ── */
+.role-pill-cr { background: rgba(108,99,255,0.2); color: #A9A4FF; border-radius: 10px; padding: 1px 6px; font-size: 9px; font-weight: 600; }
+.role-pill-teacher { background: rgba(255,217,61,0.15); color: #FFD93D; border-radius: 10px; padding: 1px 6px; font-size: 9px; font-weight: 600; }
+
+/* Due badge */
+.due-ok   { background: rgba(78,205,196,0.12); color: var(--green); }
+.due-soon { background: rgba(255,217,61,0.12); color: var(--amber); }
+.due-late { background: rgba(255,107,107,0.12); color: var(--red); }
+
+/* File type */
+.ft-pdf { background: rgba(255,107,107,0.15); color: var(--red); }
+.ft-doc { background: rgba(108,99,255,0.15); color: #A9A4FF; }
+.ft-img { background: rgba(78,205,196,0.15); color: var(--green); }
+.ft-other { background: rgba(255,255,255,0.08); color: var(--text3); }

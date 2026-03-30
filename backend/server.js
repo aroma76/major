@@ -10,10 +10,9 @@ const errorHandler = require('./middleware/errorHandler');
 const socketHandler = require('./socket/socketHandler');
 
 const authRoutes         = require('./routes/authRoutes');
-const subjectRoutes      = require('./routes/subjectRoutes');
-const enrollmentRoutes   = require('./routes/enrollmentRoutes');
+const channelRoutes      = require('./routes/subjectRoutes'); // Will rename file later
 const messageRoutes      = require('./routes/messageRoutes');
-const noteRoutes         = require('./routes/noteRoutes');
+const fileRoutes         = require('./routes/noteRoutes'); // Will rename file later
 const assignmentRoutes   = require('./routes/assignmentRoutes');
 const announcementRoutes = require('./routes/announcementRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
@@ -52,12 +51,11 @@ app.use(express.urlencoded({ extended: true }));
 app.get('/api/health', (req, res) => res.json({ success: true, message: 'ADTU Collab API is running 🚀' }));
 
 app.use('/api/auth',                       authRoutes);
-app.use('/api/subjects',                   subjectRoutes);
-app.use('/api/enrollments',                enrollmentRoutes);
-app.use('/api/subjects/:id/messages',      messageRoutes);
-app.use('/api/subjects/:id/notes',         noteRoutes);
-app.use('/api/subjects/:id/assignments',   assignmentRoutes);
-app.use('/api/subjects/:id/announcements', announcementRoutes);
+app.use('/api/channels',                   channelRoutes);
+app.use('/api/channels/:id/messages',      messageRoutes);
+app.use('/api/channels/:id/files',         fileRoutes);
+app.use('/api/channels/:id/assignments',   assignmentRoutes);
+app.use('/api/channels/:id/announcements', announcementRoutes);
 app.use('/api/notifications',              notificationRoutes);
 
 app.use((req, res) => res.status(404).json({ success: false, message: `Route ${req.originalUrl} not found` }));

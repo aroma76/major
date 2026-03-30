@@ -11,28 +11,28 @@ const socketHandler = (io) => {
       socket.userId = userId;
     });
 
-    socket.on('subject:join', (subjectId) => socket.join(`subject_${subjectId}`));
-    socket.on('subject:leave', (subjectId) => socket.leave(`subject_${subjectId}`));
+    socket.on('channel:join', (channelId) => socket.join(`channel_${channelId}`));
+    socket.on('channel:leave', (channelId) => socket.leave(`channel_${channelId}`));
 
     socket.on('message:send', async (data) => {
       try {
-        const { subjectId, senderId, content, file_url, file_name } = data;
+        const { channelId, senderId, content, file_url, file_name } = data;
         const result = await pool.query(
-          `INSERT INTO messages (subject_id, sender_id, content, file_url, file_name)
+          `INSERT INTO messages (channel_id, sender_id, content, file_url, file_name)
            VALUES ($1, $2, $3, $4, $5)
            RETURNING *, (SELECT name FROM users WHERE id=$2) AS sender_name,
                         (SELECT role FROM users WHERE id=$2) AS sender_role,
                         (SELECT avatar_url FROM users WHERE id=$2) AS sender_avatar`,
-          [subjectId, senderId, content, file_url || null, file_name || null]
+          [channelId, senderId, content, file_url || null, file_name || null]
         );
-        io.to(`subject_${subjectId}`).emit('message:new', result.rows[0]);
+        io.to(`channel_${channelId}`).emit('message:new', result.rows[0]);
       } catch (err) {
         socket.emit('error', { message: 'Failed to send message' });
       }
     });
 
-    socket.on('typing:start', ({ subjectId, userName }) => socket.to(`subject_${subjectId}`).emit('typing:start', { userName }));
-    socket.on('typing:stop', ({ subjectId }) => socket.to(`subject_${subjectId}`).emit('typing:stop'));
+    socket.on('typing:start', ({ channelId, userName }) => socket.to(`channel_${channelId}`).emit('typing:start', { userName }));
+    socket.on('typing:stop', ({ channelId }) => socket.to(`channel_${channelId}`).emit('typing:stop'));
 
     socket.on('notification:send', ({ targetUserId, notification }) => {
       const targetSocket = onlineUsers.get(String(targetUserId));

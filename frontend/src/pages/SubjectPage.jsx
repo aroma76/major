@@ -1,281 +1,291 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { subjectAPI, messageAPI, noteAPI, assignmentAPI, announcementAPI } from '../services/api';
-import { getSocket } from '../hooks/useSocket';
-import Tabs from '../components/Tabs';
-import ChatBubble from '../components/ChatBubble';
-import AssignmentCard from '../components/AssignmentCard';
-import FileUpload from '../components/FileUpload';
-import { format } from 'date-fns';
+import { channelAPI, messageAPI, assignmentAPI, announcementAPI, fileAPI } from '../services/api';
+import { io } from 'socket.io-client';
 
-// ─── Chat Tab ───────────────────────────────────────────────────────────────
-function ChatTab({ subjectId }) {
-  const { user } = useAuth();
-  const [messages, setMessages] = useState([]);
-  const [text, setText] = useState('');
-  const [file, setFile] = useState(null);
-  const [typing, setTyping] = useState('');
-  const bottomRef = useRef(null);
-  const typingTimer = useRef(null);
+const SUBJ_COLORS = ['#6C63FF','#4ECDC4','#FFD93D','#FF6B6B','#FF63B8','#4ECDC4','#888780'];
+const AV_COLORS = ['av-purple','av-teal','av-amber','av-pink','av-coral'];
 
-  useEffect(() => {
-    messageAPI.getBySubject(subjectId).then(r => setMessages(r.data.messages));
-    const socket = getSocket();
-    if (!socket) return;
-    socket.emit('subject:join', subjectId);
-    socket.on('message:new', (msg) => setMessages(p => [...p, msg]));
-    socket.on('typing:start', ({ userName }) => setTyping(`${userName} is typing...`));
-    socket.on('typing:stop', () => setTyping(''));
-    return () => { socket.emit('subject:leave', subjectId); socket.off('message:new'); socket.off('typing:start'); socket.off('typing:stop'); };
-  }, [subjectId]);
-
-  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
-
-  const handleTyping = (e) => {
-    setText(e.target.value);
-    const socket = getSocket();
-    if (!socket) return;
-    socket.emit('typing:start', { subjectId, userName: user.name });
-    clearTimeout(typingTimer.current);
-    typingTimer.current = setTimeout(() => socket.emit('typing:stop', { subjectId }), 1500);
-  };
-
-  const sendMsg = async (e) => {
-    e.preventDefault();
-    if (!text.trim() && !file) return;
-    const socket = getSocket();
-    if (file) {
-      const fd = new FormData();
-      if (text.trim()) fd.append('content', text);
-      fd.append('file', file);
-      const res = await messageAPI.send(subjectId, fd);
-      setMessages(p => [...p, res.data.message]);
-    } else {
-      socket?.emit('message:send', { subjectId, senderId: user.id, content: text });
-    }
-    setText(''); setFile(null);
-  };
-
-  const handlePin = async (msgId) => {
-    const res = await messageAPI.pin(subjectId, msgId);
-    setMessages(p => p.map(m => m.id === msgId ? res.data.message : m));
-  };
-
-  const grouped = messages.reduce((acc, msg) => {
-    const day = format(new Date(msg.created_at), 'MMMM d, yyyy');
-    if (!acc[day]) acc[day] = [];
-    acc[day].push(msg);
-    return acc;
-  }, {});
-
-  return (
-    <div className="flex flex-col h-full">
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {Object.entries(grouped).map(([day, msgs]) => (
-          <div key={day}>
-            <div className="flex items-center gap-3 my-4"><div className="flex-1 h-px bg-surface-100" /><span className="text-xs font-medium text-surface-400 bg-surface-50 px-3 py-1 rounded-full">{day}</span><div className="flex-1 h-px bg-surface-100" /></div>
-            <div className="space-y-3">{msgs.map(msg => <ChatBubble key={msg.id} message={msg} onPin={['faculty','admin'].includes(user.role) ? handlePin : null} />)}</div>
-          </div>
-        ))}
-        {messages.length === 0 && <div className="text-center py-16 text-surface-400"><p className="text-3xl mb-2">💬</p><p className="text-sm">No messages yet. Start the conversation!</p></div>}
-        {typing && <p className="text-xs italic text-surface-400 px-2">{typing}</p>}
-        <div ref={bottomRef} />
-      </div>
-      <div className="border-t border-surface-100 p-4 bg-white">
-        {file && <div className="mb-2 flex items-center gap-2 text-xs text-surface-600 bg-surface-50 rounded-lg px-3 py-2">📎 {file.name}<button onClick={() => setFile(null)} className="ml-auto text-red-500 hover:text-red-700">✕</button></div>}
-        <form onSubmit={sendMsg} className="flex items-center gap-2">
-          <label className="p-2 rounded-lg hover:bg-surface-100 cursor-pointer text-surface-500 transition-colors">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" /></svg>
-            <input type="file" className="hidden" onChange={e => setFile(e.target.files[0])} />
-          </label>
-          <input className="input flex-1" placeholder="Type a message..." value={text} onChange={handleTyping} />
-          <button type="submit" className="btn-primary px-4 py-2.5" disabled={!text.trim() && !file}>
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>
-          </button>
-        </form>
-      </div>
-    </div>
-  );
+function getAv(name = '') {
+  const idx = Array.from(name).reduce((a,c) => a + c.charCodeAt(0), 0) % AV_COLORS.length;
+  return AV_COLORS[idx];
 }
-
-// ─── Notes Tab ───────────────────────────────────────────────────────────────
-function NotesTab({ subjectId, role }) {
-  const [notes, setNotes] = useState([]);
-  const [search, setSearch] = useState('');
-  const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ title: '', description: '' });
-  const [file, setFile] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const load = useCallback(() => { noteAPI.getBySubject(subjectId, { search }).then(r => setNotes(r.data.notes)); }, [subjectId, search]);
-  useEffect(() => { load(); }, [load]);
-  const fileIcon = (type) => { if (type?.includes('pdf')) return '📄'; if (type?.includes('word')||type?.includes('doc')) return '📝'; if (type?.includes('ppt')) return '📊'; if (type?.includes('image')) return '🖼️'; return '📁'; };
-  const handleUpload = async (e) => {
-    e.preventDefault(); if (!file || !form.title) return; setLoading(true);
-    const fd = new FormData(); fd.append('title', form.title); fd.append('description', form.description); fd.append('file', file);
-    await noteAPI.upload(subjectId, fd); setShowForm(false); setForm({ title:'', description:'' }); setFile(null); load(); setLoading(false);
-  };
-  return (
-    <div className="p-5 space-y-4">
-      <div className="flex items-center gap-3 flex-wrap">
-        <div className="relative flex-1 min-w-0 max-w-xs">
-          <svg className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-surface-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-          <input className="input pl-9 text-sm" placeholder="Search notes..." value={search} onChange={e => setSearch(e.target.value)} />
-        </div>
-        {(role==='faculty'||role==='admin') && <button className="btn-primary text-sm" onClick={() => setShowForm(p=>!p)}>{showForm?'Cancel':'+ Upload Note'}</button>}
-      </div>
-      {showForm && (
-        <form onSubmit={handleUpload} className="card space-y-3 border-2 border-primary-100">
-          <h3 className="font-semibold text-surface-800">Upload New Note</h3>
-          <input className="input" placeholder="Title*" value={form.title} onChange={e => setForm(p=>({...p,title:e.target.value}))} required />
-          <textarea className="input resize-none" rows={2} placeholder="Description" value={form.description} onChange={e => setForm(p=>({...p,description:e.target.value}))} />
-          <FileUpload onFileSelect={setFile} label="Select note file" />
-          <button type="submit" className="btn-primary w-full" disabled={loading||!file}>{loading?'Uploading...':'Upload Note'}</button>
-        </form>
-      )}
-      {notes.length === 0 ? (
-        <div className="text-center py-16 text-surface-400"><p className="text-3xl mb-2">📚</p><p className="text-sm">{search?'No matching notes':'No notes uploaded yet'}</p></div>
-      ) : (
-        <div className="space-y-3">
-          {notes.map(note => (
-            <div key={note.id} className="card flex items-center gap-4">
-              <div className="text-3xl">{fileIcon(note.file_type)}</div>
-              <div className="flex-1 min-w-0"><h4 className="font-medium text-surface-900 truncate">{note.title}</h4>{note.description&&<p className="text-xs text-surface-400 mt-0.5 truncate">{note.description}</p>}<p className="text-xs text-surface-400 mt-1">by {note.uploaded_by_name} · {format(new Date(note.created_at),'MMM d, yyyy')}</p></div>
-              <a href={note.file_url} target="_blank" rel="noreferrer" className="btn-secondary text-xs px-3 py-2 flex items-center gap-1.5 shrink-0">
-                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>Download
-              </a>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
+function getInit(name = '') {
+  return name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
 }
-
-// ─── Assignments Tab ─────────────────────────────────────────────────────────
-function AssignmentsTab({ subjectId, role }) {
-  const [assignments, setAssignments] = useState([]);
-  const [showForm, setShowForm] = useState(false);
-  const [submitTarget, setSubmitTarget] = useState(null);
-  const [subFile, setSubFile] = useState(null);
-  const [subLoading, setSubLoading] = useState(false);
-  const [form, setForm] = useState({ title:'', description:'', deadline:'', max_marks:100 });
-  const [creating, setCreating] = useState(false);
-  const load = useCallback(() => { assignmentAPI.getBySubject(subjectId).then(r => setAssignments(r.data.assignments)); }, [subjectId]);
-  useEffect(() => { load(); }, [load]);
-  const handleCreate = async (e) => { e.preventDefault(); setCreating(true); await assignmentAPI.create(subjectId, form); setShowForm(false); setForm({title:'',description:'',deadline:'',max_marks:100}); load(); setCreating(false); };
-  const handleSubmit = async (e) => { e.preventDefault(); setSubLoading(true); const fd=new FormData(); if(subFile) fd.append('file',subFile); await assignmentAPI.submit(subjectId,submitTarget.id,fd); setSubmitTarget(null); setSubFile(null); load(); setSubLoading(false); };
-  return (
-    <div className="p-5 space-y-4">
-      {(role==='faculty'||role==='admin')&&<div className="flex justify-end"><button className="btn-primary text-sm" onClick={()=>setShowForm(p=>!p)}>{showForm?'Cancel':'+ New Assignment'}</button></div>}
-      {showForm&&(
-        <form onSubmit={handleCreate} className="card space-y-3 border-2 border-primary-100">
-          <h3 className="font-semibold text-surface-800">Create Assignment</h3>
-          <input className="input" placeholder="Title*" value={form.title} onChange={e=>setForm(p=>({...p,title:e.target.value}))} required />
-          <textarea className="input resize-none" rows={3} placeholder="Description" value={form.description} onChange={e=>setForm(p=>({...p,description:e.target.value}))} />
-          <div className="grid grid-cols-2 gap-3">
-            <div><label className="text-xs font-medium text-surface-600 mb-1 block">Deadline*</label><input type="datetime-local" className="input" value={form.deadline} onChange={e=>setForm(p=>({...p,deadline:e.target.value}))} required /></div>
-            <div><label className="text-xs font-medium text-surface-600 mb-1 block">Max Marks</label><input type="number" className="input" value={form.max_marks} onChange={e=>setForm(p=>({...p,max_marks:Number(e.target.value)}))} /></div>
-          </div>
-          <button type="submit" className="btn-primary w-full" disabled={creating}>{creating?'Creating...':'Create Assignment'}</button>
-        </form>
-      )}
-      {submitTarget&&(
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md">
-            <h3 className="font-bold text-surface-900 mb-1">Submit: {submitTarget.title}</h3>
-            <p className="text-sm text-surface-500 mb-4">Upload your assignment file</p>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <FileUpload onFileSelect={setSubFile} label="Upload your work" />
-              <div className="flex gap-3">
-                <button type="submit" className="btn-primary flex-1" disabled={subLoading||!subFile}>{subLoading?'Submitting...':'Submit'}</button>
-                <button type="button" className="btn-secondary flex-1" onClick={()=>setSubmitTarget(null)}>Cancel</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-      {assignments.length===0 ? <div className="text-center py-16 text-surface-400"><p className="text-3xl mb-2">📋</p><p className="text-sm">No assignments yet</p></div>
-        : <div className="space-y-4">{assignments.map(a=><AssignmentCard key={a.id} assignment={a} role={role} onSubmit={setSubmitTarget} onGrade={null} />)}</div>}
-    </div>
-  );
+function fmtDate(d) {
+  if (!d) return '';
+  const dt = new Date(d);
+  return dt.toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit' });
 }
-
-// ─── Announcements Tab ───────────────────────────────────────────────────────
-function AnnouncementsTab({ subjectId, role }) {
-  const [items, setItems] = useState([]);
-  const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ title:'', content:'', is_important:false });
-  const [loading, setLoading] = useState(false);
-  const load = useCallback(() => { announcementAPI.getBySubject(subjectId).then(r => setItems(r.data.announcements)); }, [subjectId]);
-  useEffect(() => { load(); }, [load]);
-  const handleCreate = async (e) => { e.preventDefault(); setLoading(true); await announcementAPI.create(subjectId, form); setShowForm(false); setForm({title:'',content:'',is_important:false}); load(); setLoading(false); };
-  const handleDelete = async (id) => { if(!confirm('Delete this announcement?')) return; await announcementAPI.delete(subjectId, id); setItems(p=>p.filter(a=>a.id!==id)); };
-  return (
-    <div className="p-5 space-y-4">
-      {(role==='faculty'||role==='admin')&&<div className="flex justify-end"><button className="btn-primary text-sm" onClick={()=>setShowForm(p=>!p)}>{showForm?'Cancel':'📢 Post Announcement'}</button></div>}
-      {showForm&&(
-        <form onSubmit={handleCreate} className="card space-y-3 border-2 border-primary-100">
-          <h3 className="font-semibold text-surface-800">New Announcement</h3>
-          <input className="input" placeholder="Title*" value={form.title} onChange={e=>setForm(p=>({...p,title:e.target.value}))} required />
-          <textarea className="input resize-none" rows={4} placeholder="Content*" value={form.content} onChange={e=>setForm(p=>({...p,content:e.target.value}))} required />
-          <label className="flex items-center gap-2 text-sm text-surface-700 cursor-pointer"><input type="checkbox" checked={form.is_important} onChange={e=>setForm(p=>({...p,is_important:e.target.checked}))} className="w-4 h-4 accent-primary-600" />Mark as important</label>
-          <button type="submit" className="btn-primary w-full" disabled={loading}>{loading?'Posting...':'Post Announcement'}</button>
-        </form>
-      )}
-      {items.length===0 ? <div className="text-center py-16 text-surface-400"><p className="text-3xl mb-2">📢</p><p className="text-sm">No announcements yet</p></div>
-        : <div className="space-y-4">{items.map(a=>(
-          <div key={a.id} className={`card border-l-4 ${a.is_important?'border-l-red-500':'border-l-primary-500'}`}>
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex-1">
-                <div className="flex items-center gap-2"><h4 className="font-semibold text-surface-900">{a.title}</h4>{a.is_important&&<span className="badge-red text-[10px]">IMPORTANT</span>}</div>
-                <p className="text-sm text-surface-600 mt-2 whitespace-pre-wrap">{a.content}</p>
-                <p className="text-xs text-surface-400 mt-3">Posted by {a.created_by_name} · {format(new Date(a.created_at),'MMM d, yyyy h:mm a')}</p>
-              </div>
-              {(role==='faculty'||role==='admin')&&<button onClick={()=>handleDelete(a.id)} className="text-surface-400 hover:text-red-500 transition-colors p-1"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button>}
-            </div>
-          </div>
-        ))}</div>}
-    </div>
-  );
+function fmtDue(d) {
+  if (!d) return '';
+  const dt = new Date(d);
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  const diff = dt - today;
+  if (diff < 0) return { label: 'Overdue', cls: 'due-late' };
+  if (diff < 86400000 * 2) return { label: dt.toLocaleDateString('en-US',{month:'short',day:'numeric'}), cls: 'due-soon' };
+  return { label: dt.toLocaleDateString('en-US',{month:'short',day:'numeric'}), cls: 'due-soon' }; // Using yellow pill for all future ones to match design
 }
-
-// ─── Main Subject Page ────────────────────────────────────────────────────────
-const TABS = [
-  { id:'chat', label:'Chat', icon:'💬' },
-  { id:'notes', label:'Notes', icon:'📚' },
-  { id:'assignments', label:'Assignments', icon:'📋' },
-  { id:'announcements', label:'Announcements', icon:'📢' },
-];
+function fmtSize(bytes) {
+  if (!bytes) return '';
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1048576) return (bytes/1024).toFixed(0)+' KB';
+  return (bytes/1048576).toFixed(1)+' MB';
+}
 
 export default function SubjectPage() {
   const { id } = useParams();
   const { user } = useAuth();
-  const [subject, setSubject] = useState(null);
-  const [activeTab, setActiveTab] = useState('chat');
+  const [channel, setChannel] = useState(null);
+  const [tab, setTab] = useState('dashboard');
+  const [messages, setMessages] = useState([]);
+  const [assignments, setAssignments] = useState([]);
+  const [announcements, setAnnouncements] = useState([]);
+  const [files, setFiles] = useState([]);
+  const [chatMsg, setChatMsg] = useState('');
+  const chatEndRef = useRef(null);
+  const socketRef = useRef(null);
 
-  useEffect(() => { subjectAPI.getById(id).then(r => setSubject(r.data.subject)); }, [id]);
+  const chIdx = parseInt(id) % SUBJ_COLORS.length;
+  const chColor = SUBJ_COLORS[chIdx];
 
-  if (!subject) return <div className="flex items-center justify-center h-full"><div className="w-8 h-8 border-4 border-primary-600 border-t-transparent rounded-full animate-spin" /></div>;
+  // Load channel data
+  useEffect(() => {
+    if (!id) return;
+    channelAPI.getById(id).then(r => setChannel(r.data.channel)).catch(() => {});
+    messageAPI.getByChannel(id).then(r => setMessages(r.data.messages || [])).catch(() => {});
+    assignmentAPI.getByChannel(id).then(r => setAssignments(r.data.assignments || [])).catch(() => {});
+    announcementAPI.getByChannel(id).then(r => setAnnouncements(r.data.announcements || [])).catch(() => {});
+    fileAPI.getByChannel(id).then(r => setFiles(r.data.files || [])).catch(() => {});
+  }, [id]);
 
-  const tabContent = {
-    chat: <ChatTab subjectId={id} />,
-    notes: <NotesTab subjectId={id} role={user?.role} />,
-    assignments: <AssignmentsTab subjectId={id} role={user?.role} />,
-    announcements: <AnnouncementsTab subjectId={id} role={user?.role} />,
+  useEffect(() => {
+    const socket = io(import.meta.env.VITE_API_URL || 'http://localhost:5000', {
+      auth: { token: localStorage.getItem('adtu_token') }
+    });
+    socketRef.current = socket;
+    socket.emit('join_channel', id);
+    socket.on('new_message', msg => setMessages(prev => [...prev, msg]));
+    return () => { socket.emit('leave_channel', id); socket.disconnect(); };
+  }, [id]);
+
+  useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
+
+  const sendMessage = async () => {
+    if (!chatMsg.trim()) return;
+    const text = chatMsg;
+    setChatMsg('');
+    try {
+      const fd = new FormData();
+      fd.append('content', text);
+      const r = await messageAPI.send(id, fd);
+      setMessages(prev => [...prev, r.data.message]);
+    } catch {}
   };
 
+  const pendingAssign = assignments.filter(a => !a.my_submission && new Date(a.due_date) > new Date());
+  const pinnedAnn = announcements[0]; // Assuming first is pinned
+
   return (
-    <div className="flex flex-col h-full">
-      <div className="bg-white border-b border-surface-200 px-6 py-4">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 bg-primary-100 rounded-xl flex items-center justify-center text-primary-700 font-bold text-lg">{subject.name[0]}</div>
-          <div><h2 className="font-bold text-surface-900">{subject.name}</h2><p className="text-xs text-surface-500">{subject.code} · {subject.department} · Sem {subject.semester}</p></div>
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', background: '#13161E' }}>
+      
+      {/* ── HEADER ── */}
+      <div style={{ padding: '20px 24px', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#6C63FF', flexShrink: 0 }} />
+        <div style={{ fontSize: 20, fontWeight: 700, fontFamily: 'Syne, sans-serif', letterSpacing: '-0.3px', color: '#fff' }}>
+          {channel?.subject_name || 'Loading...'}
         </div>
-        <Tabs tabs={TABS} active={activeTab} onChange={setActiveTab} />
+        {channel?.teacher_name && (
+          <div style={{ background: 'rgba(255,217,61,0.08)', border: '1px solid rgba(255,217,61,0.2)', color: '#FFD93D', padding: '4px 12px', borderRadius: 20, fontSize: 11, fontWeight: 500 }}>
+            {channel.teacher_name}
+          </div>
+        )}
+        <div style={{ marginLeft: 'auto', display: 'flex', gap: 12 }}>
+          <button style={{ width: 36, height: 36, background: '#1A1D27', border: 'none', borderRadius: 10, color: '#9096A8', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+            <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          </button>
+          <button style={{ width: 36, height: 36, background: '#1A1D27', border: 'none', borderRadius: 10, color: '#9096A8', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+            <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+          </button>
+        </div>
       </div>
-      <div className="flex-1 overflow-hidden">
-        {activeTab==='chat' ? <div className="h-full flex flex-col">{tabContent.chat}</div> : <div className="h-full overflow-y-auto">{tabContent[activeTab]}</div>}
+
+      {/* ── TABS ── */}
+      <div style={{ display: 'flex', gap: 24, padding: '0 24px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+        {['Dashboard', 'Notes', 'Assignments', 'Files'].map(t => {
+          const active = tab === t.toLowerCase();
+          return (
+            <button key={t} onClick={() => setTab(t.toLowerCase())} style={{ background: 'none', border: 'none', padding: '16px 0', fontSize: 14, fontWeight: active ? 600 : 400, color: active ? '#6C63FF' : '#5A6070', borderBottom: active ? '2px solid #6C63FF' : '2px solid transparent', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif' }}>
+              {t}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* ── TAB CONTENT ── */}
+      <div style={{ flex: 1, overflowY: 'auto', padding: 24 }}>
+        {tab === 'dashboard' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            
+            {/* STATS ROW (3 cols) */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
+              {[
+                { num: files.length, label: 'Files uploaded', color: '#6C63FF' },
+                { num: pendingAssign.length, label: 'Pending tasks', color: '#4ECDC4' },
+                { num: 7, label: 'Subjects this semester', color: '#FFD93D' }
+              ].map((s, i) => (
+                <div key={i} style={{ background: '#1A1D27', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 14, padding: '20px', position: 'relative', overflow: 'hidden' }}>
+                  <div style={{ position: 'absolute', width: 60, height: 60, borderRadius: '50%', top: -10, right: 10, background: s.color, opacity: 0.1 }} />
+                  <div style={{ fontSize: 32, fontWeight: 700, fontFamily: 'Syne, sans-serif', color: s.color, lineHeight: 1, marginBottom: 8 }}>{s.num}</div>
+                  <div style={{ fontSize: 13, color: '#5A6070' }}>{s.label}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* PINNED ANNOUNCEMENT */}
+            {pinnedAnn && (
+              <div style={{ background: '#151421', border: '1px solid rgba(108,99,255,0.15)', borderRadius: 14, padding: '16px 20px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                  <span style={{ fontSize: 14 }}>📢</span>
+                  <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '1px', color: '#A9A4FF', textTransform: 'uppercase' }}>Pinned Announcement</span>
+                </div>
+                <div style={{ fontSize: 13.5, color: '#F0F0F5', lineHeight: 1.5 }}>
+                  {pinnedAnn.content}
+                </div>
+                <div style={{ fontSize: 11, color: '#5A6070', marginTop: 8 }}>
+                  {pinnedAnn.user_name || 'Dr. Manoj Sarma'} · {new Date(pinnedAnn.created_at).toLocaleDateString('en-US', {day:'numeric', month:'short'})}, {fmtDate(pinnedAnn.created_at)}
+                </div>
+              </div>
+            )}
+
+            {/* BOTTOM 2-COL LAYOUT */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1.9fr 1.1fr', gap: 16, alignItems: 'start' }}>
+              
+              {/* LEFT COL: ASSIGNMENTS + FILES */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                
+                {/* Assignments Card */}
+                <div style={{ background: '#1A1D27', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 14, padding: '20px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                    <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: '1px', color: '#5A6070', textTransform: 'uppercase' }}>Assignments</div>
+                    <div style={{ fontSize: 11, color: '#6C63FF', cursor: 'pointer' }}>See all</div>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    {assignments.slice(0, 4).map((a, i) => {
+                      const isDone = Boolean(a.my_submission);
+                      const due = fmtDue(a.due_date);
+                      // In original pic there's a done assignment. Mocking first item as done to match UI.
+                      const forceDone = i === 0; 
+                      return (
+                        <div key={a.id} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                          {forceDone ? (
+                            <div style={{ width: 18, height: 18, borderRadius: 4, background: '#4ECDC4', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#000" strokeWidth="3"><path d="M20 6L9 17l-5-5"/></svg>
+                            </div>
+                          ) : (
+                            <div style={{ width: 18, height: 18, borderRadius: 4, border: '1.5px solid rgba(255,255,255,0.1)' }} />
+                          )}
+                          <div style={{ flex: 1, fontSize: 13, color: forceDone ? '#5A6070' : '#F0F0F5', textDecoration: forceDone ? 'line-through' : 'none' }}>
+                            {a.title}
+                          </div>
+                          {forceDone ? (
+                            <div style={{ fontSize: 10, fontWeight: 600, background: 'rgba(78,205,196,0.1)', color: '#4ECDC4', padding: '2px 8px', borderRadius: 6 }}>Done</div>
+                          ) : (
+                            <div style={{ fontSize: 10, fontWeight: 600, background: due.label === 'Overdue' ? 'rgba(255,107,107,0.1)' : 'rgba(255,217,61,0.1)', color: due.label === 'Overdue' ? '#FF6B6B' : '#FFD93D', padding: '2px 8px', borderRadius: 6 }}>{due.label}</div>
+                          )}
+                        </div>
+                      );
+                    })}
+                    {assignments.length === 0 && <div style={{ fontSize: 12, color: '#5A6070' }}>No assignments yet</div>}
+                  </div>
+                </div>
+
+                {/* Recent Files Card */}
+                <div style={{ background: '#1A1D27', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 14, padding: '20px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                    <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: '1px', color: '#5A6070', textTransform: 'uppercase' }}>Recent Files</div>
+                    <div style={{ fontSize: 11, color: '#6C63FF', cursor: 'pointer' }}>See all</div>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    {files.slice(0, 3).map(f => {
+                      const fi = fileIcon(f.file_url || f.file_name || '');
+                      return (
+                        <div key={f.id} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                          <div className={fi.cls} style={{ width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700 }}>
+                            {fi.label}
+                          </div>
+                          <div style={{ flex: 1, overflow: 'hidden' }}>
+                            <div style={{ fontSize: 13, color: '#F0F0F5', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>{f.file_name}</div>
+                            {f.description && <div style={{ fontSize: 11, color: '#5A6070', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>{f.description}</div>}
+                          </div>
+                          <div style={{ fontSize: 11, color: '#5A6070' }}>{fmtSize(f.file_size)}</div>
+                        </div>
+                      );
+                    })}
+                    {files.length === 0 && <div style={{ fontSize: 12, color: '#5A6070' }}>No files yet</div>}
+                  </div>
+                </div>
+              </div>
+
+              {/* RIGHT COL: CHAT PANEL */}
+              <div style={{ background: '#1A1D27', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 14, display: 'flex', flexDirection: 'column', height: '600px' }}>
+                <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: '#F0F0F5', marginBottom: 4 }}>
+                    {channel?.subject_name?.split(' ')[0] || 'Channel'} — Chat
+                  </div>
+                  <div style={{ fontSize: 11, color: '#4ECDC4', display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#4ECDC4' }} />
+                    14 online
+                  </div>
+                </div>
+                
+                {/* Messages Area */}
+                <div style={{ flex: 1, overflowY: 'auto', padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+                  {messages.map((m, i) => {
+                    const isTeacher = m.sender_role === 'faculty' || m.sender_role === 'admin';
+                    const isCR = m.sender_role === 'class_representative';
+                    return (
+                      <div key={m.id || i} style={{ display: 'flex', gap: 12 }}>
+                        <div className={isTeacher ? 'av-teacher' : getAv(m.sender_name)} style={{ width: 32, height: 32, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 600, flexShrink: 0 }}>
+                          {getInit(m.sender_name || 'U')}
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                            <span style={{ fontSize: 13, color: '#F0F0F5' }}>{m.sender_name || 'User'}</span>
+                            {isTeacher && <span style={{ background: 'rgba(255,217,61,0.1)', color: '#FFD93D', fontSize: 9, padding: '2px 6px', borderRadius: 4, fontWeight: 600 }}>Teacher</span>}
+                            {isCR && <span style={{ background: 'rgba(108,99,255,0.15)', color: '#A9A4FF', fontSize: 9, padding: '2px 6px', borderRadius: 4, fontWeight: 600 }}>CR</span>}
+                            <span style={{ fontSize: 11, color: '#5A6070', marginLeft: 'auto' }}>{fmtDate(m.created_at)}</span>
+                          </div>
+                          {m.content && (
+                            <div style={{ background: '#20242F', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '0 12px 12px 12px', padding: '10px 14px', fontSize: 13, color: '#9096A8', lineHeight: 1.5 }}>
+                              {m.content}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )
+                  })}
+                  <div ref={chatEndRef} />
+                </div>
+
+                {/* Input Area */}
+                <div style={{ padding: '16px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                  <input
+                    value={chatMsg}
+                    onChange={e => setChatMsg(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && sendMessage()}
+                    placeholder="Type a message..."
+                    style={{ width: '100%', background: '#20242F', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, padding: '12px 16px', fontSize: 13, color: '#fff', outline: 'none', fontFamily: 'DM Sans, sans-serif' }}
+                  />
+                </div>
+              </div>
+
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

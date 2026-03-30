@@ -3,12 +3,9 @@ import { useAuth } from '../context/AuthContext';
 import { authAPI } from '../services/api';
 import FileUpload from '../components/FileUpload';
 
-const DEPARTMENTS = ['Engineering', 'Management', 'Pharmacy', 'Arts'];
-const SEMESTERS = [1,2,3,4,5,6,7,8];
-
 export default function ProfilePage() {
   const { user, updateUser } = useAuth();
-  const [form, setForm] = useState({ name: user?.name || '', department: user?.department || '', semester: user?.semester || '' });
+  const [form, setForm] = useState({ name: user?.name || '' });
   const [avatar, setAvatar] = useState(null);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState('');
@@ -41,7 +38,7 @@ export default function ProfilePage() {
         </div>
         <div>
           <h2 className="text-lg font-bold text-surface-900">{user?.name}</h2>
-          <p className="text-sm text-surface-500">{user?.email}</p>
+          <p className="text-sm text-surface-500">{user?.roll_number} • {user?.email}</p>
           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium mt-1.5 ${roleBadge}`}>{user?.role}</span>
         </div>
       </div>
@@ -51,20 +48,6 @@ export default function ProfilePage() {
         {error && <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm mb-4">{error}</div>}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div><label className="text-sm font-medium text-surface-700 block mb-1.5">Full Name</label><input className="input" value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} /></div>
-          <div className="grid grid-cols-2 gap-3">
-            <div><label className="text-sm font-medium text-surface-700 block mb-1.5">Department</label>
-              <select className="input" value={form.department} onChange={e => setForm(p => ({ ...p, department: e.target.value }))}>
-                <option value="">Select</option>
-                {DEPARTMENTS.map(d => <option key={d} value={d}>{d}</option>)}
-              </select>
-            </div>
-            <div><label className="text-sm font-medium text-surface-700 block mb-1.5">Semester</label>
-              <select className="input" value={form.semester} onChange={e => setForm(p => ({ ...p, semester: e.target.value }))}>
-                <option value="">Select</option>
-                {SEMESTERS.map(s => <option key={s} value={s}>Semester {s}</option>)}
-              </select>
-            </div>
-          </div>
           <div><label className="text-sm font-medium text-surface-700 block mb-1.5">Profile Photo</label><FileUpload onFileSelect={setAvatar} accept="image/*" label="Upload a photo" hint="JPG, PNG up to 5MB" /></div>
           <button type="submit" className="btn-primary w-full py-3" disabled={loading}>{loading ? 'Saving...' : 'Save Changes'}</button>
         </form>

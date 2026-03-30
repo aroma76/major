@@ -16,10 +16,13 @@ export const AuthProvider = ({ children }) => {
       .finally(() => setLoading(false));
   }, []);
 
-  const login = useCallback(async (email, password) => {
-    const res = await authAPI.login({ email, password });
+  const login = useCallback(async (identifier, password) => {
+    const res = await authAPI.login({ identifier, password });
     const { token, user } = res.data;
-    localStorage.setItem('adtu_token', token); localStorage.setItem('adtu_user', JSON.stringify(user)); setUser(user); return user;
+    localStorage.setItem('adtu_token', token);
+    localStorage.setItem('adtu_user', JSON.stringify(user));
+    setUser(user);
+    return user;
   }, []);
 
   const register = useCallback(async (formData) => {

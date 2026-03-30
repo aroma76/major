@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { useSocket } from './hooks/useSocket';
 import LoginPage         from './pages/LoginPage';
+import FacultyLoginPage  from './pages/FacultyLoginPage';
 import SignupPage        from './pages/SignupPage';
 import DashboardPage     from './pages/DashboardPage';
 import SubjectPage       from './pages/SubjectPage';
@@ -21,11 +22,12 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/login"  element={user ? <Navigate to="/" replace /> : <LoginPage />} />
+      <Route path="/faculty-login" element={user ? <Navigate to="/" replace /> : <FacultyLoginPage />} />
       <Route path="/signup" element={user ? <Navigate to="/" replace /> : <SignupPage />} />
       <Route path="/" element={<PrivateRoute><Layout /></PrivateRoute>}>
         <Route index element={<Navigate to="/dashboard" replace />} />
         <Route path="dashboard"     element={<DashboardPage />} />
-        <Route path="subject/:id"   element={<SubjectPage />} />
+        <Route path="channels/:id"  element={<SubjectPage />} />
         <Route path="notifications" element={<NotificationsPage />} />
         <Route path="profile"       element={<ProfilePage />} />
       </Route>

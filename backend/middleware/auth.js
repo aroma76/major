@@ -10,7 +10,7 @@ const protect = async (req, res, next) => {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const result = await pool.query(
-      'SELECT id, name, email, role, department, semester, roll_number, avatar_url FROM users WHERE id = $1',
+      'SELECT id, name, email, role, programme_id, batch_year, current_semester, roll_number, avatar_initials, avatar_url FROM users WHERE id = $1',
       [decoded.id]
     );
     if (result.rows.length === 0) return res.status(401).json({ success: false, message: 'User not found' });

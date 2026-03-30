@@ -4,7 +4,7 @@ const getMessages = async (req, res) => {
   const result = await pool.query(
     `SELECT m.*, u.name AS sender_name, u.role AS sender_role, u.avatar_url AS sender_avatar
      FROM messages m INNER JOIN users u ON m.sender_id = u.id
-     WHERE m.subject_id = $1 ORDER BY m.created_at ASC LIMIT 100`,
+     WHERE m.channel_id = $1 ORDER BY m.created_at ASC LIMIT 100`,
     [req.params.id]
   );
   res.json({ success: true, messages: result.rows });
@@ -16,7 +16,7 @@ const sendMessage = async (req, res) => {
   const file_name = req.file?.originalname || null;
   if (!content && !file_url) return res.status(400).json({ success: false, message: 'Message or file required' });
   const result = await pool.query(
-    `INSERT INTO messages (subject_id, sender_id, content, file_url, file_name)
+    `INSERT INTO messages (channel_id, sender_id, content, file_url, file_name)
      VALUES ($1, $2, $3, $4, $5)
      RETURNING *, (SELECT name FROM users WHERE id=$2) AS sender_name,
                   (SELECT role FROM users WHERE id=$2) AS sender_role,
@@ -45,7 +45,7 @@ const getPinnedMessages = async (req, res) => {
   const result = await pool.query(
     `SELECT m.*, u.name AS sender_name, u.role AS sender_role
      FROM messages m INNER JOIN users u ON m.sender_id = u.id
-     WHERE m.subject_id = $1 AND m.is_pinned = TRUE ORDER BY m.created_at DESC`,
+     WHERE m.channel_id = $1 AND m.is_pinned = TRUE ORDER BY m.created_at DESC`,
     [req.params.id]
   );
   res.json({ success: true, messages: result.rows });
