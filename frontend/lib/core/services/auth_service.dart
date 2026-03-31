@@ -1,0 +1,72 @@
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'api_service.dart';
+
+class AuthService {
+  static final AuthService _instance = AuthService._internal();
+  factory AuthService() => _instance;
+  AuthService._internal();
+
+  final _storage = const FlutterSecureStorage();
+  final _api = ApiService();
+
+  Map<String, dynamic>? _currentUser;
+  Map<String, dynamic>? get currentUser => _currentUser;
+
+  /// Login with roll number + DOB (DOB is used as default password by the backend)
+  Future<Map<String, dynamic>> login(String rollNumber, String dob) async {
+    final response = await _api.login(rollNumber, dob);
+    final data = response.data as Map<String, dynamic>;
+    final token = data['token'] as String;
+    _currentUser = data['user'] as Map<String, dynamic>;
+    await _storage.write(key: 'adtu_token', value: token);
+    return _currentUser!;
+  }
+
+  /// Register a new student account
+  Future<Map<String, dynamic>> signup({
+    required String name,
+    required String email,
+    required String rollNumber,
+    required String dob,
+    required int programmeId,
+    required int batchYear,
+    required int currentSemester,
+  }) async {
+    final response = await _api.signup({
+      'name': name,
+      'email': email,
+      'roll_number': rollNumber,
+      'dob': dob,
+      'programme_id': programmeId,
+      'batch_year': batchYear,
+      'current_semester': currentSemester,
+      'role': 'student',
+    });
+    final data = response.data as Map<String, dynamic>;
+    final token = data['token'] as String;
+    _currentUser = data['user'] as Map<String, dynamic>;
+    await _storage.write(key: 'adtu_token', value: token);
+    return _currentUser!;
+  }
+
+  /// Restore session from stored token
+  Future<bool> restoreSession() async {
+    final token = await _storage.read(key: 'adtu_token');
+    if (token == null) return false;
+    try {
+      final response = await _api.getMe();
+      _currentUser = (response.data as Map<String, dynamic>)['user'];
+      return true;
+    } catch (_) {
+      await logout();
+      return false;
+    }
+  }
+
+  Future<void> logout() async {
+    _currentUser = null;
+    await _storage.delete(key: 'adtu_token');
+  }
+
+  bool get isLoggedIn => _currentUser != null;
+}

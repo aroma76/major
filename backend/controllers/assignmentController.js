@@ -26,11 +26,12 @@ const getAssignment = async (req, res) => {
 };
 
 const createAssignment = async (req, res) => {
-  const { title, description, due_date, max_marks } = req.body;
+  const { title, description, due_date, max_marks, priority } = req.body;
   if (!title || !due_date) return res.status(400).json({ success: false, message: 'title and due_date required' });
   const result = await pool.query(
-    `INSERT INTO assignments (channel_id, created_by, title, description, due_date, max_marks) VALUES ($1,$2,$3,$4,$5,$6) RETURNING *`,
-    [req.params.id, req.user.id, title, description, due_date, max_marks || 100]
+    `INSERT INTO assignments (channel_id, created_by, title, description, due_date, max_marks, priority, status)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,'todo') RETURNING *`,
+    [req.params.id, req.user.id, title, description, due_date, max_marks || 100, priority || 'medium']
   );
   const students = await pool.query(`SELECT user_id FROM enrollments WHERE channel_id=$1`, [req.params.id]);
   await Promise.all(students.rows.map(s =>
@@ -38,6 +39,19 @@ const createAssignment = async (req, res) => {
       [s.user_id, `New Assignment: ${title}`, `Due: ${new Date(due_date).toLocaleDateString()}`, result.rows[0].id])
   ));
   res.status(201).json({ success: true, assignment: result.rows[0] });
+};
+
+// PATCH /api/channels/:id/assignments/:assignId/status  — for Kanban drag-drop
+const updateAssignmentStatus = async (req, res) => {
+  const { status } = req.body;
+  const allowed = ['todo', 'in_progress', 'done'];
+  if (!allowed.includes(status)) return res.status(400).json({ success: false, message: 'Invalid status' });
+  const result = await pool.query(
+    `UPDATE assignments SET status=$1 WHERE id=$2 RETURNING *`,
+    [status, req.params.assignId]
+  );
+  if (!result.rows.length) return res.status(404).json({ success: false, message: 'Assignment not found' });
+  res.json({ success: true, assignment: result.rows[0] });
 };
 
 const updateAssignment = async (req, res) => {
@@ -60,4 +74,4 @@ const getSubmissions = async (req, res) => {
   res.json({ success: true, submissions: result.rows });
 };
 
-module.exports = { getAssignments, getAssignment, createAssignment, updateAssignment, deleteAssignment, getSubmissions };
+module.exports = { getAssignments, getAssignment, createAssignment, updateAssignment, updateAssignmentStatus, deleteAssignment, getSubmissions };

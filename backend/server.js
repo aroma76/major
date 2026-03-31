@@ -1,4 +1,4 @@
-require('dotenv').config();
+lrequire('dotenv').config();
 require('express-async-errors');
 
 const express = require('express');
@@ -17,6 +17,7 @@ const assignmentRoutes   = require('./routes/assignmentRoutes');
 const announcementRoutes = require('./routes/announcementRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 const actualNotesRoutes  = require('./routes/actualNotesRoutes');
+const projectRoutes      = require('./routes/projectRoutes');
 
 const app = express();
 const server = http.createServer(app);
@@ -25,6 +26,7 @@ const allowedOrigins = [
   process.env.CLIENT_URL,
   'http://localhost:5173',
   'http://localhost:3000',
+  'https://major-three-tau.vercel.app',  // Flutter Web on Vercel
   /\.vercel\.app$/,        // allow all Vercel preview/branch URLs
 ].filter(Boolean);
 
@@ -59,6 +61,7 @@ app.use('/api/channels/:id/assignments',   assignmentRoutes);
 app.use('/api/channels/:id/announcements', announcementRoutes);
 app.use('/api/channels/:id/notes',         actualNotesRoutes);
 app.use('/api/notifications',              notificationRoutes);
+app.use('/api/projects',                   projectRoutes);
 
 app.use((req, res) => res.status(404).json({ success: false, message: `Route ${req.originalUrl} not found` }));
 app.use(errorHandler);
