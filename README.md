@@ -1,92 +1,76 @@
-# ADTU Collab — Cloud-Based Academic Collaboration System
-### Assam down town University
+# ADTU Collab: Academic Workspace & Chat Portal
 
-A full-stack academic collaboration platform that replaces WhatsApp groups with structured, cloud-based subject workspaces.
+![ADTU Collab](https://major-three-tau.vercel.app/icons/Icon-192.png)
 
----
+A full-fledged, real-time academic collaboration platform built for Assam down town University (AdtU). This platform serves as a "Jira for Students," providing real-time chat, file sharing, assignments, and an academic calendar — securely organized into subjects and batches.
 
-## Features
+## 🚀 Live Links
 
-| Feature | Description |
-|---|---|
-| 💬 Real-time Chat | Socket.IO powered messaging with file sharing, typing indicators, and pinned messages |
-| 📚 Notes Repository | Cloud-stored notes with search, upload, and download |
-| 📋 Assignment System | Create, submit, and grade assignments with deadline tracking |
-| 📢 Announcements | Faculty posts, auto-notifies all enrolled students |
-| 🔔 Notifications | In-app, real-time notifications for assignments, grades, announcements |
-| 🔐 Role-Based Access | Student / Faculty / Admin with controlled permissions |
-| ☁️ Cloud Storage | All files stored on Cloudinary — no data loss |
+- **Frontend (Web App):** [https://major-three-tau.vercel.app](https://major-three-tau.vercel.app)
+- **Backend (API Base URL):** [https://major-gin9.onrender.com](https://major-gin9.onrender.com)
+- **API Health Check:** [https://major-gin9.onrender.com/api/health](https://major-gin9.onrender.com/api/health)
 
----
+## ✨ Core Features
 
-## Tech Stack
+*   **Real-Time Class Chat:** Built with Socket.io. Features threaded replies, typing indicators, and seamless file attachments.
+*   **Performance & Offline Support:** Cursor-based pagination handles thousands of messages smoothly, and an aggressive offline caching system loads chats instantly.
+*   **Security First:** JWT authentication, Express Rate Limiting (Brute-force protection), Helmet HTTP headers, and strict MIME-type file parsing to block malware uploads.
+*   **Academic Workflows:** 
+    *   File sharing (PDFs, Images, Docs) backed by Cloudinary.
+    *   Assignments and Submission tracking.
+    *   Academic Calendar displaying university events, exams, and holidays.
+*   **Role-Based Access Control:** Distinct roles and privileges for Students, Faculty (Teachers), and Admins.
 
-| Layer | Technology |
-|---|---|
-| Frontend | React 18 + Vite + Tailwind CSS + React Router |
-| Backend | Node.js + Express + Socket.IO |
-| Database | PostgreSQL (Supabase / Neon) |
-| Storage | Cloudinary |
-| Auth | JWT |
-| Deployment | Vercel (frontend) + Render (backend) |
+## 🛠 Tech Stack
 
----
+**Frontend (Client)**
+- **Framework:** Flutter Web (Dart)
+- **State Management:** Riverpod (AsyncNotifier & Family Providers)
+- **Storage:** SharedPreferences (Offline Cache)
+- **Networking:** Dio & Socket.io-client
+- **UI:** Custom modern Google Fonts (Outfit) & Feather Icons
 
-## Project Structure
+**Backend (Server)**
+- **Runtime:** Node.js + Express.js
+- **Database:** PostgreSQL (Neon)
+- **Real-Time:** Socket.io
+- **Storage Engine:** Cloudinary Storage (Multer middleware)
+- **Security:** Helmet, express-rate-limit, jsonwebtoken, file-type validation.
 
-```
-major project/
-├── backend/
-│   ├── config/         ← db.js, cloudinary.js, schema.sql
-│   ├── controllers/    ← auth, subject, enrollment, message, note, assignment, submission, announcement, notification
-│   ├── middleware/     ← auth.js, upload.js, errorHandler.js
-│   ├── routes/         ← All route files
-│   ├── socket/         ← socketHandler.js (real-time)
-│   └── server.js       ← Entry point
-├── frontend/
-│   └── src/
-│       ├── components/ ← Layout, Navbar, Sidebar, SubjectCard, Tabs, ChatBubble, AssignmentCard, FileUpload
-│       ├── context/    ← AuthContext
-│       ├── hooks/      ← useSocket
-│       ├── pages/      ← Login, Signup, Dashboard, Subject, Notifications, Profile
-│       └── services/   ← api.js (Axios)
-└── docs/
-    ├── API.md          ← REST + Socket.IO reference
-    ├── SETUP.md        ← Local development guide
-    ├── DEPLOYMENT.md   ← Vercel + Render + Supabase guide
-    └── SEED.sql        ← Sample test data
-```
+## 💻 Local Development
 
----
+Before you begin, ensure you have Node.js, Flutter SDK, and PostgreSQL installed.
 
-## Quick Start
-
+### 1. Backend Setup
 ```bash
-# 1. Set up the database (see docs/SETUP.md)
-# 2. Configure environment variables
-cp backend/.env.example backend/.env   # fill in your values
+cd backend
 
-# 3. Install and run
-cd backend && npm install && npm run dev
-cd frontend && npm install && npm run dev
+# Install dependencies
+npm install
 
-# 4. Open http://localhost:5173
+# Setup your environment variables
+# Create a .env file based on .env.example with your DB & Cloudinary keys
+
+# Run development server
+npm run dev
 ```
 
-See **[docs/SETUP.md](docs/SETUP.md)** for full setup instructions.
-See **[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)** for production deployment.
-See **[docs/API.md](docs/API.md)** for the full API reference.
+### 2. Frontend Setup
+```bash
+cd frontend
+
+# Get Flutter packages
+flutter pub get
+
+# To test locally, open lib/core/config/app_config.dart
+# and set `baseUrl` to 'http://localhost:5000' (if running backend locally)
+
+# Run the Flutter App
+flutter run -d chrome
+```
+
+## 🔐 Default Credentials Setup
+*For new students, the default password is their Date of Birth in `YYYY-MM-DD` format.*
 
 ---
-
-## User Roles
-
-| Role | Permissions |
-|---|---|
-| **Student** | View subjects, chat, download notes, submit assignments, view announcements |
-| **Faculty** | All student permissions + upload notes, create assignments, grade submissions, post announcements |
-| **Admin** | All permissions + manage subjects, users, and enrollments |
-
----
-
-*Built as a Final Year Major Project — Assam down town University, 2026*
+*Developed for Assam down town University.*
