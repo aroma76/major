@@ -1,13 +1,13 @@
 import 'package:dio/dio.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../config/app_config.dart';
+import 'storage_service.dart';
 
 class ApiService {
   static final ApiService _instance = ApiService._internal();
   factory ApiService() => _instance;
   ApiService._internal();
 
-  final _storage = const FlutterSecureStorage();
+  final _storage = StorageService();
   late final Dio dio;
 
   void init() {
@@ -21,7 +21,7 @@ class ApiService {
     // Inject JWT token on every request
     dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) async {
-        final token = await _storage.read(key: 'adtu_token');
+        final token = await _storage.read('adtu_token');
         if (token != null) {
           options.headers['Authorization'] = 'Bearer $token';
         }
@@ -36,7 +36,7 @@ class ApiService {
 
   // ── Auth ──────────────────────────────────────────────────────────────────
   Future<Response> login(String rollNumber, String dob) =>
-      dio.post('/auth/login', data: {'roll_number': rollNumber, 'dob': dob});
+      dio.post('/auth/login', data: {'identifier': rollNumber, 'password': dob});
 
   Future<Response> signup(Map<String, dynamic> data) =>
       dio.post('/auth/register', data: data);
@@ -49,8 +49,11 @@ class ApiService {
   Future<Response> getChannelById(int id) => dio.get('/channels/$id');
 
   // ── Messages ──────────────────────────────────────────────────────────────
-  Future<Response> getMessages(int channelId) =>
-      dio.get('/channels/$channelId/messages');
+  Future<Response> getMessages(int channelId, {int? cursor, int limit = 50}) =>
+      dio.get('/channels/$channelId/messages', queryParameters: {
+        if (cursor != null) 'cursor': cursor,
+        'limit': limit,
+      });
 
   Future<Response> sendMessage(int channelId, FormData formData) =>
       dio.post('/channels/$channelId/messages',
@@ -83,6 +86,15 @@ class ApiService {
 
   Future<Response> markNotificationRead(int id) =>
       dio.patch('/notifications/$id/read');
+
+  // ── Academic Events / Calendar ─────────────────────────────────────────────
+  Future<Response> getAcademicEvents({int? month, int? year, String? type}) {
+    final params = <String, dynamic>{};
+    if (month != null) params['month'] = month;
+    if (year  != null) params['year']  = year;
+    if (type  != null && type != 'all') params['type'] = type;
+    return dio.get('/academic-events', queryParameters: params);
+  }
 
   // ── Assignment Kanban Status ───────────────────────────────────────────────
   Future<Response> updateAssignmentStatus(int channelId, int assignmentId, String status) =>

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_feather_icons/flutter_feather_icons.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../providers/task_provider.dart';
+import '../../../../features/auth/auth_provider.dart';
 
 class SettingsViewWidget extends ConsumerWidget {
   const SettingsViewWidget({super.key});
@@ -34,36 +35,81 @@ class SettingsViewWidget extends ConsumerWidget {
     );
   }
 
-  void _showChangePassword(BuildContext context) {
+  void _showChangePassword(BuildContext context, WidgetRef ref) {
+    final currentController = TextEditingController();
+    final newController = TextEditingController();
+    final confirmController = TextEditingController();
+    bool isLoading = false;
+    String? errorMsg;
+
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppColors.getSurfaceColor(context),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        title: Text('Change Password', style: TextStyle(color: AppColors.getHeadingColor(context), fontWeight: FontWeight.bold)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _buildDialogField(context, 'Current Password', '••••••••', obscure: true),
-            const SizedBox(height: 16),
-            _buildDialogField(context, 'New Password', '', obscure: true),
-            const SizedBox(height: 16),
-            _buildDialogField(context, 'Confirm New Password', '', obscure: true),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          backgroundColor: AppColors.getSurfaceColor(context),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          title: Text('Change Password', style: TextStyle(color: AppColors.getHeadingColor(context), fontWeight: FontWeight.bold)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (errorMsg != null)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8.0),
+                  child: Text(errorMsg!, style: const TextStyle(color: Colors.red, fontSize: 13)),
+                ),
+              _buildDialogField(context, 'Current Password', '••••••••', controller: currentController, obscure: true),
+              const SizedBox(height: 16),
+              _buildDialogField(context, 'New Password', '', controller: newController, obscure: true),
+              const SizedBox(height: 16),
+              _buildDialogField(context, 'Confirm New Password', '', controller: confirmController, obscure: true),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: isLoading ? null : () => Navigator.pop(context), 
+              child: const Text('Cancel')
+            ),
+            ElevatedButton(
+              onPressed: isLoading ? null : () async {
+                if (newController.text != confirmController.text) {
+                  setState(() => errorMsg = 'New passwords do not match');
+                  return;
+                }
+                if (newController.text.length < 6) {
+                  setState(() => errorMsg = 'Password must be at least 6 characters');
+                  return;
+                }
+                setState(() { errorMsg = null; isLoading = true; });
+                try {
+                  await ref.read(authProvider.notifier).changePassword(
+                    currentController.text,
+                    newController.text,
+                  );
+                  if (context.mounted) {
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Password updated successfully!', style: TextStyle(color: Colors.white)), backgroundColor: Colors.green),
+                    );
+                  }
+                } catch (e) {
+                  setState(() { 
+                    isLoading = false; 
+                    errorMsg = 'Failed. Check current password.';
+                  });
+                }
+              },
+              style: ElevatedButton.styleFrom(backgroundColor: AppColors.accent, foregroundColor: Colors.white),
+              child: isLoading 
+                  ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)) 
+                  : const Text('Update Password'),
+            ),
           ],
         ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context),
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.accent, foregroundColor: Colors.white),
-            child: const Text('Update Password'),
-          ),
-        ],
       ),
     );
   }
 
-  void _showLogoutConfirmation(BuildContext context) {
+  void _showLogoutConfirmation(BuildContext context, WidgetRef ref) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -74,10 +120,9 @@ class SettingsViewWidget extends ConsumerWidget {
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
           ElevatedButton(
-            onPressed: () {
-              // Redirection to Login could be handled here or by a provider
+            onPressed: () async {
               Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Signed out successfully')));
+              await ref.read(authProvider.notifier).logout();
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
             child: const Text('Sign Out'),
@@ -87,13 +132,14 @@ class SettingsViewWidget extends ConsumerWidget {
     );
   }
 
-  Widget _buildDialogField(BuildContext context, String label, String hint, {bool obscure = false}) {
+  Widget _buildDialogField(BuildContext context, String label, String hint, {bool obscure = false, TextEditingController? controller}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label, style: TextStyle(color: AppColors.getHeadingColor(context), fontSize: 13, fontWeight: FontWeight.bold)),
         const SizedBox(height: 8),
         TextField(
+          controller: controller,
           obscureText: obscure,
           style: TextStyle(color: AppColors.getHeadingColor(context), fontSize: 14),
           decoration: InputDecoration(
@@ -114,6 +160,10 @@ class SettingsViewWidget extends ConsumerWidget {
     final themeMode = ref.watch(themeModeProvider);
     final notificationsEnabled = ref.watch(isNotificationsEnabledProvider);
     final emailSummaryEnabled = ref.watch(isEmailSummaryEnabledProvider);
+    final authState = ref.watch(authProvider).value;
+    final userName = authState?.userName ?? 'Student';
+    final userEmail = authState?.user?['email'] as String? ?? '';
+    final userRole = authState?.userRole ?? 'student';
 
     return SingleChildScrollView(
       child: Padding(
@@ -138,9 +188,13 @@ class SettingsViewWidget extends ConsumerWidget {
               context,
               child: Row(
                 children: [
-                  const CircleAvatar(
+                  CircleAvatar(
                     radius: 32,
-                    backgroundImage: NetworkImage('https://i.pravatar.cc/150?img=11'),
+                    backgroundColor: AppColors.accent.withOpacity(0.15),
+                    child: Text(
+                      userName.isNotEmpty ? userName[0].toUpperCase() : 'S',
+                      style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.accent),
+                    ),
                   ),
                   const SizedBox(width: 24),
                   Expanded(
@@ -148,15 +202,15 @@ class SettingsViewWidget extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'John Doe',
+                          userName,
                           style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.getHeadingColor(context)),
                         ),
                         Text(
-                          'Software Engineering Student',
+                          userRole[0].toUpperCase() + userRole.substring(1),
                           style: TextStyle(fontSize: 14, color: AppColors.getBodyColor(context)),
                         ),
                         Text(
-                          'john.doe@university.edu',
+                          userEmail,
                           style: const TextStyle(fontSize: 14, color: AppColors.accent),
                         ),
                       ],
@@ -226,7 +280,7 @@ class SettingsViewWidget extends ConsumerWidget {
                     'Change Password',
                     'Update your password for better security',
                     Icons.lock_outline,
-                    () => _showChangePassword(context),
+                    () => _showChangePassword(context, ref),
                   ),
                   Divider(color: AppColors.getBorderColor(context), height: 1),
                   _buildActionTile(
@@ -234,7 +288,7 @@ class SettingsViewWidget extends ConsumerWidget {
                     'Logout',
                     'Sign out of your account on this device',
                     Icons.logout_rounded,
-                    () => _showLogoutConfirmation(context),
+                    () => _showLogoutConfirmation(context, ref),
                     isDanger: true,
                   ),
                 ],

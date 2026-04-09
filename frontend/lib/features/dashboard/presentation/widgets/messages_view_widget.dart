@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../core/theme/app_colors.dart';
-import '../providers/task_provider.dart';
-import '../../data/models/chat_model.dart';
 import 'package:flutter_feather_icons/flutter_feather_icons.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:dio/dio.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:google_fonts/google_fonts.dart';
 
-class MessageModel {
-  final String text;
-  final String time;
-  final bool isMe;
-
-  MessageModel({required this.text, required this.time, required this.isMe});
-}
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/services/socket_service.dart';
+import '../../../../core/services/auth_service.dart';
+import '../../../../core/services/api_service.dart';
+import '../../data/models/channel_model.dart';
+import '../../data/models/api_message_model.dart';
+import '../providers/api_providers.dart';
+import '../providers/messages_notifier.dart';
 
 class MessagesViewWidget extends ConsumerStatefulWidget {
   const MessagesViewWidget({super.key});
@@ -21,46 +23,59 @@ class MessagesViewWidget extends ConsumerStatefulWidget {
 }
 
 class _MessagesViewWidgetState extends ConsumerState<MessagesViewWidget> {
-  String? selectedChatId;
-  final TextEditingController _messageController = TextEditingController();
-  final ScrollController _scrollController = ScrollController();
+  final TextEditingController _inputCtrl    = TextEditingController();
+  final ScrollController       _scrollCtrl  = ScrollController();
 
-  final Map<String, List<MessageModel>> _chatMessages = {
-    'c1': [
-      MessageModel(text: "Hey, has anyone finished Lab 4?", time: "12:45 PM", isMe: false),
-      MessageModel(text: "Working on it right now!", time: "12:46 PM", isMe: true),
-      MessageModel(text: "I'm stuck on the buffer overflow part.", time: "12:50 PM", isMe: false),
-    ],
-    'c2': [
-      MessageModel(text: "Hello Professor, I have a question about Assignment 3.", time: "10:30 AM", isMe: true),
-      MessageModel(text: "Sure John, what's on your mind?", time: "10:32 AM", isMe: false),
-      MessageModel(text: "Can you share the notes for the last lecture?", time: "10:33 AM", isMe: true),
-    ],
-    'c3': [
-      MessageModel(text: "Let's meet at 5:00 PM for the project sync.", time: "Yesterday", isMe: false),
-      MessageModel(text: "Sounds good to me.", time: "Yesterday", isMe: true),
-    ],
-  };
+  PlatformFile?    _pendingFile;
+  bool             _isSending  = false;
+  String?          _typingUser;
+  ApiMessageModel? _replyingTo;
 
-  void _sendMessage() {
-    if (_messageController.text.trim().isEmpty || selectedChatId == null) return;
+  // ── Lifecycle ─────────────────────────────────────────────────────────────
+  @override
+  void initState() {
+    super.initState();
+    _initSocketListeners();
+  }
 
-    setState(() {
-      _chatMessages[selectedChatId!]!.add(
-        MessageModel(
-          text: _messageController.text.trim(),
-          time: TimeOfDay.now().format(context),
-          isMe: true,
-        ),
-      );
-      _messageController.clear();
+  void _initSocketListeners() {
+    final socket = SocketService();
+    socket.onNewMessage((data) {
+      if (!mounted) return;
+      final chanId   = (data['channel_id'] as num?)?.toInt();
+      final selected = ref.read(selectedChannelProvider)?.id;
+      if (chanId == null) return;
+
+      final msg = ApiMessageModel.fromJson(data);
+      ref.read(messagesNotifierProvider(chanId).notifier).append(msg);
+
+      if (chanId == selected) _scrollToBottom();
     });
 
-    // Auto-scroll to bottom
-    Future.delayed(const Duration(milliseconds: 100), () {
-      if (_scrollController.hasClients) {
-        _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent,
+    socket.onTypingStart((name) {
+      if (mounted) setState(() => _typingUser = name);
+    });
+    socket.onTypingStop(() {
+      if (mounted) setState(() => _typingUser = null);
+    });
+  }
+
+  @override
+  void dispose() {
+    _inputCtrl.dispose();
+    _scrollCtrl.dispose();
+    SocketService().off('message:new');
+    SocketService().off('typing:start');
+    SocketService().off('typing:stop');
+    super.dispose();
+  }
+
+  // ── Helpers ───────────────────────────────────────────────────────────────
+  void _scrollToBottom() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollCtrl.hasClients) {
+        _scrollCtrl.animateTo(
+          _scrollCtrl.position.maxScrollExtent,
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeOut,
         );
@@ -68,160 +83,124 @@ class _MessagesViewWidgetState extends ConsumerState<MessagesViewWidget> {
     });
   }
 
-  void _showChatSettings(ChatModel chat) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppColors.getSurfaceColor(context),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text('Chat Settings: ${chat.name}', style: TextStyle(color: AppColors.getHeadingColor(context))),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _buildSettingTile(context, 'Rename Chat', FeatherIcons.edit2, () {}),
-            _buildSettingTile(context, 'Manage Participants', FeatherIcons.users, () {}),
-            _buildSettingTile(context, 'Mute Notifications', FeatherIcons.bellOff, () {}),
-            _buildSettingTile(context, 'Clear Chat', FeatherIcons.trash2, () {}, isDestructive: true),
-          ],
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close')),
-        ],
-      ),
-    );
+  void _selectChannel(ChannelModel ch) {
+    final prev = ref.read(selectedChannelProvider);
+    if (prev != null) SocketService().leaveChannel(prev.id);
+    ref.read(selectedChannelProvider.notifier).state = ch;
+    setState(() => _replyingTo = null);
+    SocketService().joinChannel(ch.id);
   }
 
-  Widget _buildSettingTile(BuildContext context, String title, IconData icon, VoidCallback onTap, {bool isDestructive = false}) {
-    return ListTile(
-      leading: Icon(icon, color: isDestructive ? Colors.red : AppColors.getBodyColor(context), size: 20),
-      title: Text(title, style: TextStyle(color: isDestructive ? Colors.red : AppColors.getHeadingColor(context), fontSize: 14)),
-      onTap: onTap,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-    );
+  void _emitTyping() {
+    final channel = ref.read(selectedChannelProvider);
+    if (channel == null) return;
+    final name = AuthService().currentUser?['name']?.toString() ?? 'Someone';
+    SocketService().emitTypingStart(channel.id, name);
+    Future.delayed(const Duration(seconds: 2),
+        () => SocketService().emitTypingStop(channel.id));
   }
 
+  void _setReply(ApiMessageModel msg) {
+    setState(() => _replyingTo = msg);
+  }
+  void _clearReply() {
+    setState(() => _replyingTo = null);
+  }
+
+  // ── Send ──────────────────────────────────────────────────────────────────
+  Future<void> _send() async {
+    final channel = ref.read(selectedChannelProvider);
+    if (channel == null) return;
+
+    final text = _inputCtrl.text.trim();
+    if (text.isEmpty && _pendingFile == null) return;
+
+    final parentId = _replyingTo?.id;
+
+    if (_pendingFile != null) {
+      await _uploadFile(channel.id, text, parentId);
+    } else {
+      SocketService().sendMessage(
+        channelId: channel.id, 
+        content: text,
+        parentId: parentId,
+      );
+      _inputCtrl.clear();
+      _clearReply();
+    }
+  }
+
+  Future<void> _uploadFile(int channelId, String caption, int? parentId) async {
+    final file = _pendingFile!;
+    setState(() => _isSending = true);
+    try {
+      final formData = FormData.fromMap({
+        'content': caption.isNotEmpty ? caption : file.name,
+        'file'   : MultipartFile.fromBytes(file.bytes!, filename: file.name),
+        if (parentId != null) 'parent_id': parentId,
+      });
+      await ApiService().sendMessage(channelId, formData);
+      setState(() {
+        _pendingFile = null;
+        _inputCtrl.clear();
+        _clearReply();
+      });
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Upload failed: $e'), backgroundColor: Colors.red),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isSending = false);
+    }
+  }
+
+  Future<void> _pickFile() async {
+    final result = await FilePicker.platform.pickFiles(type: FileType.any, withData: true);
+    if (result != null && result.files.isNotEmpty) {
+      setState(() => _pendingFile = result.files.first);
+    }
+  }
+  void _clearFile() => setState(() => _pendingFile = null);
+
+  // ── Build ─────────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
-    final chats = ref.watch(chatProvider);
+    final channelsAsync    = ref.watch(channelsProvider);
+    final selectedChannel  = ref.watch(selectedChannelProvider);
 
     return Row(
       children: [
-        // Left Column: Chat List
+        // ── Left: Channel List ───────────────────────────────────────────
         Container(
-          width: 350,
-          decoration: BoxDecoration(
-            border: Border(right: BorderSide(color: AppColors.getBorderColor(context))),
-          ),
+          width: 320,
+          decoration: BoxDecoration(border: Border(right: BorderSide(color: AppColors.getBorderColor(context)))),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Padding(
-                padding: const EdgeInsets.all(24.0),
+                padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      'Messages',
-                      style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.getHeadingColor(context)),
-                    ),
-                    IconButton(
-                      onPressed: () {},
-                      icon: const Icon(FeatherIcons.edit, color: AppColors.accent, size: 20),
-                    ),
+                    Text('Messages', style: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.getHeadingColor(context))),
+                    const Spacer(),
+                    Icon(FeatherIcons.hash, color: AppColors.accent, size: 18),
                   ],
                 ),
               ),
               Expanded(
-                child: ListView.builder(
-                  itemCount: chats.length,
-                  itemBuilder: (context, index) {
-                    final chat = chats[index];
-                    final isSelected = selectedChatId == chat.id;
-                    return InkWell(
-                      onTap: () {
-                        setState(() => selectedChatId = chat.id);
-                        // Mark as read logic would go here
-                      },
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
-                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                        color: isSelected ? AppColors.accent.withOpacity(0.08) : Colors.transparent,
-                        child: Row(
-                          children: [
-                            Stack(
-                              children: [
-                                CircleAvatar(radius: 26, backgroundImage: NetworkImage(chat.imageUrl)),
-                                if (chat.isOnline)
-                                  Positioned(
-                                    right: 2,
-                                    bottom: 2,
-                                    child: Container(
-                                      width: 12,
-                                      height: 12,
-                                      decoration: BoxDecoration(
-                                        color: Colors.green,
-                                        shape: BoxShape.circle,
-                                        border: Border.all(color: AppColors.getSurfaceColor(context), width: 2),
-                                      ),
-                                    ),
-                                  ),
-                              ],
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text(
-                                        chat.name,
-                                        style: TextStyle(
-                                          fontSize: 15,
-                                          fontWeight: isSelected || chat.unreadCount > 0 ? FontWeight.bold : FontWeight.w600,
-                                          color: isSelected ? AppColors.accent : AppColors.getHeadingColor(context),
-                                        ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                      Text(
-                                        chat.lastMessageTime,
-                                        style: TextStyle(fontSize: 10, color: AppColors.getBodyColor(context)),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        child: Text(
-                                          chat.lastMessage,
-                                          style: TextStyle(
-                                            fontSize: 12, 
-                                            color: chat.unreadCount > 0 ? AppColors.getHeadingColor(context) : AppColors.getBodyColor(context),
-                                            fontWeight: chat.unreadCount > 0 ? FontWeight.w500 : FontWeight.normal,
-                                          ),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ),
-                                      if (chat.unreadCount > 0)
-                                        Container(
-                                          margin: const EdgeInsets.only(left: 8),
-                                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                          decoration: BoxDecoration(color: AppColors.accent, borderRadius: BorderRadius.circular(10)),
-                                          child: Text(
-                                            '${chat.unreadCount}',
-                                            style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
-                                          ),
-                                        ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
+                child: channelsAsync.when(
+                  loading: () => const Center(child: CircularProgressIndicator()),
+                  error: (e, _) => Center(child: Text('Error loading channels')),
+                  data: (channels) {
+                    if (channels.isEmpty) return const Center(child: Text('No channels.'));
+                    return ListView.builder(
+                      itemCount: channels.length,
+                      itemBuilder: (_, i) => _ChannelTile(
+                        channel   : channels[i],
+                        isSelected: selectedChannel?.id == channels[i].id,
+                        onTap     : () => _selectChannel(channels[i]),
                       ),
                     );
                   },
@@ -230,177 +209,386 @@ class _MessagesViewWidgetState extends ConsumerState<MessagesViewWidget> {
             ],
           ),
         ),
-        
-        // Right Column: Active Conversation
+
+        // ── Right: Chat Area ─────────────────────────────────────────────
         Expanded(
-          child: selectedChatId == null
-              ? _buildEmptyState()
-              : _buildActiveChat(chats.firstWhere((c) => c.id == selectedChatId)),
+          child: selectedChannel == null
+              ? _EmptyState()
+              : _ChatArea(
+                  channel    : selectedChannel,
+                  inputCtrl  : _inputCtrl,
+                  scrollCtrl : _scrollCtrl,
+                  pendingFile: _pendingFile,
+                  isSending  : _isSending,
+                  typingUser : _typingUser,
+                  replyingTo : _replyingTo,
+                  onSend     : _send,
+                  onPickFile : _pickFile,
+                  onClearFile: _clearFile,
+                  onTyping   : _emitTyping,
+                  onReply    : _setReply,
+                  onClearReply: _clearReply,
+                ),
         ),
       ],
     );
   }
+}
 
-  Widget _buildEmptyState() {
+// ─────────────────────────────────────────────────────────────────────────────
+class _ChannelTile extends StatelessWidget {
+  final ChannelModel channel;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _ChannelTile({required this.channel, required this.isSelected, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+        color: isSelected ? AppColors.accent.withOpacity(0.09) : Colors.transparent,
+        child: Row(
+          children: [
+            Container(
+              width: 40, height: 40, alignment: Alignment.center,
+              decoration: BoxDecoration(color: isSelected ? AppColors.accent : AppColors.accent.withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
+              child: Icon(FeatherIcons.hash, size: 18, color: isSelected ? Colors.white : AppColors.accent),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(channel.subjectName, style: GoogleFonts.outfit(fontWeight: isSelected ? FontWeight.bold : FontWeight.w600, fontSize: 14, color: isSelected ? AppColors.accent : AppColors.getHeadingColor(context)), maxLines: 1, overflow: TextOverflow.ellipsis),
+                  if (channel.teacherName != null) Text(channel.teacherName!, style: GoogleFonts.outfit(fontSize: 11, color: AppColors.getBodyColor(context))),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _EmptyState extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
     return Center(
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
-            padding: const EdgeInsets.all(32),
-            decoration: BoxDecoration(
-              color: AppColors.accent.withOpacity(0.05),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(FeatherIcons.messageSquare, size: 64, color: AppColors.accent.withOpacity(0.3)),
-          ),
-          const SizedBox(height: 24),
-          Text(
-            'Select a conversation to start messaging',
-            style: TextStyle(color: AppColors.getBodyColor(context), fontSize: 16),
-          ),
+          Container(padding: const EdgeInsets.all(28), decoration: BoxDecoration(color: AppColors.accent.withOpacity(0.07), shape: BoxShape.circle), child: Icon(FeatherIcons.messageSquare, size: 56, color: AppColors.accent.withOpacity(0.3))),
+          const SizedBox(height: 20),
+          Text('Select a channel to start chatting', style: GoogleFonts.outfit(fontSize: 15, color: AppColors.getBodyColor(context))),
         ],
       ),
     );
   }
+}
 
-  Widget _buildActiveChat(ChatModel chat) {
-    final messages = _chatMessages[chat.id] ?? [];
+// ─────────────────────────────────────────────────────────────────────────────
+class _ChatArea extends ConsumerWidget {
+  final ChannelModel channel;
+  final TextEditingController inputCtrl;
+  final ScrollController scrollCtrl;
+  final PlatformFile? pendingFile;
+  final bool isSending;
+  final String? typingUser;
+  final ApiMessageModel? replyingTo;
+  final Future<void> Function() onSend;
+  final Future<void> Function() onPickFile;
+  final VoidCallback onClearFile;
+  final VoidCallback onTyping;
+  final void Function(ApiMessageModel) onReply;
+  final VoidCallback onClearReply;
+
+  const _ChatArea({
+    required this.channel, required this.inputCtrl, required this.scrollCtrl, required this.pendingFile,
+    required this.isSending, required this.typingUser, required this.replyingTo,
+    required this.onSend, required this.onPickFile, required this.onClearFile,
+    required this.onTyping, required this.onReply, required this.onClearReply,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final messagesAsync = ref.watch(messagesNotifierProvider(channel.id));
+    final myId = AuthService().currentUser?['id']?.toString();
 
     return Column(
       children: [
-        // Chat Header
+        // ── Header ────────────────────────────────────────────────────────
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-          decoration: BoxDecoration(
-            border: Border(bottom: BorderSide(color: AppColors.getBorderColor(context))),
-          ),
+          decoration: BoxDecoration(border: Border(bottom: BorderSide(color: AppColors.getBorderColor(context)))),
           child: Row(
             children: [
-              CircleAvatar(radius: 20, backgroundImage: NetworkImage(chat.imageUrl)),
+              Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: AppColors.accent.withOpacity(0.1), borderRadius: BorderRadius.circular(8)), child: Icon(FeatherIcons.hash, color: AppColors.accent, size: 16)),
               const SizedBox(width: 12),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(chat.name, style: TextStyle(color: AppColors.getHeadingColor(context), fontWeight: FontWeight.bold)),
-                  if (chat.isOnline)
-                    Row(
-                      children: [
-                        Container(width: 8, height: 8, decoration: const BoxDecoration(color: Colors.green, shape: BoxShape.circle)),
-                        const SizedBox(width: 6),
-                        const Text('Online', style: TextStyle(color: Colors.green, fontSize: 11)),
-                      ],
-                    )
-                  else
-                    const Text('Last seen recently', style: TextStyle(color: AppColors.textBody, fontSize: 11)),
-                ],
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(channel.subjectName, style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.getHeadingColor(context))),
+                    if (channel.teacherName != null) Text('Teacher: ${channel.teacherName}', style: GoogleFonts.outfit(fontSize: 11, color: AppColors.getBodyColor(context))),
+                  ],
+                ),
               ),
-              const Spacer(),
-              IconButton(icon: Icon(FeatherIcons.video, color: AppColors.getBodyColor(context), size: 20), onPressed: () {}),
-              IconButton(icon: Icon(FeatherIcons.phone, color: AppColors.getBodyColor(context), size: 18), onPressed: () {}),
-              IconButton(icon: Icon(FeatherIcons.moreHorizontal, color: AppColors.getBodyColor(context), size: 20), onPressed: () => _showChatSettings(chat)),
             ],
           ),
         ),
-        
-        // Message List
+
+        // ── Messages List ──────────────────────────────────────────────────
         Expanded(
-          child: ListView.builder(
-            controller: _scrollController,
-            padding: const EdgeInsets.all(24),
-            itemCount: messages.length,
-            itemBuilder: (context, index) {
-              final msg = messages[index];
-              return _buildMessageBubble(msg.text, msg.time, msg.isMe);
+          child: messagesAsync.when(
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (err, _) => Center(child: Text('Failed to load messages')),
+            data: (messages) {
+              if (messages.isEmpty) return Center(child: Text('No messages yet', style: GoogleFonts.outfit(color: AppColors.getBodyColor(context))));
+              return NotificationListener<ScrollNotification>(
+                onNotification: (ScrollNotification scrollInfo) {
+                  if (scrollInfo.metrics.pixels >= scrollInfo.metrics.maxScrollExtent - 200) {
+                     ref.read(messagesNotifierProvider(channel.id).notifier).loadMore();
+                  }
+                  return false;
+                },
+                child: ListView.builder(
+                  controller: scrollCtrl,
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                  itemCount: messages.length,
+                  itemBuilder: (_, i) {
+                    final msg = messages[i];
+                    final isMe = msg.senderId.toString() == myId;
+                    return InkWell(
+                      onLongPress: () => onReply(msg),
+                      hoverColor: AppColors.getBorderColor(context).withOpacity(0.1),
+                      child: _MessageBubble(msg: msg, isMe: isMe),
+                    );
+                  },
+                ),
+              );
             },
           ),
         ),
-        
-        // Message Input
-        Container(
-          padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-            decoration: BoxDecoration(
-              color: AppColors.getSurfaceColor(context),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.getBorderColor(context)),
-              boxShadow: [
-                BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4)),
-              ],
-            ),
-            child: Row(
-              children: [
-                IconButton(icon: Icon(FeatherIcons.plusCircle, color: AppColors.getBodyColor(context), size: 20), onPressed: () {}),
-                Expanded(
-                  child: TextField(
-                    controller: _messageController,
-                    onSubmitted: (_) => _sendMessage(),
-                    decoration: InputDecoration(
-                      hintText: 'Type a message...',
-                      hintStyle: TextStyle(color: AppColors.getBodyColor(context), fontSize: 14),
-                      border: InputBorder.none,
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                    ),
-                    style: TextStyle(color: AppColors.getHeadingColor(context), fontSize: 14),
-                  ),
-                ),
-                InkWell(
-                  onTap: _sendMessage,
-                  borderRadius: BorderRadius.circular(12),
-                  child: Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      gradient: AppColors.accentGradient,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(FeatherIcons.send, color: Colors.white, size: 18),
-                  ),
-                ),
-              ],
-            ),
+
+        // ── Typing Indicator ──────────────────────────────────────────────
+        if (typingUser != null)
+          Padding(
+            padding: const EdgeInsets.only(left: 28, bottom: 4),
+            child: Align(alignment: Alignment.centerLeft, child: Text('$typingUser is typing...', style: GoogleFonts.outfit(fontSize: 11, fontStyle: FontStyle.italic, color: AppColors.getBodyColor(context)))),
           ),
+
+        // ── Input Bar ─────────────────────────────────────────────────────
+        _InputBar(
+          inputCtrl: inputCtrl, pendingFile: pendingFile, isSending: isSending, replyingTo: replyingTo,
+          onSend: onSend, onPickFile: onPickFile, onClearFile: onClearFile, onTyping: onTyping, onClearReply: onClearReply,
         ),
       ],
     );
   }
+}
 
-  Widget _buildMessageBubble(String text, String time, bool isMe) {
+// ─────────────────────────────────────────────────────────────────────────────
+class _MessageBubble extends StatelessWidget {
+  final ApiMessageModel msg;
+  final bool isMe;
+
+  const _MessageBubble({required this.msg, required this.isMe});
+
+  static IconData _fileIcon(String? name) {
+    final ext = name?.split('.').last.toLowerCase() ?? '';
+    if (['jpg', 'jpeg', 'png', 'gif', 'webp'].contains(ext)) return FeatherIcons.image;
+    if (ext == 'pdf') return FeatherIcons.fileText;
+    return FeatherIcons.paperclip;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bubbleColor = isMe ? AppColors.accent : AppColors.getBorderColor(context).withOpacity(0.15);
+    final textColor = isMe ? Colors.white : AppColors.getHeadingColor(context);
+    final radius = BorderRadius.only(topLeft: const Radius.circular(16), topRight: const Radius.circular(16), bottomLeft: Radius.circular(isMe ? 16 : 0), bottomRight: Radius.circular(isMe ? 0 : 16));
+    final time = '${msg.createdAt.hour}:${msg.createdAt.minute.toString().padLeft(2, '0')}';
+    final isFaculty = msg.senderRole == 'faculty';
+
     return Align(
       alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
-        margin: const EdgeInsets.only(bottom: 20),
-        constraints: const BoxConstraints(maxWidth: 450),
+        margin: const EdgeInsets.only(bottom: 18),
+        constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.55),
         child: Column(
           crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
           children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
-                color: isMe ? AppColors.accent : AppColors.getBorderColor(context).withOpacity(0.1),
-                borderRadius: BorderRadius.only(
-                  topLeft: const Radius.circular(16),
-                  topRight: const Radius.circular(16),
-                  bottomLeft: Radius.circular(isMe ? 16 : 0),
-                  bottomRight: Radius.circular(isMe ? 0 : 16),
+            if (!isMe)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 4, left: 2),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(msg.senderName, style: GoogleFonts.outfit(fontSize: 11, fontWeight: FontWeight.bold, color: isFaculty ? Colors.orange : AppColors.accent)),
+                    if (isFaculty) ...[
+                      const SizedBox(width: 5),
+                      Container(padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1), decoration: BoxDecoration(color: Colors.orange.withOpacity(0.15), borderRadius: BorderRadius.circular(4)), child: const Text('Teacher', style: TextStyle(fontSize: 9, color: Colors.orange, fontWeight: FontWeight.bold))),
+                    ],
+                  ],
                 ),
               ),
-              child: Text(
-                text,
-                style: TextStyle(color: isMe ? Colors.white : AppColors.getHeadingColor(context), fontSize: 14),
+
+            // Parent Message Thread
+            if (msg.parentContent != null || msg.parentSenderName != null)
+              Container(
+                margin: const EdgeInsets.only(bottom: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: AppColors.getBorderColor(context).withOpacity(0.2),
+                  border: Border(left: BorderSide(color: AppColors.accent, width: 3)),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(msg.parentSenderName ?? 'Someone', style: GoogleFonts.outfit(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.accent)),
+                    Text(msg.parentContent ?? 'Attachment', maxLines: 1, overflow: TextOverflow.ellipsis, style: GoogleFonts.outfit(fontSize: 11, color: AppColors.getBodyColor(context))),
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(height: 6),
+
+            // File or Text Content
+            if (msg.fileUrl != null && msg.fileUrl!.isNotEmpty)
+              GestureDetector(
+                onTap: () async {
+                  final uri = Uri.parse(msg.fileUrl!);
+                  if (await canLaunchUrl(uri)) launchUrl(uri, mode: LaunchMode.externalApplication);
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  decoration: BoxDecoration(color: bubbleColor, borderRadius: radius),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(_fileIcon(msg.fileName), color: textColor, size: 22),
+                      const SizedBox(width: 10),
+                      Flexible(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(msg.fileName ?? 'attachment', style: GoogleFonts.outfit(color: textColor, fontSize: 13, fontWeight: FontWeight.w600), overflow: TextOverflow.ellipsis),
+                            const SizedBox(height: 2),
+                            Text('Tap to open', style: GoogleFonts.outfit(color: textColor.withOpacity(0.7), fontSize: 10)),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            else
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(color: bubbleColor, borderRadius: radius),
+                child: Text(msg.content ?? '', style: GoogleFonts.outfit(color: textColor, fontSize: 14)),
+              ),
+
+            const SizedBox(height: 5),
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 if (isMe) Icon(Icons.done_all, size: 12, color: AppColors.accent.withOpacity(0.8)),
-                if (isMe) const SizedBox(width: 4),
-                Text(time, style: TextStyle(fontSize: 10, color: AppColors.getBodyColor(context))),
+                if (isMe) const SizedBox(width: 3),
+                Text(time, style: GoogleFonts.outfit(fontSize: 10, color: AppColors.getBodyColor(context))),
               ],
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+class _InputBar extends StatelessWidget {
+  final TextEditingController inputCtrl;
+  final PlatformFile? pendingFile;
+  final bool isSending;
+  final ApiMessageModel? replyingTo;
+  final Future<void> Function() onSend;
+  final Future<void> Function() onPickFile;
+  final VoidCallback onClearFile;
+  final VoidCallback onTyping;
+  final VoidCallback onClearReply;
+
+  const _InputBar({
+    required this.inputCtrl, required this.pendingFile, required this.isSending, required this.replyingTo,
+    required this.onSend, required this.onPickFile, required this.onClearFile, required this.onTyping, required this.onClearReply,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+      child: Column(
+        children: [
+          // Replying to chip
+          if (replyingTo != null)
+            Container(
+              margin: const EdgeInsets.only(bottom: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              decoration: BoxDecoration(color: AppColors.getBorderColor(context).withOpacity(0.1), borderRadius: BorderRadius.circular(10), border: Border(left: BorderSide(color: AppColors.accent, width: 4))),
+              child: Row(
+                children: [
+                  Icon(FeatherIcons.cornerUpLeft, color: AppColors.accent, size: 14),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Replying to ${replyingTo!.senderName}', style: GoogleFonts.outfit(color: AppColors.accent, fontSize: 11, fontWeight: FontWeight.bold)),
+                        Text(replyingTo!.content ?? 'Attachment', style: GoogleFonts.outfit(color: AppColors.getBodyColor(context), fontSize: 12), overflow: TextOverflow.ellipsis, maxLines: 1),
+                      ],
+                    ),
+                  ),
+                  GestureDetector(onTap: onClearReply, child: Icon(Icons.close, size: 16, color: AppColors.getBodyColor(context))),
+                ],
+              ),
+            ),
+
+          if (pendingFile != null)
+            Container(
+              margin: const EdgeInsets.only(bottom: 8), padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              decoration: BoxDecoration(color: AppColors.accent.withOpacity(0.08), borderRadius: BorderRadius.circular(10), border: Border.all(color: AppColors.accent.withOpacity(0.25))),
+              child: Row(
+                children: [
+                  Icon(FeatherIcons.paperclip, color: AppColors.accent, size: 16),
+                  const SizedBox(width: 8),
+                  Expanded(child: Text(pendingFile!.name, style: GoogleFonts.outfit(color: AppColors.getHeadingColor(context), fontSize: 12), overflow: TextOverflow.ellipsis)),
+                  GestureDetector(onTap: onClearFile, child: Padding(padding: const EdgeInsets.only(left: 6), child: Icon(Icons.close, size: 14, color: AppColors.getBodyColor(context)))),
+                ],
+              ),
+            ),
+
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+            decoration: BoxDecoration(color: AppColors.getSurfaceColor(context), borderRadius: BorderRadius.circular(16), border: Border.all(color: AppColors.getBorderColor(context))),
+            child: Row(
+              children: [
+                IconButton(icon: Icon(FeatherIcons.paperclip, color: pendingFile != null ? AppColors.accent : AppColors.getBodyColor(context), size: 20), onPressed: isSending ? null : onPickFile),
+                Expanded(
+                  child: TextField(
+                    controller: inputCtrl, maxLines: null, keyboardType: TextInputType.multiline, onChanged: (_) => onTyping(), onSubmitted: (_) => onSend(),
+                    decoration: InputDecoration(hintText: 'Type a message...', hintStyle: GoogleFonts.outfit(color: AppColors.getBodyColor(context), fontSize: 14), border: InputBorder.none, contentPadding: const EdgeInsets.symmetric(horizontal: 12)),
+                    style: GoogleFonts.outfit(color: AppColors.getHeadingColor(context), fontSize: 14),
+                  ),
+                ),
+                isSending
+                    ? const SizedBox(width: 36, height: 36, child: Center(child: SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))))
+                    : GestureDetector(onTap: onSend, child: Container(padding: const EdgeInsets.all(10), decoration: BoxDecoration(gradient: AppColors.accentGradient, borderRadius: BorderRadius.circular(12)), child: const Icon(FeatherIcons.send, color: Colors.white, size: 18))),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

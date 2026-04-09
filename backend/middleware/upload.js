@@ -12,5 +12,24 @@ const storage = new CloudinaryStorage({
   }),
 });
 
-const upload = multer({ storage, limits: { fileSize: 50 * 1024 * 1024 } });
+const fileFilter = (req, file, cb) => {
+  // Broad blocklist for obvious malware/scripts
+  const blockedMimes = [
+    'application/x-msdownload', // .exe
+    'application/x-sh',         // .sh
+    'application/javascript',   // .js
+    'text/x-python',            // .py
+    'application/x-bat',        // .bat
+  ];
+  if (blockedMimes.includes(file.mimetype)) {
+    return cb(new Error('File type not allowed for security reasons'), false);
+  }
+  cb(null, true);
+};
+
+const upload = multer({ 
+  storage, 
+  fileFilter,
+  limits: { fileSize: 50 * 1024 * 1024 } 
+});
 module.exports = upload;

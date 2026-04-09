@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../auth_provider.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'auth_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -12,16 +13,17 @@ class LoginScreen extends ConsumerStatefulWidget {
 }
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
-  final _rollController = TextEditingController();
-  final _dobController = TextEditingController();
-  final _formKey = GlobalKey<FormState>();
-  bool _obscureDob = false;
-  bool _isLoading = false;
+  final _identifierCtrl = TextEditingController(); // roll no or email
+  final _passwordCtrl   = TextEditingController();
+  final _formKey        = GlobalKey<FormState>();
+
+  bool _isLoading      = false;
+  bool _obscurePassword = true;
 
   @override
   void dispose() {
-    _rollController.dispose();
-    _dobController.dispose();
+    _identifierCtrl.dispose();
+    _passwordCtrl.dispose();
     super.dispose();
   }
 
@@ -29,8 +31,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isLoading = true);
     await ref.read(authProvider.notifier).login(
-          _rollController.text.trim(),
-          _dobController.text.trim(), // YYYY-MM-DD format
+          _identifierCtrl.text.trim(),
+          _passwordCtrl.text.trim(),
         );
     if (mounted) setState(() => _isLoading = false);
   }
@@ -38,7 +40,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
-    final error = authState.valueOrNull?.error;
+    final error     = authState.value?.error;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -50,93 +52,102 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             child: Form(
               key: _formKey,
               child: Column(
-                mainAxisSize: MainAxisSize.min,
+                mainAxisSize     : MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Logo / Title
+                  // ── Logo ─────────────────────────────────────────────────
                   Center(
                     child: Column(
                       children: [
-                        Container(
-                          width: 64,
-                          height: 64,
-                          decoration: BoxDecoration(
-                            gradient: AppColors.accentGradient,
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: const Icon(Icons.school_rounded,
-                              color: Colors.white, size: 36),
+                        SvgPicture.asset(
+                          'assets/images/adtu_logo.svg',
+                          height: 80,
+                          fit   : BoxFit.contain,
                         ),
                         const SizedBox(height: 16),
                         Text(
                           'ADTU Collab',
                           style: GoogleFonts.outfit(
-                            fontSize: 28,
+                            fontSize  : 28,
                             fontWeight: FontWeight.bold,
-                            color: AppColors.textHeading,
+                            color     : AppColors.textHeading,
                           ),
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          'Jira for Students — Academic Workspace',
+                          'Academic Workspace — Assam downtown University',
                           style: GoogleFonts.outfit(
-                            fontSize: 13,
-                            color: AppColors.textBody,
-                          ),
+                              fontSize: 12, color: AppColors.textBody),
+                          textAlign: TextAlign.center,
                         ),
                       ],
                     ),
                   ),
+
                   const SizedBox(height: 40),
 
-                  // Roll Number
-                  _label('Roll Number'),
+                  // ── Identifier (Roll No or Email) ─────────────────────────
+                  _label('Roll Number or Email'),
                   const SizedBox(height: 8),
                   TextFormField(
-                    controller: _rollController,
-                    style: const TextStyle(color: AppColors.textHeading),
-                    decoration: _inputDecoration(
-                      hint: 'e.g. BSC-IT-2022-001',
-                      icon: Icons.badge_outlined,
+                    controller : _identifierCtrl,
+                    style      : const TextStyle(color: AppColors.textHeading),
+                    keyboardType: TextInputType.emailAddress,
+                    decoration : _inputDeco(
+                      hint: 'e.g.  21CS001  or  john@adtu.in',
+                      icon: Icons.person_outline,
                     ),
-                    validator: (v) =>
-                        v == null || v.isEmpty ? 'Enter your roll number' : null,
+                    validator: (v) => (v == null || v.trim().isEmpty)
+                        ? 'Enter your Roll Number or Email'
+                        : null,
                   ),
                   const SizedBox(height: 20),
 
-                  // DOB
-                  _label('Date of Birth (Password)'),
+                  // ── Password ──────────────────────────────────────────────
+                  _label('Password'),
                   const SizedBox(height: 8),
                   TextFormField(
-                    controller: _dobController,
-                    style: const TextStyle(color: AppColors.textHeading),
-                    decoration: _inputDecoration(
-                      hint: 'YYYY-MM-DD  e.g. 2003-05-14',
-                      icon: Icons.calendar_today_outlined,
+                    controller   : _passwordCtrl,
+                    obscureText  : _obscurePassword,
+                    style        : const TextStyle(color: AppColors.textHeading),
+                    decoration   : _inputDeco(
+                      hint: 'Enter your password',
+                      icon: Icons.lock_outline,
+                    ).copyWith(
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscurePassword
+                              ? Icons.visibility_off_outlined
+                              : Icons.visibility_outlined,
+                          color: AppColors.textBody,
+                          size : 18,
+                        ),
+                        onPressed: () =>
+                            setState(() => _obscurePassword = !_obscurePassword),
+                      ),
                     ),
                     validator: (v) {
-                      if (v == null || v.isEmpty) return 'Enter your date of birth';
-                      final exp = RegExp(r'^\d{4}-\d{2}-\d{2}$');
-                      if (!exp.hasMatch(v)) return 'Format must be YYYY-MM-DD';
+                      if (v == null || v.isEmpty) return 'Enter your password';
+                      if (v.length < 6) return 'Password must be at least 6 characters';
                       return null;
                     },
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    '💡 Your DOB in YYYY-MM-DD format is your default password.',
+                    '💡 First time? Your default password is your date of birth: YYYY-MM-DD',
                     style: GoogleFonts.outfit(
                         fontSize: 11, color: AppColors.textBody),
                   ),
                   const SizedBox(height: 24),
 
-                  // Error
+                  // ── Error ─────────────────────────────────────────────────
                   if (error != null) ...[
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF3D1A1A),
+                        color       : const Color(0xFF3D1A1A),
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: const Color(0xFF9D2727)),
+                        border      : Border.all(color: const Color(0xFF9D2727)),
                       ),
                       child: Row(
                         children: [
@@ -144,9 +155,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               color: Color(0xFFFF6B6B), size: 16),
                           const SizedBox(width: 8),
                           Expanded(
-                            child: Text(error,
-                                style: const TextStyle(
-                                    color: Color(0xFFFF6B6B), fontSize: 13)),
+                            child: Text(
+                              error,
+                              style: const TextStyle(
+                                  color: Color(0xFFFF6B6B), fontSize: 13),
+                            ),
                           ),
                         ],
                       ),
@@ -154,11 +167,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     const SizedBox(height: 16),
                   ],
 
-                  // Login Button
+                  // ── Login Button ──────────────────────────────────────────
                   SizedBox(
-                    width: double.infinity,
+                    width : double.infinity,
                     height: 50,
-                    child: ElevatedButton(
+                    child : ElevatedButton(
                       onPressed: _isLoading ? null : _login,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.accent,
@@ -168,18 +181,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       ),
                       child: _isLoading
                           ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
-                              ))
-                          : Text('Sign In',
+                              width : 20, height: 20,
+                              child : CircularProgressIndicator(
+                                  strokeWidth: 2, color: Colors.white),
+                            )
+                          : Text(
+                              'Sign In',
                               style: GoogleFonts.outfit(
-                                  fontSize: 16, fontWeight: FontWeight.w600)),
+                                  fontSize  : 16,
+                                  fontWeight: FontWeight.w600),
+                            ),
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 20),
 
                   Center(
                     child: Text(
@@ -200,37 +214,40 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Widget _label(String text) => Text(
         text,
         style: GoogleFonts.outfit(
-          fontSize: 13,
+          fontSize  : 13,
           fontWeight: FontWeight.w500,
-          color: AppColors.textBody,
+          color     : AppColors.textBody,
         ),
       );
 
-  InputDecoration _inputDecoration(
-          {required String hint, required IconData icon}) =>
+  InputDecoration _inputDeco({required String hint, required IconData icon}) =>
       InputDecoration(
-        hintText: hint,
-        hintStyle: const TextStyle(color: Color(0xFF484F58), fontSize: 13),
+        hintText  : hint,
+        hintStyle : const TextStyle(color: Color(0xFF484F58), fontSize: 13),
         prefixIcon: Icon(icon, color: AppColors.textBody, size: 18),
-        filled: true,
-        fillColor: AppColors.surface,
+        filled    : true,
+        fillColor : AppColors.surface,
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: Color(0xFF30363D)),
+          borderSide  : const BorderSide(color: Color(0xFF30363D)),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: Color(0xFF30363D)),
+          borderSide  : const BorderSide(color: Color(0xFF30363D)),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: AppColors.accent, width: 1.5),
+          borderSide  : const BorderSide(color: AppColors.accent, width: 1.5),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: Color(0xFFFF6B6B)),
+          borderSide  : const BorderSide(color: Color(0xFFFF6B6B)),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide  : const BorderSide(color: Color(0xFFFF6B6B), width: 1.5),
         ),
       );
 }

@@ -92,4 +92,39 @@ const updateProfile = async (req, res) => {
   res.json({ success: true, user: result.rows[0] });
 };
 
-module.exports = { register, login, getMe, updateProfile };
+// ─── Change Password ──────────────────────────────────────────────────────────
+const changePassword = async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+
+  if (!currentPassword || !newPassword) {
+    return res.status(400).json({ success: false, message: 'Please provide both current and new passwords' });
+  }
+
+  if (newPassword.length < 6) {
+    return res.status(400).json({ success: false, message: 'New password must be at least 6 characters' });
+  }
+
+  // Get user from database
+  const result = await pool.query('SELECT * FROM users WHERE id = $1', [req.user.id]);
+  if (result.rows.length === 0) {
+    return res.status(404).json({ success: false, message: 'User not found' });
+  }
+
+  const user = result.rows[0];
+
+  // Verify current password
+  const match = await bcrypt.compare(currentPassword, user.password);
+  if (!match) {
+    return res.status(401).json({ success: false, message: 'Incorrect current password' });
+  }
+
+  // Hash new password
+  const hashedNewPassword = await bcrypt.hash(newPassword, 12);
+
+  // Update password in database
+  await pool.query('UPDATE users SET password = $1 WHERE id = $2', [hashedNewPassword, req.user.id]);
+
+  res.json({ success: true, message: 'Password updated successfully' });
+};
+
+module.exports = { register, login, getMe, updateProfile, changePassword };

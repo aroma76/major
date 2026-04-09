@@ -1,4 +1,4 @@
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'storage_service.dart';
 import 'api_service.dart';
 
 class AuthService {
@@ -6,19 +6,19 @@ class AuthService {
   factory AuthService() => _instance;
   AuthService._internal();
 
-  final _storage = const FlutterSecureStorage();
+  final _storage = StorageService();
   final _api = ApiService();
 
   Map<String, dynamic>? _currentUser;
   Map<String, dynamic>? get currentUser => _currentUser;
 
-  /// Login with roll number + DOB (DOB is used as default password by the backend)
-  Future<Map<String, dynamic>> login(String rollNumber, String dob) async {
-    final response = await _api.login(rollNumber, dob);
+  /// Login with roll number OR email + password
+  Future<Map<String, dynamic>> login(String identifier, String password) async {
+    final response = await _api.login(identifier, password);
     final data = response.data as Map<String, dynamic>;
     final token = data['token'] as String;
     _currentUser = data['user'] as Map<String, dynamic>;
-    await _storage.write(key: 'adtu_token', value: token);
+    await _storage.write('adtu_token', token);
     return _currentUser!;
   }
 
@@ -45,13 +45,13 @@ class AuthService {
     final data = response.data as Map<String, dynamic>;
     final token = data['token'] as String;
     _currentUser = data['user'] as Map<String, dynamic>;
-    await _storage.write(key: 'adtu_token', value: token);
+    await _storage.write('adtu_token', token);
     return _currentUser!;
   }
 
   /// Restore session from stored token
   Future<bool> restoreSession() async {
-    final token = await _storage.read(key: 'adtu_token');
+    final token = await _storage.read('adtu_token');
     if (token == null) return false;
     try {
       final response = await _api.getMe();
@@ -65,7 +65,7 @@ class AuthService {
 
   Future<void> logout() async {
     _currentUser = null;
-    await _storage.delete(key: 'adtu_token');
+    await _storage.delete('adtu_token');
   }
 
   bool get isLoggedIn => _currentUser != null;

@@ -1,13 +1,16 @@
 const express = require('express');
-const router = express.Router();
-const { getSubjects, getSubject, createSubject, updateSubject, deleteSubject, getSubjectMembers } = require('../controllers/subjectController');
+const router  = express.Router();
+const {
+  getChannels, getChannel, createChannel, updateChannel, deleteChannel, getChannelMembers
+} = require('../controllers/channelController');
 const { protect, authorize } = require('../middleware/auth');
 
-router.get('/', protect, getSubjects);
-router.get('/:id', protect, getSubject);
-router.post('/', protect, authorize('admin', 'faculty'), createSubject);
-router.put('/:id', protect, authorize('admin', 'faculty'), updateSubject);
-router.delete('/:id', protect, authorize('admin'), deleteSubject);
-router.get('/:id/members', protect, getSubjectMembers);
+// All authenticated users see their enrolled channels
+router.get  ('/',              protect,                            getChannels);
+router.get  ('/:id',          protect,                            getChannel);
+router.post ('/',              protect, authorize('admin'),        createChannel);
+router.put  ('/:id',          protect, authorize('admin'),        updateChannel);
+router.delete('/:id',         protect, authorize('admin'),        deleteChannel);
+router.get  ('/:id/members',  protect,                            getChannelMembers);
 
 module.exports = router;

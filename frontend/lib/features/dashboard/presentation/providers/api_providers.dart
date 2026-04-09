@@ -95,3 +95,13 @@ final projectsProvider =
   return list.cast<Map<String, dynamic>>();
 });
 
+// ── Academic Events (Calendar) ────────────────────────────────────────────────
+
+final academicEventsProvider =
+    FutureProvider.family<List<Map<String, dynamic>>, int>((ref, year) async {
+  final response = await _api.getAcademicEvents(year: year);
+  final data = response.data as Map<String, dynamic>;
+  final list = data['events'] as List<dynamic>? ?? [];
+  return list.cast<Map<String, dynamic>>();
+});
+

@@ -52,6 +52,7 @@ class _TopBarWidgetState extends ConsumerState<TopBarWidget> {
   Widget build(BuildContext context) {
     final notifications = ref.watch(notificationProvider);
     final themeMode = ref.watch(themeModeProvider);
+    final isMobile = MediaQuery.of(context).size.width < 850;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
@@ -64,43 +65,65 @@ class _TopBarWidgetState extends ConsumerState<TopBarWidget> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Container(
-            width: 400,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            decoration: BoxDecoration(
-              color: AppColors.getSurfaceColor(context),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.getBorderColor(context), width: 1),
-            ),
-            child: Row(
-              children: [
-                Icon(FeatherIcons.search, size: 20, color: AppColors.getBodyColor(context)),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: TextField(
-                    onChanged: (value) {
-                      ref.read(searchQueryProvider.notifier).set(value);
-                    },
-                    decoration: InputDecoration(
-                      hintText: 'Search assignments, subjects...',
-                      hintStyle: TextStyle(color: AppColors.getBodyColor(context), fontSize: 14),
-                      border: InputBorder.none,
-                      isDense: true,
-                      contentPadding: const EdgeInsets.symmetric(vertical: 12),
+          Row(
+            children: [
+              if (isMobile)
+                Padding(
+                  padding: const EdgeInsets.only(right: 12.0),
+                  child: InkWell(
+                    onTap: () => Scaffold.of(context).openDrawer(),
+                    borderRadius: BorderRadius.circular(12),
+                    child: Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: AppColors.getSurfaceColor(context),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: AppColors.getBorderColor(context), width: 1),
+                      ),
+                      child: Icon(FeatherIcons.menu, size: 20, color: AppColors.getHeadingColor(context)),
                     ),
-                    style: TextStyle(color: AppColors.getHeadingColor(context), fontSize: 14),
                   ),
                 ),
-                Text(
-                  '⌘K',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.getBodyColor(context),
-                  ),
+              Container(
+                constraints: BoxConstraints(maxWidth: isMobile ? MediaQuery.of(context).size.width * 0.4 : 400),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                decoration: BoxDecoration(
+                  color: AppColors.getSurfaceColor(context),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.getBorderColor(context), width: 1),
                 ),
-              ],
-            ),
+                child: Row(
+                  children: [
+                    Icon(FeatherIcons.search, size: 20, color: AppColors.getBodyColor(context)),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: TextField(
+                        onChanged: (value) {
+                          ref.read(searchQueryProvider.notifier).set(value);
+                        },
+                        decoration: InputDecoration(
+                          hintText: isMobile ? 'Search...' : 'Search assignments, subjects...',
+                          hintStyle: TextStyle(color: AppColors.getBodyColor(context), fontSize: 14),
+                          border: InputBorder.none,
+                          isDense: true,
+                          contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                        ),
+                        style: TextStyle(color: AppColors.getHeadingColor(context), fontSize: 14),
+                      ),
+                    ),
+                    if (!isMobile)
+                      Text(
+                        '⌘K',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.getBodyColor(context),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ],
           ),
           
           // Action Icons and Notifications
@@ -149,7 +172,7 @@ class _TopBarWidgetState extends ConsumerState<TopBarWidget> {
                    ),
                 ),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: 8),
               
               // Dark/Light Mode toggle
                InkWell(
@@ -173,7 +196,23 @@ class _TopBarWidgetState extends ConsumerState<TopBarWidget> {
                    ),
                  ),
                ),
-              const SizedBox(width: 16),
+              const SizedBox(width: 8),
+
+              if (isMobile)
+                InkWell(
+                  onTap: () => Scaffold.of(context).openEndDrawer(),
+                  borderRadius: BorderRadius.circular(12),
+                  child: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: AppColors.getSurfaceColor(context),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: AppColors.getBorderColor(context), width: 1),
+                    ),
+                    child: Icon(FeatherIcons.sidebar, size: 20, color: AppColors.getHeadingColor(context)),
+                  ),
+                ),
+              if (isMobile) const SizedBox(width: 8),
               
               InkWell(
                 onTap: () {
@@ -184,7 +223,7 @@ class _TopBarWidgetState extends ConsumerState<TopBarWidget> {
                 },
                 borderRadius: BorderRadius.circular(12),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  padding: EdgeInsets.symmetric(horizontal: isMobile ? 12 : 16, vertical: 10),
                   decoration: BoxDecoration(
                     gradient: AppColors.accentGradient,
                     borderRadius: BorderRadius.circular(12),
@@ -196,17 +235,18 @@ class _TopBarWidgetState extends ConsumerState<TopBarWidget> {
                       ),
                     ],
                   ),
-                  child: const Row(
+                  child: Row(
                     children: [
-                      Icon(Icons.add, color: Colors.white, size: 18),
-                      SizedBox(width: 8),
-                      Text(
-                        'Create New',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
+                      const Icon(Icons.add, color: Colors.white, size: 18),
+                      if (!isMobile) const SizedBox(width: 8),
+                      if (!isMobile)
+                        const Text(
+                          'Create New',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ),
                     ],
                   ),
                 ),

@@ -10,6 +10,9 @@ class ApiMessageModel {
   final String? fileName;
   final bool isPinned;
   final DateTime createdAt;
+  final int? parentId;
+  final String? parentContent;
+  final String? parentSenderName;
 
   ApiMessageModel({
     required this.id,
@@ -23,6 +26,9 @@ class ApiMessageModel {
     this.fileName,
     required this.isPinned,
     required this.createdAt,
+    this.parentId,
+    this.parentContent,
+    this.parentSenderName,
   });
 
   factory ApiMessageModel.fromJson(Map<String, dynamic> json) {
@@ -38,6 +44,9 @@ class ApiMessageModel {
       fileName: json['file_name'] as String?,
       isPinned: json['is_pinned'] as bool? ?? false,
       createdAt: DateTime.tryParse(json['created_at'] as String? ?? '') ?? DateTime.now(),
+      parentId: json['parent_id'] as int?,
+      parentContent: json['parent_content'] as String?,
+      parentSenderName: json['parent_sender_name'] as String?,
     );
   }
 }

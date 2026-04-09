@@ -1,6 +1,6 @@
 import 'package:socket_io_client/socket_io_client.dart' as IO;
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../config/app_config.dart';
+import 'storage_service.dart';
 
 class SocketService {
   static final SocketService _instance = SocketService._internal();
@@ -8,13 +8,13 @@ class SocketService {
   SocketService._internal();
 
   IO.Socket? _socket;
-  final _storage = const FlutterSecureStorage();
+  final _storage = StorageService();
 
   bool get isConnected => _socket?.connected ?? false;
 
   Future<void> connect() async {
     if (isConnected) return;
-    final token = await _storage.read(key: 'adtu_token');
+    final token = await _storage.read('adtu_token');
 
     _socket = IO.io(
       AppConfig.baseUrl,
@@ -50,17 +50,13 @@ class SocketService {
 
   void sendMessage({
     required int channelId,
-    required int senderId,
     required String content,
-    String? fileUrl,
-    String? fileName,
+    int? parentId,
   }) {
     _socket?.emit('message:send', {
       'channelId': channelId,
-      'senderId': senderId,
       'content': content,
-      if (fileUrl != null) 'file_url': fileUrl,
-      if (fileName != null) 'file_name': fileName,
+      if (parentId != null) 'parent_id': parentId,
     });
   }
 

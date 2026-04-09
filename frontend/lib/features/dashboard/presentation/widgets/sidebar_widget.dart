@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_feather_icons/flutter_feather_icons.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../core/theme/app_colors.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/task_provider.dart';
+import '../../../../features/auth/auth_provider.dart';
 
 class SidebarWidget extends ConsumerWidget {
   const SidebarWidget({super.key});
@@ -20,85 +22,89 @@ class SidebarWidget extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedIndex = ref.watch(navigationProvider);
-    
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
-      width: 240,
-      color: Theme.of(context).brightness == Brightness.dark 
-          ? AppColors.secondaryBackground 
-          : AppColors.lightSecondaryBackground,
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.secondaryBackground : AppColors.lightSecondaryBackground,
+      ),
       child: Column(
         children: [
+          SizedBox(height: MediaQuery.of(context).padding.top + 16),
+
           // Header Logo
-          Container(
-            padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 24),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    gradient: AppColors.accentGradient,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Icon(FeatherIcons.zap, color: Colors.white, size: 24),
-                ),
-                const SizedBox(width: 12),
-                Text(
-                  'EduNova',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.getHeadingColor(context),
-                    letterSpacing: 0.5,
-                  ),
-                ),
-              ],
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            child: SvgPicture.asset(
+              'assets/images/adtu_logo.svg',
+              height: 52,
+              fit: BoxFit.contain,
+              alignment: Alignment.centerLeft,
             ),
           ),
-          
-          const SizedBox(height: 20),
-          
+
+          const SizedBox(height: 8),
+          Divider(color: AppColors.getBorderColor(context), height: 1),
+          const SizedBox(height: 12),
+
           // Navigation Items
           Expanded(
             child: ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 12),
               itemCount: items.length,
               itemBuilder: (context, index) {
                 final item = items[index];
                 final isSelected = selectedIndex == index;
-                
+
                 return Padding(
-                  padding: const EdgeInsets.only(bottom: 8.0),
+                  padding: const EdgeInsets.only(bottom: 4.0),
                   child: InkWell(
                     borderRadius: BorderRadius.circular(12),
                     onTap: () {
                       ref.read(navigationProvider.notifier).navigateTo(index);
+                      // Auto-close drawer when inside a Drawer (mobile)
+                      if (Navigator.of(context).canPop()) {
+                        Navigator.of(context).pop();
+                      }
                     },
                     child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
-                      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+                      duration: const Duration(milliseconds: 180),
+                      padding: const EdgeInsets.symmetric(vertical: 13, horizontal: 16),
                       decoration: BoxDecoration(
-                        color: isSelected ? AppColors.accent.withOpacity(0.1) : Colors.transparent,
+                        color: isSelected ? AppColors.accent.withOpacity(0.12) : Colors.transparent,
                         borderRadius: BorderRadius.circular(12),
-                        border: isSelected 
-                          ? Border.all(color: AppColors.accent.withOpacity(0.3), width: 1)
-                          : null,
+                        border: isSelected
+                            ? Border.all(color: AppColors.accent.withOpacity(0.3), width: 1)
+                            : null,
                       ),
                       child: Row(
                         children: [
                           Icon(
                             item.icon,
-                            size: 22,
+                            size: 20,
                             color: isSelected ? AppColors.accent : AppColors.getBodyColor(context),
                           ),
-                          const SizedBox(width: 16),
+                          const SizedBox(width: 14),
                           Text(
                             item.title,
                             style: TextStyle(
-                              fontSize: 16,
+                              fontSize: 15,
                               fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                               color: isSelected ? AppColors.accent : AppColors.getBodyColor(context),
                             ),
                           ),
+                          if (isSelected) ...[
+                            const Spacer(),
+                            Container(
+                              width: 6,
+                              height: 6,
+                              decoration: BoxDecoration(
+                                color: AppColors.accent,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                          ],
                         ],
                       ),
                     ),
@@ -107,64 +113,68 @@ class SidebarWidget extends ConsumerWidget {
               },
             ),
           ),
-          
+
           // User Profile at bottom
           Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: InkWell(
-              onTap: () {
-                // Navigate to Settings/Profile (index 6)
-                ref.read(navigationProvider.notifier).navigateTo(6);
+            padding: const EdgeInsets.all(16.0),
+            child: Consumer(
+              builder: (context, ref, _) {
+                final authState = ref.watch(authProvider).value;
+                final userName = authState?.userName ?? 'Student';
+                final userRole = authState?.userRole ?? 'student';
+                final initials = userName.isNotEmpty ? userName[0].toUpperCase() : 'S';
+                return InkWell(
+                  onTap: () {
+                    ref.read(navigationProvider.notifier).navigateTo(6);
+                    if (Navigator.of(context).canPop()) Navigator.of(context).pop();
+                  },
+                  borderRadius: BorderRadius.circular(14),
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: AppColors.getSurfaceColor(context),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: AppColors.getBorderColor(context), width: 1),
+                    ),
+                    child: Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 18,
+                          backgroundColor: AppColors.accent.withOpacity(0.15),
+                          child: Text(initials, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.accent)),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                userName,
+                                style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.getHeadingColor(context)),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              Text(
+                                userRole[0].toUpperCase() + userRole.substring(1),
+                                style: TextStyle(fontSize: 11, color: AppColors.getBodyColor(context)),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Icon(FeatherIcons.logOut, size: 16, color: AppColors.getBodyColor(context)),
+                      ],
+                    ),
+                  ),
+                );
               },
-              borderRadius: BorderRadius.circular(16),
-              child: Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: AppColors.getSurfaceColor(context),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: AppColors.getBorderColor(context), width: 1),
-                ),
-                child: Row(
-                  children: [
-                     const CircleAvatar(
-                      radius: 20,
-                      backgroundImage: NetworkImage('https://i.pravatar.cc/150?img=11'),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'John Doe',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.getHeadingColor(context),
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          Text(
-                            'Student',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: AppColors.getBodyColor(context),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Icon(FeatherIcons.moreVertical, size: 18, color: AppColors.getBodyColor(context)),
-                  ],
-                ),
-              ),
             ),
           ),
+          SizedBox(height: MediaQuery.of(context).padding.bottom),
         ],
       ),
     );
   }
 }
+
 
 class SidebarItemModel {
   final IconData icon;

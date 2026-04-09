@@ -20,12 +20,63 @@ class MainDashboardScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedIndex = ref.watch(navigationProvider);
+    final isMobile = MediaQuery.of(context).size.width < 850;
 
     return Scaffold(
+      drawer: isMobile
+          ? Drawer(
+              width: 280,
+              backgroundColor: Theme.of(context).brightness == Brightness.dark
+                  ? AppColors.secondaryBackground
+                  : AppColors.lightSecondaryBackground,
+              child: const SidebarWidget(),
+            )
+          : null,
+      endDrawer: isMobile && selectedIndex == 0
+          ? Drawer(
+              width: 320,
+              backgroundColor: Theme.of(context).brightness == Brightness.dark
+                  ? AppColors.secondaryBackground
+                  : AppColors.lightSecondaryBackground,
+              child: SafeArea(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.campaign_rounded,
+                              color: AppColors.accent, size: 22),
+                          const SizedBox(width: 10),
+                          Text(
+                            'Announcements',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.getHeadingColor(context),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      Divider(color: AppColors.getBorderColor(context)),
+                      const SizedBox(height: 8),
+                      const AnnouncementsPanel(),
+                    ],
+                  ),
+                ),
+              ),
+            )
+          : null,
       body: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SidebarWidget(),
+          if (!isMobile)
+            const SizedBox(
+              width: 240,
+              child: SidebarWidget(),
+            ),
           Expanded(
             child: Column(
               children: [
@@ -36,7 +87,7 @@ class MainDashboardScreen extends ConsumerWidget {
               ],
             ),
           ),
-          if (selectedIndex == 0)
+          if (!isMobile && selectedIndex == 0)
             Container(
               width: 300,
               height: double.infinity,
