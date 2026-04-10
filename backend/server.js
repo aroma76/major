@@ -72,8 +72,8 @@ const loginLimiter = rateLimit({
 
 app.get('/api/health', (req, res) => res.json({ success: true, message: 'ADTU Collab API is running 🚀' }));
 
-app.use('/api/auth',                       authRoutes);
-app.post('/api/auth/login',                loginLimiter); // rate limit only on login
+app.use('/api/auth', authRoutes);
+
 app.use('/api/channels',                   channelRoutes);
 app.use('/api/channels/:id/messages',      messageRoutes);
 app.use('/api/channels/:id/files',         fileRoutes);
