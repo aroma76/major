@@ -4,91 +4,114 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../data/models/api_message_model.dart';
 import '../../../../core/services/api_service.dart';
 
-class MessagesNotifier extends AutoDisposeFamilyAsyncNotifier<List<ApiMessageModel>, int> {
-  bool _hasMore = true;
-  bool _isFetchingMore = false;
-  
-  bool get hasMore => _hasMore;
-  bool get isFetchingMore => _isFetchingMore;
+class MessagesState {
+  final List<ApiMessageModel> messages;
+  final bool isLoading;
+  final bool hasMore;
+  final bool isFetchingMore;
+  final String? error;
+
+  const MessagesState({
+    this.messages = const [],
+    this.isLoading = true,
+    this.hasMore = true,
+    this.isFetchingMore = false,
+    this.error,
+  });
+
+  MessagesState copyWith({
+    List<ApiMessageModel>? messages,
+    bool? isLoading,
+    bool? hasMore,
+    bool? isFetchingMore,
+    String? error,
+  }) =>
+      MessagesState(
+        messages: messages ?? this.messages,
+        isLoading: isLoading ?? this.isLoading,
+        hasMore: hasMore ?? this.hasMore,
+        isFetchingMore: isFetchingMore ?? this.isFetchingMore,
+        error: error,
+      );
+}
+
+/// Riverpod v3 family: argument is injected via constructor and stored as a
+/// final field. The [Notifier.state] getter/setter is provided by the base class.
+class MessagesNotifier extends Notifier<MessagesState> {
+  MessagesNotifier(this.channelId);
+
+  final int channelId;
 
   @override
-  Future<List<ApiMessageModel>> build(int channelId) async {
+  MessagesState build() {
+    Future.microtask(_init);
+    return const MessagesState();
+  }
+
+  Future<void> _init() async {
     final prefs = await SharedPreferences.getInstance();
     List<ApiMessageModel> cachedMsgs = [];
-    
-    // 1. Load from offline cache first (fast path)
+
     final cachedStr = prefs.getString('chat_cache_$channelId');
     if (cachedStr != null) {
       try {
         final List<dynamic> jsonList = jsonDecode(cachedStr);
         cachedMsgs = jsonList.map((e) => ApiMessageModel.fromJson(e)).toList();
+        state = state.copyWith(messages: cachedMsgs, isLoading: true);
       } catch (_) {}
     }
 
-    // Initialize state with cache immediately if available before fetching
-    if (cachedMsgs.isNotEmpty) {
-      state = AsyncValue.data(cachedMsgs);
-    }
-
-    // 2. Fetch fresh from network
     try {
       final response = await ApiService().getMessages(channelId, limit: 50);
       final data = response.data as Map<String, dynamic>;
       final list = data['messages'] as List<dynamic>? ?? [];
-      final msgs = list.map((e) => ApiMessageModel.fromJson(e as Map<String, dynamic>)).toList();
-      
-      if (msgs.length < 50) _hasMore = false;
-      
-      // Update cache
+      final msgs = list
+          .map((e) => ApiMessageModel.fromJson(e as Map<String, dynamic>))
+          .toList();
       prefs.setString('chat_cache_$channelId', jsonEncode(list));
-      
-      return msgs;
+      state = state.copyWith(
+        messages: msgs,
+        isLoading: false,
+        hasMore: msgs.length >= 50,
+        error: null,
+      );
     } catch (e) {
-      if (cachedMsgs.isNotEmpty) return cachedMsgs;
-      rethrow;
+      if (cachedMsgs.isNotEmpty) {
+        state = state.copyWith(messages: cachedMsgs, isLoading: false);
+      } else {
+        state = state.copyWith(isLoading: false, error: e.toString());
+      }
     }
   }
 
   void append(ApiMessageModel msg) {
-    if (state.value != null) {
-      state = AsyncValue.data([...state.value!, msg]);
-      // Silently update cache
-      SharedPreferences.getInstance().then((prefs) {
-        // Just cache the last 50 to prevent bloat
-        final subset = state.value!.length > 50 ? state.value!.sublist(state.value!.length - 50) : state.value!;
-        // Note: we'd need a toJson on model. Since we don't have it, we skip caching live appends for now, 
-        // they'll be cached next reload.
-      });
-    }
+    state = state.copyWith(messages: [...state.messages, msg]);
   }
 
   Future<void> loadMore() async {
-    if (!_hasMore || _isFetchingMore) return;
-    
-    final currentMsgs = state.value;
-    if (currentMsgs == null || currentMsgs.isEmpty) return;
-    
-    _isFetchingMore = true;
-    final cursorId = currentMsgs.first.id;
-    
+    if (!state.hasMore || state.isFetchingMore || state.messages.isEmpty) return;
+    state = state.copyWith(isFetchingMore: true);
+    final cursorId = state.messages.first.id;
     try {
-      final response = await ApiService().getMessages(arg, cursor: cursorId, limit: 50);
+      final response = await ApiService()
+          .getMessages(channelId, cursor: cursorId, limit: 50);
       final data = response.data as Map<String, dynamic>;
       final list = data['messages'] as List<dynamic>? ?? [];
-      final moreMsgs = list.map((e) => ApiMessageModel.fromJson(e as Map<String, dynamic>)).toList();
-      
-      if (moreMsgs.length < 50) _hasMore = false;
-      
-      state = AsyncValue.data([...moreMsgs, ...currentMsgs]);
-    } catch (e) {
-      // Ignore network errors on pagination
-    } finally {
-      _isFetchingMore = false;
+      final moreMsgs = list
+          .map((e) => ApiMessageModel.fromJson(e as Map<String, dynamic>))
+          .toList();
+      state = state.copyWith(
+        messages: [...moreMsgs, ...state.messages],
+        hasMore: moreMsgs.length >= 50,
+        isFetchingMore: false,
+      );
+    } catch (_) {
+      state = state.copyWith(isFetchingMore: false);
     }
   }
 }
 
-final messagesNotifierProvider =
-    AutoDisposeAsyncNotifierProviderFamily<MessagesNotifier, List<ApiMessageModel>, int>(
+final messagesNotifierProvider = NotifierProvider.autoDispose
+    .family<MessagesNotifier, MessagesState, int>(
   MessagesNotifier.new,
 );

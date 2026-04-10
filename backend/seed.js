@@ -268,15 +268,15 @@ async function seed() {
 
     // System users: admin + 2 teachers per faculty
     const sysUserRows = [
-      ['Admin ADTU', 'admin@adtu.in', 'ADMIN001', hashedPwd, 'admin', null, null, null, 'AA'],
+      ['Admin ADTU', 'admin@gmail.com', 'ADMIN001', hashedPwd, 'admin', null, null, null, 'AA'],
     ];
     // teacher slot index → [t1idx, t2idx] per faculty
     const teacherSlots = []; // teacherSlots[fi] = [idxInSysUsers for t1, idxInSysUsers for t2]
     facultiesData.forEach((_, fi) => {
       const tag = `F${String(fi + 1).padStart(2, '0')}`;
       teacherSlots.push([sysUserRows.length, sysUserRows.length + 1]);
-      sysUserRows.push(['Dr. Manoj Sarma',   `manoj.sarma.${tag}@adtu.in`,  `TCH-${tag}-01`, hashedPwd, 'faculty', null, null, null, 'MS']);
-      sysUserRows.push(['Prof. Anita Gogoi', `anita.gogoi.${tag}@adtu.in`, `TCH-${tag}-02`, hashedPwd, 'faculty', null, null, null, 'AG']);
+      sysUserRows.push(['Dr. Manoj Sarma',   `manoj.sarma.${tag}@gmail.com`,  `TCH-${tag}-01`, hashedPwd, 'faculty', null, null, null, 'MS']);
+      sysUserRows.push(['Prof. Anita Gogoi', `anita.gogoi.${tag}@gmail.com`, `TCH-${tag}-02`, hashedPwd, 'faculty', null, null, null, 'AG']);
     });
 
     // Programmes — build as flat list with back-reference to faculty index
@@ -311,7 +311,7 @@ async function seed() {
         const initials = name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
         const roll     = `ADTU/${bm.batchYear}-${gradYear}/${bm.progCode}/${String(idx + 1).padStart(3, '0')}`;
         const parts    = name.toLowerCase().split(' ');
-        const email    = `${parts[0]}.${parts[parts.length - 1]}.${bm.progCode.toLowerCase()}.${bm.batchYear}@adtu.in`;
+        const email    = `${parts[0]}.${parts[parts.length - 1]}.${bm.progCode.toLowerCase()}.${bm.batchYear}@gmail.com`;
         studentRows.push([name, email, roll, hashedPwd, role, bm.pi, bm.batchYear, bm.currentSem, initials]);
         studentMeta.push({ bi, name, email, roll });
       });

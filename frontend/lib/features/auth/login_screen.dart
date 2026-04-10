@@ -17,7 +17,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _passwordCtrl   = TextEditingController();
   final _formKey        = GlobalKey<FormState>();
 
-  bool _isLoading      = false;
   bool _obscurePassword = true;
 
   @override
@@ -29,18 +28,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   Future<void> _login() async {
     if (!_formKey.currentState!.validate()) return;
-    setState(() => _isLoading = true);
     await ref.read(authProvider.notifier).login(
           _identifierCtrl.text.trim(),
           _passwordCtrl.text.trim(),
         );
-    if (mounted) setState(() => _isLoading = false);
   }
 
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
     final error     = authState.value?.error;
+    final isLoading = ref.watch(authProvider.notifier).isLoggingIn;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -94,7 +92,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     style      : const TextStyle(color: AppColors.textHeading),
                     keyboardType: TextInputType.emailAddress,
                     decoration : _inputDeco(
-                      hint: 'e.g.  21CS001  or  john@adtu.in',
+                      hint: 'e.g.  21CS001  or  john@gmail.com',
                       icon: Icons.person_outline,
                     ),
                     validator: (v) => (v == null || v.trim().isEmpty)
@@ -172,14 +170,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     width : double.infinity,
                     height: 50,
                     child : ElevatedButton(
-                      onPressed: _isLoading ? null : _login,
+                      onPressed: isLoading ? null : _login,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.accent,
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10)),
                       ),
-                      child: _isLoading
+                      child: isLoading
                           ? const SizedBox(
                               width : 20, height: 20,
                               child : CircularProgressIndicator(

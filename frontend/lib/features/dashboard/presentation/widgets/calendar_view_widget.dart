@@ -38,7 +38,7 @@ class _CalendarViewWidgetState extends ConsumerState<CalendarViewWidget> {
     'holiday'  : FeatherIcons.sun,
     'semester' : FeatherIcons.bookOpen,
     'fest'     : FeatherIcons.star,
-    'workshop' : FeatherIcons.tool,
+    'workshop' : FeatherIcons.settings,
     'deadline' : FeatherIcons.clock,
     'other'    : FeatherIcons.calendar,
   };

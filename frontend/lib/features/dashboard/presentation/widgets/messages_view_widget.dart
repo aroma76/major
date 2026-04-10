@@ -86,7 +86,7 @@ class _MessagesViewWidgetState extends ConsumerState<MessagesViewWidget> {
   void _selectChannel(ChannelModel ch) {
     final prev = ref.read(selectedChannelProvider);
     if (prev != null) SocketService().leaveChannel(prev.id);
-    ref.read(selectedChannelProvider.notifier).state = ch;
+    ref.read(selectedChannelProvider.notifier).select(ch);
     setState(() => _replyingTo = null);
     SocketService().joinChannel(ch.id);
   }
@@ -316,7 +316,7 @@ class _ChatArea extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final messagesAsync = ref.watch(messagesNotifierProvider(channel.id));
+    final messagesState = ref.watch(messagesNotifierProvider(channel.id));
     final myId = AuthService().currentUser?['id']?.toString();
 
     return Column(
@@ -344,35 +344,36 @@ class _ChatArea extends ConsumerWidget {
 
         // ── Messages List ──────────────────────────────────────────────────
         Expanded(
-          child: messagesAsync.when(
-            loading: () => const Center(child: CircularProgressIndicator()),
-            error: (err, _) => Center(child: Text('Failed to load messages')),
-            data: (messages) {
-              if (messages.isEmpty) return Center(child: Text('No messages yet', style: GoogleFonts.outfit(color: AppColors.getBodyColor(context))));
-              return NotificationListener<ScrollNotification>(
-                onNotification: (ScrollNotification scrollInfo) {
-                  if (scrollInfo.metrics.pixels >= scrollInfo.metrics.maxScrollExtent - 200) {
-                     ref.read(messagesNotifierProvider(channel.id).notifier).loadMore();
-                  }
-                  return false;
-                },
-                child: ListView.builder(
-                  controller: scrollCtrl,
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-                  itemCount: messages.length,
-                  itemBuilder: (_, i) {
-                    final msg = messages[i];
-                    final isMe = msg.senderId.toString() == myId;
-                    return InkWell(
-                      onLongPress: () => onReply(msg),
-                      hoverColor: AppColors.getBorderColor(context).withOpacity(0.1),
-                      child: _MessageBubble(msg: msg, isMe: isMe),
-                    );
-                  },
-                ),
-              );
-            },
-          ),
+          child: messagesState.isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : messagesState.error != null && messagesState.messages.isEmpty
+                  ? Center(child: Text('Failed to load messages'))
+                  : () {
+                      final messages = messagesState.messages;
+                      if (messages.isEmpty) return Center(child: Text('No messages yet', style: GoogleFonts.outfit(color: AppColors.getBodyColor(context))));
+                      return NotificationListener<ScrollNotification>(
+                        onNotification: (ScrollNotification scrollInfo) {
+                          if (scrollInfo.metrics.pixels <= 200) {
+                             ref.read(messagesNotifierProvider(channel.id).notifier).loadMore();
+                          }
+                          return false;
+                        },
+                        child: ListView.builder(
+                          controller: scrollCtrl,
+                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                          itemCount: messages.length,
+                          itemBuilder: (_, i) {
+                            final msg = messages[i];
+                            final isMe = msg.senderId.toString() == myId;
+                            return InkWell(
+                              onLongPress: () => onReply(msg),
+                              hoverColor: AppColors.getBorderColor(context).withOpacity(0.1),
+                              child: _MessageBubble(msg: msg, isMe: isMe),
+                            );
+                          },
+                        ),
+                      );
+                    }(),
         ),
 
         // ── Typing Indicator ──────────────────────────────────────────────

@@ -1,5 +1,7 @@
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/services/auth_service.dart';
+import '../../../../core/services/api_service.dart';
 
 // ── Auth State ────────────────────────────────────────────────────────────────
 
@@ -36,19 +38,34 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
     return const AuthState(status: AuthStatus.unauthenticated);
   }
 
-  Future<void> login(String rollNumber, String dob) async {
-    state = const AsyncLoading();
-    state = await AsyncValue.guard(() async {
-      final user = await _auth.login(rollNumber, dob);
-      return AuthState(status: AuthStatus.authenticated, user: user);
-    });
+  /// Login — deliberately keeps state as AsyncData so _AuthGate never
+  /// navigates away from LoginScreen. Loading is signalled via [isLoggingIn].
+  bool isLoggingIn = false;
 
-    if (state.hasError) {
+  Future<void> login(String identifier, String password) async {
+    isLoggingIn = true;
+    // Emit current data (unauthenticated) to refresh isLoggingIn flag
+    state = AsyncData(AuthState(status: AuthStatus.unauthenticated));
+
+    try {
+      final user = await _auth.login(identifier, password);
+      isLoggingIn = false;
+      state = AsyncData(AuthState(status: AuthStatus.authenticated, user: user));
+    } catch (e) {
+      isLoggingIn = false;
       state = AsyncData(AuthState(
         status: AuthStatus.unauthenticated,
-        error: _parseError(state.error),
+        error: _parseError(e),
       ));
     }
+  }
+
+  Future<void> changePassword(String currentPassword, String newPassword) async {
+    final api = ApiService();
+    await api.dio.post(
+      '/auth/change-password',
+      data: {'currentPassword': currentPassword, 'newPassword': newPassword},
+    );
   }
 
   Future<void> logout() async {
@@ -59,9 +76,22 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
   }
 
   String _parseError(Object? e) {
-    return e?.toString().contains('401') == true
-        ? 'Invalid roll number or date of birth.'
-        : 'Login failed. Please check your connection.';
+    if (e is DioException) {
+      final data = e.response?.data;
+      if (data is Map && data['message'] != null) {
+        return data['message'] as String;
+      }
+      switch (e.response?.statusCode) {
+        case 400: return 'Roll Number / Email and password are required.';
+        case 401: return 'Incorrect roll number / email or password.';
+        case 404: return 'No account found with that Roll Number or Email.';
+      }
+      if (e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.receiveTimeout) {
+        return 'Connection timed out. Please check your internet.';
+      }
+    }
+    return 'Login failed. Please check your connection and try again.';
   }
 }
 

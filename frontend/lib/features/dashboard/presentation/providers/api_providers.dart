@@ -82,8 +82,16 @@ final apiNotificationsProvider =
 
 // ── Selected channel for Messages view ────────────────────────────────────────
 
+class _SelectedChannelNotifier extends Notifier<ChannelModel?> {
+  @override
+  ChannelModel? build() => null;
+  void select(ChannelModel? ch) => state = ch;
+}
+
 final selectedChannelProvider =
-    StateProvider<ChannelModel?>((ref) => null);
+    NotifierProvider<_SelectedChannelNotifier, ChannelModel?>(
+  _SelectedChannelNotifier.new,
+);
 
 // ── Projects ──────────────────────────────────────────────────────────────────
 
