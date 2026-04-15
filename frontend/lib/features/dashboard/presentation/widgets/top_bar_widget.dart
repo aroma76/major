@@ -29,8 +29,6 @@ class _TopBarWidgetState extends ConsumerState<TopBarWidget> {
 
   OverlayEntry _createOverlayEntry() {
     RenderBox renderBox = context.findRenderObject() as RenderBox;
-    var size = renderBox.size;
-
     return OverlayEntry(
       builder: (context) => Positioned(
         width: 350,
@@ -52,9 +50,21 @@ class _TopBarWidgetState extends ConsumerState<TopBarWidget> {
   Widget build(BuildContext context) {
     final notifications = ref.watch(notificationProvider);
     final themeMode = ref.watch(themeModeProvider);
+    final selectedIndex = ref.watch(navigationProvider);
     final isMobile = MediaQuery.of(context).size.width < 850;
 
-    return Container(
+    const sectionTitles = [
+      'Dashboard', 'Subjects', 'Assignments',
+      'Projects', 'Calendar', 'Messages', 'Settings',
+    ];
+    final currentTitle = selectedIndex < sectionTitles.length
+        ? sectionTitles[selectedIndex]
+        : 'Dashboard';
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       decoration: BoxDecoration(
         color: AppColors.getBackgroundColor(context),
@@ -65,6 +75,7 @@ class _TopBarWidgetState extends ConsumerState<TopBarWidget> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
+
           Row(
             children: [
               if (isMobile)
@@ -255,8 +266,47 @@ class _TopBarWidgetState extends ConsumerState<TopBarWidget> {
           ),
         ],
       ),
+    ),
+    // ── Breadcrumb bar ───────────────────────────────────────────────────
+    Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+      decoration: BoxDecoration(
+        color: AppColors.getSurfaceColor(context),
+        border: Border(
+          bottom: BorderSide(color: AppColors.getBorderColor(context), width: 1),
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.home_outlined, size: 13, color: AppColors.getBodyColor(context)),
+          const SizedBox(width: 5),
+          Text(
+            'ADTU Collab',
+            style: TextStyle(
+              fontSize: 12,
+              color: AppColors.getBodyColor(context),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 6),
+            child: Icon(Icons.chevron_right, size: 14, color: AppColors.getBodyColor(context)),
+          ),
+          Text(
+            currentTitle,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: AppColors.accent,
+            ),
+          ),
+        ],
+      ),
+    ),
+      ],
     );
   }
+
 
   @override
   void dispose() {

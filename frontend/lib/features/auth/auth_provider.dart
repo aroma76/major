@@ -68,6 +68,22 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
     );
   }
 
+  Future<void> updateProfile({String? name, String? dob}) async {
+    if (name == null && dob == null) return;
+    final api = ApiService();
+    final data = <String, dynamic>{};
+    if (name != null && name.isNotEmpty) data['name'] = name;
+    if (dob  != null && dob.isNotEmpty)  data['dob']  = dob;
+    final response = await api.dio.put('/auth/profile', data: data);
+    final updatedUser = response.data['user'] as Map<String, dynamic>;
+    // Merge into current state so UI reflects the change immediately
+    final current = state.value;
+    if (current != null) {
+      final merged = Map<String, dynamic>.from(current.user ?? {})..addAll(updatedUser);
+      state = AsyncData(AuthState(status: AuthStatus.authenticated, user: merged));
+    }
+  }
+
   Future<void> logout() async {
     await _auth.logout();
     state = const AsyncData(

@@ -77,16 +77,24 @@ const getMe = async (req, res) => res.json({ success: true, user: req.user });
 
 // ─── Update Profile ──────────────────────────────────────────────────────────
 const updateProfile = async (req, res) => {
-  const { name } = req.body;
+  const { name, dob } = req.body;
   const avatar_url = req.file?.path || null;
   const fields = []; const values = []; let idx = 1;
-  if (name)       { fields.push(`name = $${idx++}`);       values.push(name); }
+  if (name) {
+    fields.push(`name = $${idx++}`);
+    values.push(name);
+    // Auto-update initials when name changes
+    const initials = name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+    fields.push(`avatar_initials = $${idx++}`);
+    values.push(initials);
+  }
+  if (dob)        { fields.push(`dob = $${idx++}`);        values.push(dob); }
   if (avatar_url) { fields.push(`avatar_url = $${idx++}`); values.push(avatar_url); }
   if (!fields.length) return res.status(400).json({ success: false, message: 'No fields to update' });
   values.push(req.user.id);
   const result = await pool.query(
     `UPDATE users SET ${fields.join(', ')} WHERE id = $${idx}
-     RETURNING id, name, email, role, roll_number, avatar_url, avatar_initials`,
+     RETURNING id, name, email, role, roll_number, avatar_url, avatar_initials, dob, batch_year, current_semester`,
     values
   );
   res.json({ success: true, user: result.rows[0] });

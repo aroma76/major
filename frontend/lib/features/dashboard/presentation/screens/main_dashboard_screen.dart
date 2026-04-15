@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../widgets/sidebar_widget.dart';
 import '../widgets/top_bar_widget.dart';
-import '../widgets/kanban_board_widget.dart';
-import '../widgets/overview_cards_widget.dart';
 import '../widgets/announcements_panel.dart';
 import '../widgets/calendar_view_widget.dart';
 import '../widgets/subjects_view_widget.dart';
@@ -11,6 +9,7 @@ import '../widgets/assignments_view_widget.dart';
 import '../widgets/projects_view_widget.dart';
 import '../widgets/messages_view_widget.dart';
 import '../widgets/settings_view_widget.dart';
+import '../widgets/today_overview_widget.dart';
 import '../providers/task_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 
@@ -131,18 +130,7 @@ class MainDashboardScreen extends ConsumerWidget {
   }
 
   Widget _buildDashboardView(BuildContext context) {
-    return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const OverviewCardsWidget(),
-            const SizedBox(height: 32),
-            const KanbanBoardWidget(),
-          ],
-        ),
-      ),
-    );
+    return const TodayOverviewWidget();
   }
 }
+

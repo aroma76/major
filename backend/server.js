@@ -34,6 +34,7 @@ const allowedOrigins = [
   'https://major-three-tau.vercel.app',  // Flutter Web on Vercel
   /\.vercel\.app$/,        // allow all Vercel preview/branch URLs
   /^http:\/\/localhost:\d+$/,  // allow ALL localhost ports (Flutter picks random ports)
+  /^http:\/\/127\.0\.0\.1:\d+$/, // allow 127.0.0.1 explicitly
 ].filter(Boolean);
 
 const corsOptions = {

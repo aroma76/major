@@ -16,7 +16,7 @@ class CalendarViewWidget extends ConsumerStatefulWidget {
 }
 
 class _CalendarViewWidgetState extends ConsumerState<CalendarViewWidget> {
-  CalendarFormat _calendarFormat = CalendarFormat.month;
+  final CalendarFormat _calendarFormat = CalendarFormat.month;
   DateTime       _focusedDay     = DateTime.now();
   DateTime?      _selectedDay;
   String         _filterType     = 'all';
@@ -187,8 +187,7 @@ class _CalendarViewWidgetState extends ConsumerState<CalendarViewWidget> {
                     // Load next/prev year's events automatically
                     ref.invalidate(academicEventsProvider(focusedDay.year));
                   },
-                  onFormatChanged: (format) =>
-                      setState(() => _calendarFormat = format),
+                  availableCalendarFormats: const {CalendarFormat.month: 'Month'},
                   eventLoader: (day) => _eventsOnDay(filtered, day),
                   calendarBuilders: CalendarBuilders(
                     markerBuilder: (context, day, events) {
@@ -224,7 +223,7 @@ class _CalendarViewWidgetState extends ConsumerState<CalendarViewWidget> {
                         color: AppColors.getBodyColor(context).withOpacity(0.5)),
                   ),
                   headerStyle: HeaderStyle(
-                    formatButtonVisible  : true,
+                    formatButtonVisible  : false,
                     titleCentered        : true,
                     titleTextStyle       : GoogleFonts.outfit(
                         color     : AppColors.getHeadingColor(context),

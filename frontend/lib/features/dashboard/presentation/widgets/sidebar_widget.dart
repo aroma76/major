@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/task_provider.dart';
 import '../../../../features/auth/auth_provider.dart';
 
+
 class SidebarWidget extends ConsumerWidget {
   const SidebarWidget({super.key});
 
@@ -16,8 +17,8 @@ class SidebarWidget extends ConsumerWidget {
     SidebarItemModel(icon: FeatherIcons.folder, title: 'Projects'),
     SidebarItemModel(icon: FeatherIcons.calendar, title: 'Calendar'),
     SidebarItemModel(icon: FeatherIcons.messageSquare, title: 'Messages'),
-    SidebarItemModel(icon: FeatherIcons.settings, title: 'Settings'),
   ];
+
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -56,6 +57,12 @@ class SidebarWidget extends ConsumerWidget {
               itemBuilder: (context, index) {
                 final item = items[index];
                 final isSelected = selectedIndex == index;
+                // Compute unread badge for Messages (index 5)
+                int unreadCount = 0;
+                if (index == 5) {
+                  final chats = ref.watch(chatProvider);
+                  unreadCount = chats.fold(0, (sum, c) => sum + c.unreadCount);
+                }
 
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 4.0),
@@ -86,16 +93,34 @@ class SidebarWidget extends ConsumerWidget {
                             color: isSelected ? AppColors.accent : AppColors.getBodyColor(context),
                           ),
                           const SizedBox(width: 14),
-                          Text(
-                            item.title,
-                            style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                              color: isSelected ? AppColors.accent : AppColors.getBodyColor(context),
+                          Expanded(
+                            child: Text(
+                              item.title,
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                                color: isSelected ? AppColors.accent : AppColors.getBodyColor(context),
+                              ),
                             ),
                           ),
-                          if (isSelected) ...[
-                            const Spacer(),
+                          // Unread badge for Messages
+                          if (unreadCount > 0)
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: Colors.red,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Text(
+                                '$unreadCount',
+                                style: const TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            )
+                          else if (isSelected)
                             Container(
                               width: 6,
                               height: 6,
@@ -104,7 +129,6 @@ class SidebarWidget extends ConsumerWidget {
                                 shape: BoxShape.circle,
                               ),
                             ),
-                          ],
                         ],
                       ),
                     ),
@@ -123,46 +147,103 @@ class SidebarWidget extends ConsumerWidget {
                 final userName = authState?.userName ?? 'Student';
                 final userRole = authState?.userRole ?? 'student';
                 final initials = userName.isNotEmpty ? userName[0].toUpperCase() : 'S';
-                return InkWell(
-                  onTap: () {
-                    ref.read(navigationProvider.notifier).navigateTo(6);
-                    if (Navigator.of(context).canPop()) Navigator.of(context).pop();
-                  },
-                  borderRadius: BorderRadius.circular(14),
-                  child: Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: AppColors.getSurfaceColor(context),
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: AppColors.getBorderColor(context), width: 1),
-                    ),
-                    child: Row(
-                      children: [
-                        CircleAvatar(
-                          radius: 18,
-                          backgroundColor: AppColors.accent.withOpacity(0.15),
-                          child: Text(initials, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.accent)),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                return Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: AppColors.getSurfaceColor(context),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: AppColors.getBorderColor(context), width: 1),
+                  ),
+                  child: Row(
+                    children: [
+                      // Profile area → go to Settings
+                      Expanded(
+                        child: InkWell(
+                          onTap: () {
+                            ref.read(navigationProvider.notifier).navigateTo(6);
+                            if (Navigator.of(context).canPop()) Navigator.of(context).pop();
+                          },
+                          borderRadius: BorderRadius.circular(10),
+                          child: Row(
                             children: [
-                              Text(
-                                userName,
-                                style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.getHeadingColor(context)),
-                                overflow: TextOverflow.ellipsis,
+                              CircleAvatar(
+                                radius: 18,
+                                backgroundColor: AppColors.accent.withOpacity(0.15),
+                                child: Text(initials, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.accent)),
                               ),
-                              Text(
-                                userRole[0].toUpperCase() + userRole.substring(1),
-                                style: TextStyle(fontSize: 11, color: AppColors.getBodyColor(context)),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      userName,
+                                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.getHeadingColor(context)),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    Text(
+                                      userRole[0].toUpperCase() + userRole.substring(1),
+                                      style: TextStyle(fontSize: 11, color: AppColors.getBodyColor(context)),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ],
                           ),
                         ),
-                        Icon(FeatherIcons.logOut, size: 16, color: AppColors.getBodyColor(context)),
-                      ],
-                    ),
+                      ),
+                      const SizedBox(width: 8),
+                      // Settings button
+                      Tooltip(
+                        message: 'Settings',
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(8),
+                          onTap: () {
+                            ref.read(navigationProvider.notifier).navigateTo(6);
+                            if (Navigator.of(context).canPop()) Navigator.of(context).pop();
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.all(6),
+                            child: Icon(FeatherIcons.settings, size: 17, color: AppColors.getBodyColor(context)),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      // Logout button — clearly tappable
+
+                      Tooltip(
+                        message: 'Logout',
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(8),
+                          onTap: () async {
+                            final confirm = await showDialog<bool>(
+                              context: context,
+                              builder: (ctx) => AlertDialog(
+                                backgroundColor: AppColors.getSurfaceColor(context),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                                title: Text('Sign Out', style: TextStyle(color: AppColors.getHeadingColor(context), fontWeight: FontWeight.bold)),
+                                content: Text('Are you sure you want to sign out?', style: TextStyle(color: AppColors.getBodyColor(context))),
+                                actions: [
+                                  TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+                                  ElevatedButton(
+                                    onPressed: () => Navigator.pop(ctx, true),
+                                    style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
+                                    child: const Text('Sign Out'),
+                                  ),
+                                ],
+                              ),
+                            );
+                            if (confirm == true) {
+                              await ref.read(authProvider.notifier).logout();
+                            }
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.all(6),
+                            child: Icon(FeatherIcons.logOut, size: 17, color: Colors.red.shade400),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 );
               },

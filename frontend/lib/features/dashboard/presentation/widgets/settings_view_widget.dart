@@ -2,35 +2,88 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_feather_icons/flutter_feather_icons.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../providers/task_provider.dart';
 import '../../../../features/auth/auth_provider.dart';
 
 class SettingsViewWidget extends ConsumerWidget {
   const SettingsViewWidget({super.key});
 
-  void _showEditProfile(BuildContext context) {
+  void _showEditProfile(BuildContext context, WidgetRef ref) {
+    final authState = ref.read(authProvider).value;
+    final nameCtrl = TextEditingController(text: authState?.userName ?? '');
+    final dobCtrl  = TextEditingController(
+      text: authState?.user?['dob'] != null
+          ? (authState!.user!['dob'] as String).substring(0, 10)
+          : '',
+    );
+    final email      = authState?.user?['email']       as String? ?? '';
+    final rollNumber = authState?.user?['roll_number']  as String? ?? '';
+    bool isLoading = false;
+    String? errorMsg;
+
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppColors.getSurfaceColor(context),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        title: Text('Edit Profile', style: TextStyle(color: AppColors.getHeadingColor(context), fontWeight: FontWeight.bold)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _buildDialogField(context, 'Full Name', 'John Doe'),
-            const SizedBox(height: 16),
-            _buildDialogField(context, 'Bio', 'Software Engineering Student'),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          backgroundColor: AppColors.getSurfaceColor(context),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          title: Text('Edit Profile',
+              style: TextStyle(color: AppColors.getHeadingColor(context), fontWeight: FontWeight.bold)),
+          content: SizedBox(
+            width: 420,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (errorMsg != null)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: Text(errorMsg!, style: const TextStyle(color: Colors.red, fontSize: 13)),
+                  ),
+                _buildDialogField(context, 'Full Name', 'e.g. Aryan Sharma', controller: nameCtrl),
+                const SizedBox(height: 14),
+                _buildDialogField(context, 'Date of Birth', 'YYYY-MM-DD', controller: dobCtrl,
+                    hint: 'e.g. 2003-05-26'),
+                const SizedBox(height: 14),
+                _buildReadOnlyField(context, 'Email Address', email),
+                const SizedBox(height: 14),
+                if (rollNumber.isNotEmpty) _buildReadOnlyField(context, 'Roll Number', rollNumber),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: isLoading ? null : () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: isLoading
+                  ? null
+                  : () async {
+                      setState(() { isLoading = true; errorMsg = null; });
+                      try {
+                        await ref.read(authProvider.notifier).updateProfile(
+                          name: nameCtrl.text.trim(),
+                          dob:  dobCtrl.text.trim(),
+                        );
+                        if (context.mounted) {
+                          Navigator.pop(context);
+                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                            content: Text('Profile updated!', style: TextStyle(color: Colors.white)),
+                            backgroundColor: Colors.green,
+                          ));
+                        }
+                      } catch (e) {
+                        setState(() { isLoading = false; errorMsg = 'Failed to update. Please try again.'; });
+                      }
+                    },
+              style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.accent, foregroundColor: Colors.white),
+              child: isLoading
+                  ? const SizedBox(width: 16, height: 16,
+                      child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                  : const Text('Save Changes'),
+            ),
           ],
         ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context),
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.accent, foregroundColor: Colors.white),
-            child: const Text('Save Changes'),
-          ),
-        ],
       ),
     );
   }
@@ -132,7 +185,8 @@ class SettingsViewWidget extends ConsumerWidget {
     );
   }
 
-  Widget _buildDialogField(BuildContext context, String label, String hint, {bool obscure = false, TextEditingController? controller}) {
+  Widget _buildDialogField(BuildContext context, String label, String placeholder,
+      {bool obscure = false, TextEditingController? controller, String? hint}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -143,12 +197,38 @@ class SettingsViewWidget extends ConsumerWidget {
           obscureText: obscure,
           style: TextStyle(color: AppColors.getHeadingColor(context), fontSize: 14),
           decoration: InputDecoration(
-            hintText: hint,
+            hintText: hint ?? placeholder,
             hintStyle: TextStyle(color: AppColors.getBodyColor(context).withOpacity(0.5)),
             filled: true,
             fillColor: AppColors.getBackgroundColor(context),
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildReadOnlyField(BuildContext context, String label, String value) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: TextStyle(color: AppColors.getHeadingColor(context), fontSize: 13, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 8),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: AppColors.getBorderColor(context).withOpacity(0.3),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(value, style: TextStyle(color: AppColors.getBodyColor(context), fontSize: 14)),
+              ),
+              Icon(Icons.lock_outline, size: 14, color: AppColors.getBodyColor(context).withOpacity(0.4)),
+            ],
           ),
         ),
       ],
@@ -217,7 +297,7 @@ class SettingsViewWidget extends ConsumerWidget {
                     ),
                   ),
                   ElevatedButton(
-                    onPressed: () => _showEditProfile(context),
+                    onPressed: () => _showEditProfile(context, ref),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.getBorderColor(context),
                       foregroundColor: AppColors.getHeadingColor(context),

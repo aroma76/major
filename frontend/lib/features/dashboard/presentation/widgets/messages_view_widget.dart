@@ -170,11 +170,15 @@ class _MessagesViewWidgetState extends ConsumerState<MessagesViewWidget> {
     final channelsAsync    = ref.watch(channelsProvider);
     final selectedChannel  = ref.watch(selectedChannelProvider);
 
-    return Row(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final panelWidth = (constraints.maxWidth * 0.28).clamp(240.0, 340.0);
+        return Row(
       children: [
         // ── Left: Channel List ───────────────────────────────────────────
         Container(
-          width: 320,
+          width: panelWidth,
+
           decoration: BoxDecoration(border: Border(right: BorderSide(color: AppColors.getBorderColor(context)))),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -232,8 +236,11 @@ class _MessagesViewWidgetState extends ConsumerState<MessagesViewWidget> {
         ),
       ],
     );
+      },
+    );
   }
 }
+
 
 // ─────────────────────────────────────────────────────────────────────────────
 class _ChannelTile extends StatelessWidget {
@@ -394,11 +401,41 @@ class _ChatArea extends ConsumerWidget {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-class _MessageBubble extends StatelessWidget {
+class _MessageBubble extends StatefulWidget {
   final ApiMessageModel msg;
   final bool isMe;
 
   const _MessageBubble({required this.msg, required this.isMe});
+
+  @override
+  State<_MessageBubble> createState() => _MessageBubbleState();
+}
+
+class _MessageBubbleState extends State<_MessageBubble> {
+  static const _emojis = ['👍', '❤️', '😂', '🔥', '👀'];
+  final Map<String, int> _reactions = {};
+  String? _myReaction;
+  bool _showPicker = false;
+
+  void _togglePicker() => setState(() => _showPicker = !_showPicker);
+
+  void _react(String emoji) {
+    setState(() {
+      if (_myReaction == emoji) {
+        _reactions[emoji] = (_reactions[emoji] ?? 1) - 1;
+        if (_reactions[emoji]! <= 0) _reactions.remove(emoji);
+        _myReaction = null;
+      } else {
+        if (_myReaction != null) {
+          _reactions[_myReaction!] = (_reactions[_myReaction!] ?? 1) - 1;
+          if (_reactions[_myReaction!]! <= 0) _reactions.remove(_myReaction!);
+        }
+        _myReaction = emoji;
+        _reactions[emoji] = (_reactions[emoji] ?? 0) + 1;
+      }
+      _showPicker = false;
+    });
+  }
 
   static IconData _fileIcon(String? name) {
     final ext = name?.split('.').last.toLowerCase() ?? '';
@@ -409,9 +446,16 @@ class _MessageBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final msg = widget.msg;
+    final isMe = widget.isMe;
     final bubbleColor = isMe ? AppColors.accent : AppColors.getBorderColor(context).withOpacity(0.15);
     final textColor = isMe ? Colors.white : AppColors.getHeadingColor(context);
-    final radius = BorderRadius.only(topLeft: const Radius.circular(16), topRight: const Radius.circular(16), bottomLeft: Radius.circular(isMe ? 16 : 0), bottomRight: Radius.circular(isMe ? 0 : 16));
+    final radius = BorderRadius.only(
+      topLeft: const Radius.circular(16),
+      topRight: const Radius.circular(16),
+      bottomLeft: Radius.circular(isMe ? 16 : 0),
+      bottomRight: Radius.circular(isMe ? 0 : 16),
+    );
     final time = '${msg.createdAt.hour}:${msg.createdAt.minute.toString().padLeft(2, '0')}';
     final isFaculty = msg.senderRole == 'faculty';
 
@@ -457,41 +501,122 @@ class _MessageBubble extends StatelessWidget {
                 ),
               ),
 
-            // File or Text Content
-            if (msg.fileUrl != null && msg.fileUrl!.isNotEmpty)
-              GestureDetector(
-                onTap: () async {
-                  final uri = Uri.parse(msg.fileUrl!);
-                  if (await canLaunchUrl(uri)) launchUrl(uri, mode: LaunchMode.externalApplication);
-                },
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                  decoration: BoxDecoration(color: bubbleColor, borderRadius: radius),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(_fileIcon(msg.fileName), color: textColor, size: 22),
-                      const SizedBox(width: 10),
-                      Flexible(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+            // Long press for reactions
+            GestureDetector(
+              onLongPress: _togglePicker,
+              child: Column(
+                crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                children: [
+                  // File or Text Content
+                  if (msg.fileUrl != null && msg.fileUrl!.isNotEmpty)
+                    GestureDetector(
+                      onTap: () async {
+                        final uri = Uri.parse(msg.fileUrl!);
+                        if (await canLaunchUrl(uri)) launchUrl(uri, mode: LaunchMode.externalApplication);
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                        decoration: BoxDecoration(color: bubbleColor, borderRadius: radius),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            Text(msg.fileName ?? 'attachment', style: GoogleFonts.outfit(color: textColor, fontSize: 13, fontWeight: FontWeight.w600), overflow: TextOverflow.ellipsis),
-                            const SizedBox(height: 2),
-                            Text('Tap to open', style: GoogleFonts.outfit(color: textColor.withOpacity(0.7), fontSize: 10)),
+                            Icon(_fileIcon(msg.fileName), color: textColor, size: 22),
+                            const SizedBox(width: 10),
+                            Flexible(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(msg.fileName ?? 'attachment', style: GoogleFonts.outfit(color: textColor, fontSize: 13, fontWeight: FontWeight.w600), overflow: TextOverflow.ellipsis),
+                                  const SizedBox(height: 2),
+                                  Text('Tap to open', style: GoogleFonts.outfit(color: textColor.withOpacity(0.7), fontSize: 10)),
+                                ],
+                              ),
+                            ),
                           ],
                         ),
                       ),
-                    ],
-                  ),
-                ),
-              )
-            else
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                decoration: BoxDecoration(color: bubbleColor, borderRadius: radius),
-                child: Text(msg.content ?? '', style: GoogleFonts.outfit(color: textColor, fontSize: 14)),
+                    )
+                  else
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      decoration: BoxDecoration(color: bubbleColor, borderRadius: radius),
+                      child: Text(msg.content ?? '', style: GoogleFonts.outfit(color: textColor, fontSize: 14)),
+                    ),
+
+                  // Emoji Picker popup
+                  if (_showPicker)
+                    Container(
+                      margin: const EdgeInsets.only(top: 4),
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: AppColors.getSurfaceColor(context),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: AppColors.getBorderColor(context)),
+                        boxShadow: [
+                          BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 12, offset: const Offset(0, 4)),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: _emojis.map((e) {
+                          final isSelected = _myReaction == e;
+                          return GestureDetector(
+                            onTap: () => _react(e),
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 120),
+                              margin: const EdgeInsets.symmetric(horizontal: 2),
+                              padding: const EdgeInsets.all(6),
+                              decoration: BoxDecoration(
+                                color: isSelected ? AppColors.accent.withOpacity(0.15) : Colors.transparent,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Text(e, style: const TextStyle(fontSize: 18)),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ),
+
+                  // Reaction pills
+                  if (_reactions.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Wrap(
+                        spacing: 4,
+                        children: _reactions.entries.map((entry) {
+                          final isSelected = _myReaction == entry.key;
+                          return GestureDetector(
+                            onTap: () => _react(entry.key),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                              decoration: BoxDecoration(
+                                color: isSelected
+                                    ? AppColors.accent.withOpacity(0.15)
+                                    : AppColors.getSurfaceColor(context),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: isSelected
+                                      ? AppColors.accent.withOpacity(0.4)
+                                      : AppColors.getBorderColor(context),
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(entry.key, style: const TextStyle(fontSize: 12)),
+                                  const SizedBox(width: 4),
+                                  Text('${entry.value}',
+                                      style: TextStyle(fontSize: 11, color: isSelected ? AppColors.accent : AppColors.getBodyColor(context), fontWeight: FontWeight.w600)),
+                                ],
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                ],
               ),
+            ),
 
             const SizedBox(height: 5),
             Row(
@@ -508,6 +633,7 @@ class _MessageBubble extends StatelessWidget {
     );
   }
 }
+
 
 // ─────────────────────────────────────────────────────────────────────────────
 class _InputBar extends StatelessWidget {
