@@ -498,6 +498,7 @@ class _MessageBubbleState extends State<_MessageBubble> {
   final Map<String, int> _reactions = {};
   String? _myReaction;
   bool _showPicker = false;
+  bool _isStarred = false;
 
   void _togglePicker() => setState(() => _showPicker = !_showPicker);
 
@@ -540,7 +541,6 @@ class _MessageBubbleState extends State<_MessageBubble> {
           child: Stack(
             alignment: Alignment.center,
             children: [
-              // Zoomable Image Viewer
               InteractiveViewer(
                 panEnabled: true,
                 minScale: 0.5,
@@ -555,7 +555,6 @@ class _MessageBubbleState extends State<_MessageBubble> {
                   ),
                 ),
               ),
-              // Close Button
               Positioned(
                 top: 0,
                 right: 0,
@@ -569,11 +568,21 @@ class _MessageBubbleState extends State<_MessageBubble> {
         ),
       );
     } else {
-      // For PDFs/docs, open in a new browser tab to use the browser's native viewer
       final uri = Uri.parse(url);
       if (await canLaunchUrl(uri)) {
         launchUrl(uri, webOnlyWindowName: '_blank');
       }
+    }
+  }
+
+  void _downloadFile(String url) async {
+    // Force download via Cloudinary's fl_attachment flag; works for any file type
+    final downloadUrl = url.contains('cloudinary.com')
+        ? '${url.split('?').first}?fl_attachment=true'
+        : url;
+    final uri = Uri.parse(downloadUrl);
+    if (await canLaunchUrl(uri)) {
+      launchUrl(uri, webOnlyWindowName: '_blank');
     }
   }
 
@@ -642,28 +651,76 @@ class _MessageBubbleState extends State<_MessageBubble> {
                 children: [
                   // File or Text Content
                   if (msg.fileUrl != null && msg.fileUrl!.isNotEmpty)
-                    GestureDetector(
-                      onTap: () => _showFileViewer(context, msg.fileUrl!, msg.fileName),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                        decoration: BoxDecoration(color: bubbleColor, borderRadius: radius),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(_fileIcon(msg.fileName), color: textColor, size: 22),
-                            const SizedBox(width: 10),
-                            Flexible(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(msg.fileName ?? 'attachment', style: GoogleFonts.outfit(color: textColor, fontSize: 13, fontWeight: FontWeight.w600), overflow: TextOverflow.ellipsis),
-                                  const SizedBox(height: 2),
-                                  Text('Tap to open', style: GoogleFonts.outfit(color: textColor.withValues(alpha: 0.7), fontSize: 10)),
-                                ],
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      decoration: BoxDecoration(color: bubbleColor, borderRadius: radius),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // ── Tap area: view file ──
+                          GestureDetector(
+                            onTap: () => _showFileViewer(context, msg.fileUrl!, msg.fileName),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(_fileIcon(msg.fileName), color: textColor, size: 22),
+                                const SizedBox(width: 10),
+                                ConstrainedBox(
+                                  constraints: const BoxConstraints(maxWidth: 160),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(msg.fileName ?? 'attachment', style: GoogleFonts.outfit(color: textColor, fontSize: 13, fontWeight: FontWeight.w600), overflow: TextOverflow.ellipsis),
+                                      const SizedBox(height: 2),
+                                      Text('Tap to view', style: GoogleFonts.outfit(color: textColor.withValues(alpha: 0.7), fontSize: 10)),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          // ── Download button ──
+                          Tooltip(
+                            message: 'Download',
+                            child: InkWell(
+                              onTap: () => _downloadFile(msg.fileUrl!),
+                              borderRadius: BorderRadius.circular(8),
+                              child: Container(
+                                padding: const EdgeInsets.all(6),
+                                decoration: BoxDecoration(
+                                  color: textColor.withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Icon(FeatherIcons.download, color: textColor, size: 14),
                               ),
                             ),
-                          ],
-                        ),
+                          ),
+                          const SizedBox(width: 6),
+                          // ── Star / Mark button ──
+                          Tooltip(
+                            message: _isStarred ? 'Unmark' : 'Mark as important',
+                            child: InkWell(
+                              onTap: () => setState(() => _isStarred = !_isStarred),
+                              borderRadius: BorderRadius.circular(8),
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 200),
+                                padding: const EdgeInsets.all(6),
+                                decoration: BoxDecoration(
+                                  color: _isStarred
+                                      ? Colors.amber.withValues(alpha: 0.25)
+                                      : textColor.withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Icon(
+                                  _isStarred ? Icons.star_rounded : Icons.star_outline_rounded,
+                                  color: _isStarred ? Colors.amber : textColor,
+                                  size: 14,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     )
                   else
