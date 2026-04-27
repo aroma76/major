@@ -104093,7 +104093,7 @@ else if(d<0)A.Z(A.fl("Start may not be negative, was "+d+"."))
 throw A.f(new A.XN(n,b,new A.AO(p,d,o)))},
 TT(a){this.ayY(0,"expected "+a+".",0,this.c)}}
 A.a9X.prototype={
-aBi(){var s,r=A.b6o("http://localhost:5000/api",B.qB,A.ah(["Content-Type","application/json"],t.N,t.z),B.qB),q=new A.Tp(A.b([B.GH],t.i6))
+aBi(){var s,r=A.b6o("https://major-gin9.onrender.com/api",B.qB,A.ah(["Content-Type","application/json"],t.N,t.z),B.qB),q=new A.Tp(A.b([B.GH],t.i6))
 q.R(q,B.Rz)
 s=new A.ads($,q,$,new A.ahp(51200),!1)
 s.a1q$=r
@@ -104210,15 +104210,15 @@ m=A.r(a,n)
 m.m(0,"transports",A.b(["websocket"],t.s))
 m.m(0,"auth",A.ah(["token",o==null?"":o],n,n))
 m.m(0,"autoConnect",!1)
-l=A.h7("http://localhost:5000",0,null)
+l=A.h7("https://major-gin9.onrender.com",0,null)
 k=l.geQ()+"://"+l.glL(l)+":"+l.gqN(l)
 j=l.gex(l)
 i=$.aP5.az(0,k)&&$.aP5.h(0,k).d.az(0,j)
 h=J.d(m.h(0,"forceNew"),!0)||J.d(m.h(0,"force new connection"),!0)||!1===m.h(0,"multiplex")||i
 g=A.cc()
-if(h){$.b4N().bb(B.K,"ignoring socket cache for http://localhost:5000",null,null)
-g.b=A.aXZ(m,"http://localhost:5000")}else{f=$.aP5.h(0,k)
-if(f==null){f=A.aXZ(m,"http://localhost:5000")
+if(h){$.b4N().bb(B.K,"ignoring socket cache for https://major-gin9.onrender.com",null,null)
+g.b=A.aXZ(m,"https://major-gin9.onrender.com")}else{f=$.aP5.h(0,k)
+if(f==null){f=A.aXZ(m,"https://major-gin9.onrender.com")
 $.aP5.m(0,k,f)}g.b=f}if(l.gni(l).length!==0&&m.h(0,"query")==null)m.m(0,"query",l.gni(l))
 else{f=m.h(0,"query")
 if(t.f.b(f))m.m(0,"query",A.aU7(m.h(0,"query")))}f=g.aX()
