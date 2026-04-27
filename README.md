@@ -1,45 +1,136 @@
-# ADTU Collab: Academic Workspace & Chat Portal
+# ADTU Collab — Academic Workspace & Chat Portal
 
 ![ADTU Collab](https://major-three-tau.vercel.app/icons/Icon-192.png)
 
-A full-fledged, real-time academic collaboration platform built for Assam down town University (AdtU). This platform serves as a "Jira for Students," providing real-time chat, file sharing, assignments, and an academic calendar — securely organized into subjects and batches.
+> A full-stack, real-time academic collaboration platform built for **Assam down town University (AdtU)**. Designed as a "Jira for Students" — providing real-time class chat, file sharing, assignment tracking, Kanban boards, and an academic calendar, all organized by subject and batch with role-based access control.
+
+---
 
 ## 🚀 Live Links
 
-- **Frontend (Web App):** [https://major-three-tau.vercel.app](https://major-three-tau.vercel.app)
-- **Backend (API Base URL):** [https://major-gin9.onrender.com](https://major-gin9.onrender.com)
-- **API Health Check:** [https://major-gin9.onrender.com/api/health](https://major-gin9.onrender.com/api/health)
+| Service | URL |
+|---------|-----|
+| **Web App (Frontend)** | [https://major-three-tau.vercel.app](https://major-three-tau.vercel.app) |
+| **API Server (Backend)** | [https://major-gin9.onrender.com](https://major-gin9.onrender.com) |
+| **API Health Check** | [https://major-gin9.onrender.com/api/health](https://major-gin9.onrender.com/api/health) |
+
+> ⚠️ **Note:** The backend is hosted on Render's free tier. If it hasn't been used for 15 minutes it may take **20–30 seconds** to wake up on the first request. Subsequent requests are fast.
+
+---
 
 ## ✨ Core Features
 
-*   **Real-Time Class Chat:** Built with Socket.io. Features threaded replies, typing indicators, and seamless file attachments.
-*   **Performance & Offline Support:** Cursor-based pagination handles thousands of messages smoothly, and an aggressive offline caching system loads chats instantly.
-*   **Security First:** JWT authentication, Express Rate Limiting (Brute-force protection), Helmet HTTP headers, and strict MIME-type file parsing to block malware uploads.
-*   **Academic Workflows:** 
-    *   File sharing (PDFs, Images, Docs) backed by Cloudinary.
-    *   Assignments and Submission tracking.
-    *   Academic Calendar displaying university events, exams, and holidays.
-*   **Role-Based Access Control:** Distinct roles and privileges for Students, Faculty (Teachers), and Admins.
+### 💬 Real-Time Class Chat
+- Built with **Socket.io** — messages appear instantly for all users in the same subject room
+- **Threaded replies** — reply to specific messages with quoted context
+- **Typing indicators** — live "User is typing..." feedback
+- **File attachments** — send PDFs, images, and Word docs directly in chat
+- **Pinned messages** — faculty can pin important messages for the class
+- **Cursor-based pagination** — loads thousands of messages smoothly without lag
+
+### 📋 Academic Workflows
+- **Assignments** — faculty creates with due dates and max marks; students submit files; faculty grades with feedback
+- **Notes** — faculty uploads lecture PDFs and documents; students download anytime
+- **File Sharing** — shared course materials per subject
+- **Announcements** — faculty posts, all enrolled students notified instantly
+- **Academic Calendar** — university events, exam schedules, holidays color-coded by type
+
+### 📊 Kanban Project Boards
+- Create projects per subject with drag-and-drop task management
+- Task statuses: **To Do → In Progress → Done**
+- Assign tasks to team members
+
+### 🔔 Notifications
+- Real-time notification push via Socket.io
+- Unread count badge on notification bell
+- Mark individual or all notifications as read
+
+### 🔐 Security
+- **JWT authentication** — 7-day signed tokens, secure session restore
+- **bcrypt** password hashing
+- **Helmet** HTTP headers — XSS, MIME sniffing, clickjacking protection
+- **Express Rate Limiting** — brute-force protection on login
+- **MIME-type byte validation** — blocks malware disguised as documents
+
+### ⚡ Performance
+- **Offline caching** — chat history and session cached in SharedPreferences
+- **IndexedStack navigation** — instant tab switching, no refetching
+- **Parallel API fetching** — all subjects fetched simultaneously
+- **Riverpod keepAlive** — data persists across tab switches
+
+---
+
+## 👥 Role-Based Access Control
+
+| Feature | Student | Faculty | Admin |
+|---------|---------|---------|-------|
+| View chat, notes, files | ✅ | ✅ | ✅ |
+| Submit assignments | ✅ | ❌ | ❌ |
+| Create assignments & announcements | ❌ | ✅ | ✅ |
+| Pin/unpin chat messages | ❌ | ✅ | ✅ |
+| Grade submissions | ❌ | ✅ | ✅ |
+| Upload lecture notes | ❌ | ✅ | ✅ |
+| Manage academic events | ❌ | ❌ | ✅ |
+| Full platform access | ❌ | ❌ | ✅ |
+
+---
 
 ## 🛠 Tech Stack
 
-**Frontend (Client)**
-- **Framework:** Flutter Web (Dart)
-- **State Management:** Riverpod (AsyncNotifier & Family Providers)
-- **Storage:** SharedPreferences (Offline Cache)
-- **Networking:** Dio & Socket.io-client
-- **UI:** Custom modern Google Fonts (Outfit) & Feather Icons
+### Frontend
+| Technology | Purpose |
+|-----------|---------|
+| Flutter Web (Dart) | Cross-platform UI framework |
+| Riverpod v3 (AsyncNotifier) | Reactive state management |
+| Dio | HTTP client with JWT interceptors |
+| Socket.io-client | Real-time WebSocket connection |
+| SharedPreferences | Offline token & message cache |
+| Google Fonts — Outfit | Modern typography |
 
-**Backend (Server)**
-- **Runtime:** Node.js + Express.js
-- **Database:** PostgreSQL (Neon)
-- **Real-Time:** Socket.io
-- **Storage Engine:** Cloudinary Storage (Multer middleware)
-- **Security:** Helmet, express-rate-limit, jsonwebtoken, file-type validation.
+### Backend
+| Technology | Purpose |
+|-----------|---------|
+| Node.js + Express.js | REST API server |
+| Socket.io | WebSocket real-time engine |
+| PostgreSQL (Neon) | Cloud relational database |
+| Cloudinary + Multer | Cloud file storage & upload handling |
+| jsonwebtoken + bcrypt | Auth & password security |
+| Helmet + express-rate-limit | HTTP security hardening |
+| file-type | MIME-byte validation for uploads |
+
+### Infrastructure
+| Service | Hosts |
+|---------|-------|
+| Vercel | Flutter Web frontend (global CDN) |
+| Render | Node.js backend API |
+| Neon | Serverless PostgreSQL database |
+| Cloudinary | File & media CDN |
+
+---
+
+## 🏗 Architecture
+
+```
+Flutter Web (Vercel CDN)
+       │
+       ├── REST API (Dio) ──────────────► Express.js (Render)
+       │                                        │
+       └── WebSocket (Socket.io) ───────────────┤
+                                                │
+                                    ┌───────────┴───────────┐
+                               PostgreSQL              Cloudinary
+                                (Neon)               (Files CDN)
+```
+
+---
 
 ## 💻 Local Development
 
-Before you begin, ensure you have Node.js, Flutter SDK, and PostgreSQL installed.
+### Prerequisites
+- Node.js v18+
+- Flutter SDK
+- A PostgreSQL database (local or Neon/Supabase cloud)
+- Cloudinary account (free tier)
 
 ### 1. Backend Setup
 ```bash
@@ -48,11 +139,15 @@ cd backend
 # Install dependencies
 npm install
 
-# Setup your environment variables
-# Create a .env file based on .env.example with your DB & Cloudinary keys
+# Copy and fill in environment variables
+cp .env.example .env
 
-# Run development server
+# Seed the database (creates all tables + mock data)
+node seed.js
+
+# Start development server
 npm run dev
+# → http://localhost:5000
 ```
 
 ### 2. Frontend Setup
@@ -63,14 +158,72 @@ cd frontend
 flutter pub get
 
 # To test locally, open lib/core/config/app_config.dart
-# and set `baseUrl` to 'http://localhost:5000' (if running backend locally)
+# and set baseUrl to 'http://localhost:5000'
 
-# Run the Flutter App
+# Run in Chrome
 flutter run -d chrome
+# → http://localhost:9090
 ```
 
-## 🔐 Default Credentials Setup
-*For new students, the default password is their Date of Birth in `YYYY-MM-DD` format.*
+---
+
+## 🔐 Test Accounts
+
+After running `node seed.js`:
+
+| Role | Login Portal | Credential | Password |
+|------|-------------|-----------|---------|
+| **Admin** | `/faculty-login` | `admin@adtu.in` | `2004-05-15` |
+| **Faculty** | `/faculty-login` | `manoj.sarma.FoCT1@adtu.in` | `2004-05-15` |
+| **Student** | `/login` | `ADTU/2024/BTECH-CSE/001` | `2004-05-15` |
+
+> 💡 Default password for all students is their **Date of Birth in `YYYY-MM-DD` format.**
 
 ---
-*Developed for Assam down town University.*
+
+## 📁 Project Structure
+
+```
+major-project/
+├── backend/                   # Express.js + Socket.io server
+│   ├── config/                # Database config & schema
+│   ├── controllers/           # Business logic (11 modules)
+│   ├── middleware/            # auth.js, upload.js (Multer + Cloudinary)
+│   ├── routes/                # Express API routing (10 modules)
+│   ├── socket/                # Socket.io event handlers
+│   ├── server.js              # Main entry point
+│   └── seed.js                # Database seeder
+│
+├── frontend/                  # Flutter Web application
+│   └── lib/
+│       ├── core/
+│       │   ├── config/        # App config (API URL)
+│       │   ├── services/      # ApiService, AuthService, StorageService
+│       │   └── theme/         # Colors, typography
+│       └── features/
+│           ├── auth/          # Login screen + auth provider
+│           └── dashboard/
+│               ├── data/
+│               │   ├── models/       # Dart model classes
+│               │   └── repositories/ # Data access layer
+│               └── presentation/
+│                   ├── screens/      # Main screens
+│                   ├── providers/    # Riverpod state providers
+│                   └── widgets/      # Reusable UI components
+│
+└── docs/                      # Setup, API, and deployment guides
+```
+
+---
+
+## 📖 Documentation
+
+| Doc | Description |
+|-----|-------------|
+| [SETUP.md](docs/SETUP.md) | Full local setup guide |
+| [DEPLOYMENT.md](docs/DEPLOYMENT.md) | Cloud deployment guide |
+| [API.md](docs/API.md) | REST API & Socket.io reference |
+
+---
+
+*Developed for Assam down town University · April 2026*

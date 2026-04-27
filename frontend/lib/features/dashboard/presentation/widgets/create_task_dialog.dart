@@ -44,7 +44,7 @@ class _CreateTaskDialogState extends ConsumerState<CreateTaskDialog> {
               ),
               const SizedBox(height: 16),
               DropdownButtonFormField<TaskPriority>(
-                value: _priority,
+                initialValue: _priority,
                 items: TaskPriority.values.map((p) => DropdownMenuItem(
                   value: p,
                   child: Text(p.name.toUpperCase()),

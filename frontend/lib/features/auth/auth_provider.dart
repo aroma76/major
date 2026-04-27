@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/services/auth_service.dart';
 import '../../../../core/services/api_service.dart';
+import '../dashboard/presentation/providers/api_providers.dart';
 
 // ── Auth State ────────────────────────────────────────────────────────────────
 
@@ -86,6 +87,12 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
 
   Future<void> logout() async {
     await _auth.logout();
+    // Invalidate all keepAlive user-specific providers so a fresh
+    // login doesn't inherit the previous user's cached data.
+    ref.invalidate(channelsProvider);
+    ref.invalidate(allAssignmentsProvider);
+    ref.invalidate(notificationsApiProvider);
+    ref.invalidate(projectsProvider);
     state = const AsyncData(
       AuthState(status: AuthStatus.unauthenticated),
     );

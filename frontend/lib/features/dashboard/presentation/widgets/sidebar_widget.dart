@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_feather_icons/flutter_feather_icons.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../core/theme/app_colors.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/task_provider.dart';
@@ -10,7 +9,8 @@ import '../../../../features/auth/auth_provider.dart';
 class SidebarWidget extends ConsumerWidget {
   const SidebarWidget({super.key});
 
-  static final List<SidebarItemModel> items = [
+  // ── Student nav items ─────────────────────────────────────────────────────
+  static final List<SidebarItemModel> studentItems = [
     SidebarItemModel(icon: FeatherIcons.grid, title: 'Dashboard'),
     SidebarItemModel(icon: FeatherIcons.book, title: 'Subjects'),
     SidebarItemModel(icon: FeatherIcons.fileText, title: 'Assignments'),
@@ -19,10 +19,23 @@ class SidebarWidget extends ConsumerWidget {
     SidebarItemModel(icon: FeatherIcons.messageSquare, title: 'Messages'),
   ];
 
+  // ── Faculty / Teacher nav items ───────────────────────────────────────────
+  static final List<SidebarItemModel> facultyItems = [
+    SidebarItemModel(icon: FeatherIcons.grid, title: 'Dashboard'),
+    SidebarItemModel(icon: FeatherIcons.bookOpen, title: 'Manage Subjects'),
+    SidebarItemModel(icon: FeatherIcons.edit3, title: 'Submissions & Grading'),
+    SidebarItemModel(icon: FeatherIcons.folder, title: 'Student Projects'),
+    SidebarItemModel(icon: FeatherIcons.calendar, title: 'Schedule'),
+    SidebarItemModel(icon: FeatherIcons.messageSquare, title: 'Messages'),
+  ];
+
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedIndex = ref.watch(navigationProvider);
+    final authState = ref.watch(authProvider).value;
+    final isFaculty = authState?.isFaculty ?? false;
+    final items = isFaculty ? facultyItems : studentItems;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
@@ -37,8 +50,8 @@ class SidebarWidget extends ConsumerWidget {
           // Header Logo
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-            child: SvgPicture.asset(
-              'assets/images/adtu_logo.svg',
+            child: Image.asset(
+              'assets/images/adtu_logo.png',
               height: 52,
               fit: BoxFit.contain,
               alignment: Alignment.centerLeft,
@@ -57,12 +70,9 @@ class SidebarWidget extends ConsumerWidget {
               itemBuilder: (context, index) {
                 final item = items[index];
                 final isSelected = selectedIndex == index;
-                // Compute unread badge for Messages (index 5)
-                int unreadCount = 0;
-                if (index == 5) {
-                  final chats = ref.watch(chatProvider);
-                  unreadCount = chats.fold(0, (sum, c) => sum + c.unreadCount);
-                }
+                // Unread badge for Messages (index 5)
+                // TODO: wire to messagesNotifierProvider for real unread count
+                const int unreadCount = 0;
 
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 4.0),
@@ -79,10 +89,10 @@ class SidebarWidget extends ConsumerWidget {
                       duration: const Duration(milliseconds: 180),
                       padding: const EdgeInsets.symmetric(vertical: 13, horizontal: 16),
                       decoration: BoxDecoration(
-                        color: isSelected ? AppColors.accent.withOpacity(0.12) : Colors.transparent,
+                        color: isSelected ? AppColors.accent.withValues(alpha: 0.12) : Colors.transparent,
                         borderRadius: BorderRadius.circular(12),
                         border: isSelected
-                            ? Border.all(color: AppColors.accent.withOpacity(0.3), width: 1)
+                            ? Border.all(color: AppColors.accent.withValues(alpha: 0.3), width: 1)
                             : null,
                       ),
                       child: Row(
@@ -144,7 +154,7 @@ class SidebarWidget extends ConsumerWidget {
             child: Consumer(
               builder: (context, ref, _) {
                 final authState = ref.watch(authProvider).value;
-                final userName = authState?.userName ?? 'Student';
+                final userName = authState?.userName ?? (isFaculty ? 'Faculty' : 'Student');
                 final userRole = authState?.userRole ?? 'student';
                 final initials = userName.isNotEmpty ? userName[0].toUpperCase() : 'S';
                 return Container(
@@ -168,7 +178,7 @@ class SidebarWidget extends ConsumerWidget {
                             children: [
                               CircleAvatar(
                                 radius: 18,
-                                backgroundColor: AppColors.accent.withOpacity(0.15),
+                                backgroundColor: AppColors.accent.withValues(alpha: 0.15),
                                 child: Text(initials, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.accent)),
                               ),
                               const SizedBox(width: 12),

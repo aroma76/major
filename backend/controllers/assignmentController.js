@@ -20,7 +20,7 @@ const getAssignments = async (req, res) => {
 };
 
 const getAssignment = async (req, res) => {
-  const result = await pool.query(`SELECT a.*, u.name AS created_by_name FROM assignments a INNER JOIN users u ON a.created_by = u.id WHERE a.id=$1`, [req.params.id]);
+  const result = await pool.query(`SELECT a.*, u.name AS created_by_name FROM assignments a INNER JOIN users u ON a.created_by = u.id WHERE a.id=$1`, [req.params.assignId]);
   if (!result.rows.length) return res.status(404).json({ success: false, message: 'Assignment not found' });
   res.json({ success: true, assignment: result.rows[0] });
 };
@@ -56,13 +56,13 @@ const updateAssignmentStatus = async (req, res) => {
 
 const updateAssignment = async (req, res) => {
   const { title, description, due_date, max_marks } = req.body;
-  const result = await pool.query(`UPDATE assignments SET title=$1,description=$2,due_date=$3,max_marks=$4 WHERE id=$5 RETURNING *`, [title, description, due_date, max_marks, req.params.id]);
+  const result = await pool.query(`UPDATE assignments SET title=$1,description=$2,due_date=$3,max_marks=$4 WHERE id=$5 RETURNING *`, [title, description, due_date, max_marks, req.params.assignId]);
   if (!result.rows.length) return res.status(404).json({ success: false, message: 'Not found' });
   res.json({ success: true, assignment: result.rows[0] });
 };
 
 const deleteAssignment = async (req, res) => {
-  await pool.query('DELETE FROM assignments WHERE id=$1', [req.params.id]);
+  await pool.query('DELETE FROM assignments WHERE id=$1', [req.params.assignId]);
   res.json({ success: true, message: 'Assignment deleted' });
 };
 

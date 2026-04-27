@@ -37,7 +37,7 @@ class SubjectDetailScreen extends StatelessWidget {
                 children: [
                   CircleAvatar(
                     radius: 30,
-                    backgroundColor: subject.color.withOpacity(0.2),
+                    backgroundColor: subject.color.withValues(alpha: 0.2),
                     child: Icon(FeatherIcons.user, color: subject.color),
                   ),
                   const SizedBox(width: 16),

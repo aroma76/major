@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router({ mergeParams: true });
-const { getNotes, uploadNote, deleteNote } = require('../controllers/noteController');
+const { getNotes, uploadNote, deleteNote } = require('../controllers/fileController');
 const { protect, authorize } = require('../middleware/auth');
 const upload = require('../middleware/upload');
 

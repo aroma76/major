@@ -112,12 +112,12 @@ class _CreateProjectDialogState extends State<CreateProjectDialog> {
                     onSelected: (bool selected) {
                       if (selected) setState(() => _priority = p);
                     },
-                    selectedColor: AppColors.accent.withOpacity(0.2),
+                    selectedColor: AppColors.accent.withValues(alpha: 0.2),
                     labelStyle: TextStyle(
                       color: _priority == p ? AppColors.accent : AppColors.getBodyColor(context),
                       fontWeight: _priority == p ? FontWeight.bold : FontWeight.normal,
                     ),
-                    backgroundColor: AppColors.getBorderColor(context).withOpacity(0.1),
+                    backgroundColor: AppColors.getBorderColor(context).withValues(alpha: 0.1),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                     side: BorderSide(color: _priority == p ? AppColors.accent : AppColors.getBorderColor(context)),
                   ),

@@ -1,83 +1,62 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../core/services/api_service.dart';
 import '../../data/models/channel_model.dart';
 import '../../data/models/assignment_model.dart';
-import '../../data/models/api_message_model.dart';
 
-final _api = ApiService();
+import '../../data/repositories/channel_repository.dart';
+import '../../data/repositories/assignment_repository.dart';
+
+import '../../data/repositories/announcement_repository.dart';
+import '../../data/repositories/notification_repository.dart';
+import '../../data/repositories/project_repository.dart';
+import '../../data/repositories/academic_event_repository.dart';
+
+// ── Repository singletons (accessible across providers) ───────────────────────
+
+final _channelRepo      = ChannelRepository();
+final _assignmentRepo   = AssignmentRepository();
+final _announcementRepo = AnnouncementRepository();
+final _notificationRepo = NotificationRepository();
+final _projectRepo      = ProjectRepository();
+final _eventRepo        = AcademicEventRepository();
 
 // ── Channels (Subjects) ───────────────────────────────────────────────────────
 
 final channelsProvider = FutureProvider<List<ChannelModel>>((ref) async {
-  final response = await _api.getChannels();
-  final data = response.data as Map<String, dynamic>;
-  final list = data['channels'] as List<dynamic>? ?? [];
-  return list
-      .map((e) => ChannelModel.fromJson(e as Map<String, dynamic>))
-      .toList();
+  ref.keepAlive(); // persist for the session — channels don't change often
+  return _channelRepo.getMyChannels();
 });
 
 // ── Assignments (all channels aggregated) ─────────────────────────────────────
 
 final allAssignmentsProvider =
     FutureProvider<List<AssignmentModel>>((ref) async {
+  ref.keepAlive(); // persist — avoids re-fetching all channels on every tab switch
   final channels = await ref.watch(channelsProvider.future);
-  final results = <AssignmentModel>[];
-  for (final ch in channels) {
-    try {
-      final response = await _api.getAssignments(ch.id);
-      final data = response.data as Map<String, dynamic>;
-      final list = data['assignments'] as List<dynamic>? ?? [];
-      results.addAll(list.map(
-          (e) => AssignmentModel.fromJson(e as Map<String, dynamic>)));
-    } catch (_) {}
-  }
-  return results;
+  return _assignmentRepo.getAllAssignments(channels.map((c) => c.id).toList());
 });
 
 // ── Per-Channel Assignments ───────────────────────────────────────────────────
 
 final channelAssignmentsProvider =
     FutureProvider.family<List<AssignmentModel>, int>((ref, channelId) async {
-  final response = await _api.getAssignments(channelId);
-  final data = response.data as Map<String, dynamic>;
-  final list = data['assignments'] as List<dynamic>? ?? [];
-  return list
-      .map((e) => AssignmentModel.fromJson(e as Map<String, dynamic>))
-      .toList();
+  return _assignmentRepo.getAssignments(channelId);
 });
 
-// ── Per-Channel Messages ──────────────────────────────────────────────────────
-
-final channelMessagesProvider =
-    FutureProvider.family<List<ApiMessageModel>, int>((ref, channelId) async {
-  final response = await _api.getMessages(channelId);
-  final data = response.data as Map<String, dynamic>;
-  final list = data['messages'] as List<dynamic>? ?? [];
-  return list
-      .map((e) => ApiMessageModel.fromJson(e as Map<String, dynamic>))
-      .toList();
-});
+// channelMessagesProvider removed — use messagesNotifierProvider instead (supports socket + pagination)
 
 // ── Announcements ─────────────────────────────────────────────────────────────
 
 final channelAnnouncementsProvider =
     FutureProvider.family<List<Map<String, dynamic>>, int>(
         (ref, channelId) async {
-  final response = await _api.getAnnouncements(channelId);
-  final data = response.data as Map<String, dynamic>;
-  final list = data['announcements'] as List<dynamic>? ?? [];
-  return list.cast<Map<String, dynamic>>();
+  return _announcementRepo.getAnnouncements(channelId);
 });
 
-// ── Notifications ─────────────────────────────────────────────────────────────
+// ── Notifications (real API) ──────────────────────────────────────────────────
 
-final apiNotificationsProvider =
+final notificationsApiProvider =
     FutureProvider<List<Map<String, dynamic>>>((ref) async {
-  final response = await _api.getNotifications();
-  final data = response.data as Map<String, dynamic>;
-  final list = data['notifications'] as List<dynamic>? ?? [];
-  return list.cast<Map<String, dynamic>>();
+  return _notificationRepo.getNotifications();
 });
 
 // ── Selected channel for Messages view ────────────────────────────────────────
@@ -97,19 +76,12 @@ final selectedChannelProvider =
 
 final projectsProvider =
     FutureProvider<List<Map<String, dynamic>>>((ref) async {
-  final response = await _api.getProjects();
-  final data = response.data as Map<String, dynamic>;
-  final list = data['projects'] as List<dynamic>? ?? [];
-  return list.cast<Map<String, dynamic>>();
+  return _projectRepo.getProjects();
 });
 
 // ── Academic Events (Calendar) ────────────────────────────────────────────────
 
 final academicEventsProvider =
     FutureProvider.family<List<Map<String, dynamic>>, int>((ref, year) async {
-  final response = await _api.getAcademicEvents(year: year);
-  final data = response.data as Map<String, dynamic>;
-  final list = data['events'] as List<dynamic>? ?? [];
-  return list.cast<Map<String, dynamic>>();
+  return _eventRepo.getEvents(year: year);
 });
-

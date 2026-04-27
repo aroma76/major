@@ -1,7 +1,7 @@
 const pool = require('../config/db');
 
 const submitAssignment = async (req, res) => {
-  const assignment_id = req.params.id;
+  const assignment_id = req.params.assignId;  // was req.params.id (wrong — that's channel ID)
   const student_id = req.user.id;
 
   // Use correct table name: assignment_submissions (not submissions)
@@ -41,7 +41,7 @@ const gradeSubmission = async (req, res) => {
   const { marks, feedback } = req.body;
   const result = await pool.query(
     `UPDATE assignment_submissions SET marks=$1, feedback=$2 WHERE id=$3 RETURNING *`,
-    [marks, feedback, req.params.id]
+    [marks, feedback, req.params.subId]  // was req.params.id (wrong — that's channel ID)
   );
   if (!result.rows.length)
     return res.status(404).json({ success: false, message: 'Submission not found' });
@@ -58,7 +58,7 @@ const gradeSubmission = async (req, res) => {
 const getMySubmission = async (req, res) => {
   const result = await pool.query(
     'SELECT * FROM assignment_submissions WHERE assignment_id=$1 AND student_id=$2',
-    [req.params.id, req.user.id]
+    [req.params.assignId, req.user.id]  // was req.params.id (wrong — that's channel ID)
   );
   res.json({ success: true, submission: result.rows[0] || null });
 };

@@ -13,8 +13,8 @@ class ApiService {
   void init() {
     dio = Dio(BaseOptions(
       baseUrl: AppConfig.apiUrl,
-      connectTimeout: const Duration(seconds: 15),
-      receiveTimeout: const Duration(seconds: 15),
+      connectTimeout: const Duration(seconds: 30), // covers Render cold start (~20-30s)
+      receiveTimeout: const Duration(seconds: 30),
       headers: {'Content-Type': 'application/json'},
     ));
 

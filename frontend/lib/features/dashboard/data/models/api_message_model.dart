@@ -49,4 +49,21 @@ class ApiMessageModel {
       parentSenderName: json['parent_sender_name'] as String?,
     );
   }
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'channel_id': channelId,
+    'sender_id': senderId,
+    'sender_name': senderName,
+    'sender_role': senderRole,
+    'sender_avatar': senderAvatar,
+    'content': content,
+    'file_url': fileUrl,
+    'file_name': fileName,
+    'is_pinned': isPinned,
+    'created_at': createdAt.toIso8601String(),
+    'parent_id': parentId,
+    'parent_content': parentContent,
+    'parent_sender_name': parentSenderName,
+  };
 }

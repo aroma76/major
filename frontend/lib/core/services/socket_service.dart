@@ -1,4 +1,5 @@
-import 'package:socket_io_client/socket_io_client.dart' as IO;
+import 'package:flutter/foundation.dart';
+import 'package:socket_io_client/socket_io_client.dart' as io;
 import '../config/app_config.dart';
 import 'storage_service.dart';
 
@@ -7,7 +8,7 @@ class SocketService {
   factory SocketService() => _instance;
   SocketService._internal();
 
-  IO.Socket? _socket;
+  io.Socket? _socket;
   final _storage = StorageService();
 
   bool get isConnected => _socket?.connected ?? false;
@@ -16,9 +17,9 @@ class SocketService {
     if (isConnected) return;
     final token = await _storage.read('adtu_token');
 
-    _socket = IO.io(
+    _socket = io.io(
       AppConfig.baseUrl,
-      IO.OptionBuilder()
+      io.OptionBuilder()
           .setTransports(['websocket'])
           .setAuth({'token': token ?? ''})
           .disableAutoConnect()
@@ -28,15 +29,15 @@ class SocketService {
     _socket!.connect();
 
     _socket!.onConnect((_) {
-      print('✅ Socket connected: ${_socket!.id}');
+      debugPrint('✅ Socket connected: ${_socket!.id}');
     });
 
     _socket!.onDisconnect((_) {
-      print('❌ Socket disconnected');
+      debugPrint('❌ Socket disconnected');
     });
 
     _socket!.onConnectError((data) {
-      print('⚠️ Socket connect error: $data');
+      debugPrint('⚠️ Socket connect error: $data');
     });
   }
 
@@ -68,20 +69,25 @@ class SocketService {
     _socket?.emit('typing:stop', {'channelId': channelId});
   }
 
-  /// Listen for new incoming messages in a channel
+  /// Listen for new incoming messages in a channel.
+  /// Clears any prior listener first to prevent stacking duplicates on widget rebuild.
   void onNewMessage(void Function(Map<String, dynamic>) callback) {
+    _socket?.off('message:new');
     _socket?.on('message:new', (data) => callback(Map<String, dynamic>.from(data)));
   }
 
   void onTypingStart(void Function(String userName) callback) {
+    _socket?.off('typing:start');
     _socket?.on('typing:start', (data) => callback(data['userName'] ?? ''));
   }
 
   void onTypingStop(void Function() callback) {
+    _socket?.off('typing:stop');
     _socket?.on('typing:stop', (_) => callback());
   }
 
   void onNewNotification(void Function(Map<String, dynamic>) callback) {
+    _socket?.off('notification:new');
     _socket?.on('notification:new', (data) => callback(Map<String, dynamic>.from(data)));
   }
 

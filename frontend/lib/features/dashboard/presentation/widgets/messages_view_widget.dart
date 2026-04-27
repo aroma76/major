@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_feather_icons/flutter_feather_icons.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:dio/dio.dart';
+import 'package:http_parser/http_parser.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -45,6 +46,12 @@ class _MessagesViewWidgetState extends ConsumerState<MessagesViewWidget> {
       final chanId   = (data['channel_id'] as num?)?.toInt();
       final selected = ref.read(selectedChannelProvider)?.id;
       if (chanId == null) return;
+
+      // If this message was sent by the current user, skip appending it
+      // because an optimistic copy was already added in _send().
+      final myId     = AuthService().currentUser?['id']?.toString();
+      final senderId = (data['sender_id'] as num?)?.toInt().toString();
+      if (senderId != null && senderId == myId) return;
 
       final msg = ApiMessageModel.fromJson(data);
       ref.read(messagesNotifierProvider(chanId).notifier).append(msg);
@@ -120,40 +127,115 @@ class _MessagesViewWidgetState extends ConsumerState<MessagesViewWidget> {
     if (_pendingFile != null) {
       await _uploadFile(channel.id, text, parentId);
     } else {
+      // Optimistically append the message so the sender sees it immediately
+      final currentUser = AuthService().currentUser;
+      final tempMsg = ApiMessageModel(
+        id: DateTime.now().millisecondsSinceEpoch,
+        channelId: channel.id,
+        senderId: int.tryParse(currentUser?['id']?.toString() ?? '0') ?? 0,
+        senderName: currentUser?['name']?.toString() ?? 'You',
+        senderRole: currentUser?['role']?.toString() ?? 'student',
+        content: text,
+        isPinned: false,
+        createdAt: DateTime.now(),
+        parentId: parentId,
+      );
+      ref.read(messagesNotifierProvider(channel.id).notifier).append(tempMsg);
+
       SocketService().sendMessage(
-        channelId: channel.id, 
+        channelId: channel.id,
         content: text,
         parentId: parentId,
       );
       _inputCtrl.clear();
       _clearReply();
+      _scrollToBottom();
     }
   }
 
   Future<void> _uploadFile(int channelId, String caption, int? parentId) async {
     final file = _pendingFile!;
+
+    // Guard: bytes must exist (Flutter Web requires withData: true in picker)
+    final bytes = file.bytes;
+    if (bytes == null || bytes.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Could not read file data. Please try picking the file again.'),
+          backgroundColor: Colors.orange,
+        ));
+      }
+      setState(() => _pendingFile = null);
+      return;
+    }
+
     setState(() => _isSending = true);
     try {
+      // Derive MIME type from extension so Cloudinary resource_type:auto works correctly
+      final ext  = file.extension?.toLowerCase() ?? '';
+      final mime = _mimeFromExt(ext);
+      final parts = mime.split('/');
+
       final formData = FormData.fromMap({
         'content': caption.isNotEmpty ? caption : file.name,
-        'file'   : MultipartFile.fromBytes(file.bytes!, filename: file.name),
+        'file': MultipartFile.fromBytes(
+          bytes,
+          filename: file.name,
+          contentType: MediaType(parts[0], parts.length > 1 ? parts[1] : 'octet-stream'),
+        ),
         if (parentId != null) 'parent_id': parentId,
       });
-      await ApiService().sendMessage(channelId, formData);
+
+      final response = await ApiService().sendMessage(channelId, formData);
+      final saved = (response.data as Map<String, dynamic>)['message']
+          as Map<String, dynamic>?;
+
+      // Optimistically show the file in chat for the sender
+      // (the socket broadcast is suppressed for self-sent messages)
+      if (saved != null && mounted) {
+        final msg = ApiMessageModel.fromJson(saved);
+        ref.read(messagesNotifierProvider(channelId).notifier).append(msg);
+        _scrollToBottom();
+      }
+
       setState(() {
         _pendingFile = null;
         _inputCtrl.clear();
-        _clearReply();
       });
+      _clearReply();
     } catch (e) {
       if (mounted) {
+        final msg = e is DioException
+            ? (e.response?.data?['message'] as String? ?? e.message ?? 'Upload failed')
+            : e.toString();
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Upload failed: $e'), backgroundColor: Colors.red),
+          SnackBar(content: Text('Upload failed: $msg'), backgroundColor: Colors.red),
         );
       }
     } finally {
       if (mounted) setState(() => _isSending = false);
     }
+  }
+
+  /// Returns a MIME type string for a given file extension.
+  static String _mimeFromExt(String ext) {
+    const map = {
+      'jpg': 'image/jpeg', 'jpeg': 'image/jpeg', 'png': 'image/png',
+      'gif': 'image/gif',  'webp': 'image/webp', 'bmp': 'image/bmp',
+      'svg': 'image/svg+xml',
+      'pdf': 'application/pdf',
+      'doc': 'application/msword',
+      'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'xls': 'application/vnd.ms-excel',
+      'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'ppt': 'application/vnd.ms-powerpoint',
+      'pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+      'txt': 'text/plain',
+      'zip': 'application/zip',
+      'mp4': 'video/mp4',  'mov': 'video/quicktime',
+      'mp3': 'audio/mpeg', 'wav': 'audio/wav',
+    };
+    return map[ext] ?? 'application/octet-stream';
   }
 
   Future<void> _pickFile() async {
@@ -257,12 +339,12 @@ class _ChannelTile extends StatelessWidget {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-        color: isSelected ? AppColors.accent.withOpacity(0.09) : Colors.transparent,
+        color: isSelected ? AppColors.accent.withValues(alpha: 0.09) : Colors.transparent,
         child: Row(
           children: [
             Container(
               width: 40, height: 40, alignment: Alignment.center,
-              decoration: BoxDecoration(color: isSelected ? AppColors.accent : AppColors.accent.withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
+              decoration: BoxDecoration(color: isSelected ? AppColors.accent : AppColors.accent.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
               child: Icon(FeatherIcons.hash, size: 18, color: isSelected ? Colors.white : AppColors.accent),
             ),
             const SizedBox(width: 14),
@@ -289,7 +371,7 @@ class _EmptyState extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Container(padding: const EdgeInsets.all(28), decoration: BoxDecoration(color: AppColors.accent.withOpacity(0.07), shape: BoxShape.circle), child: Icon(FeatherIcons.messageSquare, size: 56, color: AppColors.accent.withOpacity(0.3))),
+          Container(padding: const EdgeInsets.all(28), decoration: BoxDecoration(color: AppColors.accent.withValues(alpha: 0.07), shape: BoxShape.circle), child: Icon(FeatherIcons.messageSquare, size: 56, color: AppColors.accent.withValues(alpha: 0.3))),
           const SizedBox(height: 20),
           Text('Select a channel to start chatting', style: GoogleFonts.outfit(fontSize: 15, color: AppColors.getBodyColor(context))),
         ],
@@ -334,7 +416,7 @@ class _ChatArea extends ConsumerWidget {
           decoration: BoxDecoration(border: Border(bottom: BorderSide(color: AppColors.getBorderColor(context)))),
           child: Row(
             children: [
-              Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: AppColors.accent.withOpacity(0.1), borderRadius: BorderRadius.circular(8)), child: Icon(FeatherIcons.hash, color: AppColors.accent, size: 16)),
+              Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: AppColors.accent.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)), child: Icon(FeatherIcons.hash, color: AppColors.accent, size: 16)),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -374,7 +456,7 @@ class _ChatArea extends ConsumerWidget {
                             final isMe = msg.senderId.toString() == myId;
                             return InkWell(
                               onLongPress: () => onReply(msg),
-                              hoverColor: AppColors.getBorderColor(context).withOpacity(0.1),
+                              hoverColor: AppColors.getBorderColor(context).withValues(alpha: 0.1),
                               child: _MessageBubble(msg: msg, isMe: isMe),
                             );
                           },
@@ -444,11 +526,62 @@ class _MessageBubbleState extends State<_MessageBubble> {
     return FeatherIcons.paperclip;
   }
 
+  void _showFileViewer(BuildContext context, String url, String? fileName) async {
+    final ext = fileName?.split('.').last.toLowerCase() ?? '';
+    final isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp'].contains(ext);
+
+    if (isImage) {
+      showDialog(
+        context: context,
+        builder: (context) => Dialog(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          insetPadding: const EdgeInsets.all(20),
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              // Zoomable Image Viewer
+              InteractiveViewer(
+                panEnabled: true,
+                minScale: 0.5,
+                maxScale: 4.0,
+                child: Image.network(
+                  url,
+                  fit: BoxFit.contain,
+                  errorBuilder: (_, __, ___) => Container(
+                    color: AppColors.getSurfaceColor(context),
+                    padding: const EdgeInsets.all(20),
+                    child: Text('Failed to load image', style: GoogleFonts.outfit(color: Colors.red)),
+                  ),
+                ),
+              ),
+              // Close Button
+              Positioned(
+                top: 0,
+                right: 0,
+                child: IconButton(
+                  icon: const Icon(FeatherIcons.xCircle, color: Colors.white, size: 36),
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    } else {
+      // For PDFs/docs, open in a new browser tab to use the browser's native viewer
+      final uri = Uri.parse(url);
+      if (await canLaunchUrl(uri)) {
+        launchUrl(uri, webOnlyWindowName: '_blank');
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final msg = widget.msg;
     final isMe = widget.isMe;
-    final bubbleColor = isMe ? AppColors.accent : AppColors.getBorderColor(context).withOpacity(0.15);
+    final bubbleColor = isMe ? AppColors.accent : AppColors.getBorderColor(context).withValues(alpha: 0.15);
     final textColor = isMe ? Colors.white : AppColors.getHeadingColor(context);
     final radius = BorderRadius.only(
       topLeft: const Radius.circular(16),
@@ -476,7 +609,7 @@ class _MessageBubbleState extends State<_MessageBubble> {
                     Text(msg.senderName, style: GoogleFonts.outfit(fontSize: 11, fontWeight: FontWeight.bold, color: isFaculty ? Colors.orange : AppColors.accent)),
                     if (isFaculty) ...[
                       const SizedBox(width: 5),
-                      Container(padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1), decoration: BoxDecoration(color: Colors.orange.withOpacity(0.15), borderRadius: BorderRadius.circular(4)), child: const Text('Teacher', style: TextStyle(fontSize: 9, color: Colors.orange, fontWeight: FontWeight.bold))),
+                      Container(padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1), decoration: BoxDecoration(color: Colors.orange.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(4)), child: const Text('Teacher', style: TextStyle(fontSize: 9, color: Colors.orange, fontWeight: FontWeight.bold))),
                     ],
                   ],
                 ),
@@ -488,7 +621,7 @@ class _MessageBubbleState extends State<_MessageBubble> {
                 margin: const EdgeInsets.only(bottom: 4),
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 decoration: BoxDecoration(
-                  color: AppColors.getBorderColor(context).withOpacity(0.2),
+                  color: AppColors.getBorderColor(context).withValues(alpha: 0.2),
                   border: Border(left: BorderSide(color: AppColors.accent, width: 3)),
                   borderRadius: BorderRadius.circular(8),
                 ),
@@ -510,10 +643,7 @@ class _MessageBubbleState extends State<_MessageBubble> {
                   // File or Text Content
                   if (msg.fileUrl != null && msg.fileUrl!.isNotEmpty)
                     GestureDetector(
-                      onTap: () async {
-                        final uri = Uri.parse(msg.fileUrl!);
-                        if (await canLaunchUrl(uri)) launchUrl(uri, mode: LaunchMode.externalApplication);
-                      },
+                      onTap: () => _showFileViewer(context, msg.fileUrl!, msg.fileName),
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                         decoration: BoxDecoration(color: bubbleColor, borderRadius: radius),
@@ -528,7 +658,7 @@ class _MessageBubbleState extends State<_MessageBubble> {
                                 children: [
                                   Text(msg.fileName ?? 'attachment', style: GoogleFonts.outfit(color: textColor, fontSize: 13, fontWeight: FontWeight.w600), overflow: TextOverflow.ellipsis),
                                   const SizedBox(height: 2),
-                                  Text('Tap to open', style: GoogleFonts.outfit(color: textColor.withOpacity(0.7), fontSize: 10)),
+                                  Text('Tap to open', style: GoogleFonts.outfit(color: textColor.withValues(alpha: 0.7), fontSize: 10)),
                                 ],
                               ),
                             ),
@@ -553,7 +683,7 @@ class _MessageBubbleState extends State<_MessageBubble> {
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(color: AppColors.getBorderColor(context)),
                         boxShadow: [
-                          BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 12, offset: const Offset(0, 4)),
+                          BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 12, offset: const Offset(0, 4)),
                         ],
                       ),
                       child: Row(
@@ -567,7 +697,7 @@ class _MessageBubbleState extends State<_MessageBubble> {
                               margin: const EdgeInsets.symmetric(horizontal: 2),
                               padding: const EdgeInsets.all(6),
                               decoration: BoxDecoration(
-                                color: isSelected ? AppColors.accent.withOpacity(0.15) : Colors.transparent,
+                                color: isSelected ? AppColors.accent.withValues(alpha: 0.15) : Colors.transparent,
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Text(e, style: const TextStyle(fontSize: 18)),
@@ -591,12 +721,12 @@ class _MessageBubbleState extends State<_MessageBubble> {
                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                               decoration: BoxDecoration(
                                 color: isSelected
-                                    ? AppColors.accent.withOpacity(0.15)
+                                    ? AppColors.accent.withValues(alpha: 0.15)
                                     : AppColors.getSurfaceColor(context),
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
                                   color: isSelected
-                                      ? AppColors.accent.withOpacity(0.4)
+                                      ? AppColors.accent.withValues(alpha: 0.4)
                                       : AppColors.getBorderColor(context),
                                 ),
                               ),
@@ -622,7 +752,7 @@ class _MessageBubbleState extends State<_MessageBubble> {
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                if (isMe) Icon(Icons.done_all, size: 12, color: AppColors.accent.withOpacity(0.8)),
+                if (isMe) Icon(Icons.done_all, size: 12, color: AppColors.accent.withValues(alpha: 0.8)),
                 if (isMe) const SizedBox(width: 3),
                 Text(time, style: GoogleFonts.outfit(fontSize: 10, color: AppColors.getBodyColor(context))),
               ],
@@ -663,7 +793,7 @@ class _InputBar extends StatelessWidget {
             Container(
               margin: const EdgeInsets.only(bottom: 8),
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-              decoration: BoxDecoration(color: AppColors.getBorderColor(context).withOpacity(0.1), borderRadius: BorderRadius.circular(10), border: Border(left: BorderSide(color: AppColors.accent, width: 4))),
+              decoration: BoxDecoration(color: AppColors.getBorderColor(context).withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10), border: Border(left: BorderSide(color: AppColors.accent, width: 4))),
               child: Row(
                 children: [
                   Icon(FeatherIcons.cornerUpLeft, color: AppColors.accent, size: 14),
@@ -685,7 +815,7 @@ class _InputBar extends StatelessWidget {
           if (pendingFile != null)
             Container(
               margin: const EdgeInsets.only(bottom: 8), padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-              decoration: BoxDecoration(color: AppColors.accent.withOpacity(0.08), borderRadius: BorderRadius.circular(10), border: Border.all(color: AppColors.accent.withOpacity(0.25))),
+              decoration: BoxDecoration(color: AppColors.accent.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(10), border: Border.all(color: AppColors.accent.withValues(alpha: 0.25))),
               child: Row(
                 children: [
                   Icon(FeatherIcons.paperclip, color: AppColors.accent, size: 16),

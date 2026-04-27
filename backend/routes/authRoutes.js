@@ -18,6 +18,6 @@ router.post('/register', register);
 router.post('/login', loginLimiter, login);  // limiter applied BEFORE handler ✓
 router.get('/me',              protect, getMe);
 router.put('/profile',         protect, upload.single('avatar'), updateProfile);
-router.put('/change-password', protect, changePassword);
+router.post('/change-password', protect, changePassword);  // POST: matches frontend call
 
 module.exports = router;

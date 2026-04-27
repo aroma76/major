@@ -10,8 +10,10 @@ import '../widgets/projects_view_widget.dart';
 import '../widgets/messages_view_widget.dart';
 import '../widgets/settings_view_widget.dart';
 import '../widgets/today_overview_widget.dart';
+import '../widgets/teacher_overview_widget.dart';
 import '../providers/task_provider.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../features/auth/auth_provider.dart';
 
 class MainDashboardScreen extends ConsumerWidget {
   const MainDashboardScreen({super.key});
@@ -20,6 +22,7 @@ class MainDashboardScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedIndex = ref.watch(navigationProvider);
     final isMobile = MediaQuery.of(context).size.width < 850;
+    final isFaculty = ref.read(authProvider).value?.isFaculty ?? false;
 
     return Scaffold(
       drawer: isMobile
@@ -81,18 +84,33 @@ class MainDashboardScreen extends ConsumerWidget {
               children: [
                 const TopBarWidget(),
                 Expanded(
-                  child: _buildBody(context, selectedIndex),
+                  // IndexedStack keeps all tab widgets alive in memory.
+                  // Switching tabs is instant — no rebuild, no refetch.
+                  child: IndexedStack(
+                    index: selectedIndex,
+                    children: [
+                      isFaculty
+                          ? const TeacherOverviewWidget()
+                          : const TodayOverviewWidget(),
+                      const SubjectsViewWidget(),
+                      const AssignmentsViewWidget(),
+                      const ProjectsViewWidget(),
+                      const CalendarViewWidget(),
+                      const MessagesViewWidget(),
+                      const SettingsViewWidget(),
+                    ],
+                  ),
                 ),
               ],
             ),
           ),
-          if (!isMobile && selectedIndex == 0)
+          if (!isMobile && selectedIndex == 0 && !isFaculty)
             Container(
               width: 300,
               height: double.infinity,
               decoration: BoxDecoration(
-                color: Theme.of(context).brightness == Brightness.dark 
-                    ? AppColors.secondaryBackground 
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? AppColors.secondaryBackground
                     : AppColors.lightSecondaryBackground,
                 border: Border(
                   left: BorderSide(color: AppColors.getBorderColor(context), width: 1),
@@ -107,30 +125,6 @@ class MainDashboardScreen extends ConsumerWidget {
       ),
     );
   }
-
-  Widget _buildBody(BuildContext context, int index) {
-    switch (index) {
-      case 0: // Dashboard
-        return _buildDashboardView(context);
-      case 1: // Subjects
-        return const SubjectsViewWidget();
-      case 2: // Assignments
-        return const AssignmentsViewWidget();
-      case 3: // Projects
-        return const ProjectsViewWidget();
-      case 4: // Calendar
-        return const CalendarViewWidget();
-      case 5: // Messages
-        return const MessagesViewWidget();
-      case 6: // Settings
-        return const SettingsViewWidget();
-      default:
-        return _buildDashboardView(context);
-    }
-  }
-
-  Widget _buildDashboardView(BuildContext context) {
-    return const TodayOverviewWidget();
-  }
 }
+
 

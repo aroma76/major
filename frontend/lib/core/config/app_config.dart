@@ -1,20 +1,13 @@
-import 'package:flutter/foundation.dart';
-
 class AppConfig {
-  // ── Your Render backend URL (production) ──
-  static const String _renderUrl = 'https://major-gin9.onrender.com';
+  // ── Backend URLs ──
+  // Production (Render): 'https://major-gin9.onrender.com'
+  static const String _localUrl = 'http://localhost:5000';
 
-  static const String _localUrl = 'http://127.0.0.1:5000';
-
-  // ── Auto-select URL based on platform ──
-  static String get baseUrl {
-    // Use Web debug mode to point to local backend
-    return kDebugMode ? _localUrl : _renderUrl;
-  }
+  // ── Auto-select URL based on environment ──
+  static String get baseUrl => _localUrl;
 
   static String get apiUrl => '$baseUrl/api';
 
   // Your Vercel frontend URL (for reference)
   static const String vercelUrl = 'https://major-three-tau.vercel.app';
 }
-

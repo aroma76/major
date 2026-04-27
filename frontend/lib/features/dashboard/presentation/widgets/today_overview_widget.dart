@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../features/auth/auth_provider.dart';
 import '../providers/task_provider.dart';
+import '../providers/api_providers.dart';
 import '../../data/models/task_model.dart';
 import 'subject_color_manager.dart';
 import 'kanban_board_widget.dart';
@@ -72,7 +73,7 @@ class _TodayOverviewWidgetState extends ConsumerState<TodayOverviewWidget>
   @override
   Widget build(BuildContext context) {
     final tasks = ref.watch(taskProvider);
-    final subjects = ref.watch(subjectProvider);
+    final channelsAsync = ref.watch(channelsProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     final pendingCount = tasks.where((t) => t.status != TaskStatus.done).length;
@@ -83,12 +84,11 @@ class _TodayOverviewWidgetState extends ConsumerState<TodayOverviewWidget>
     final now = DateTime.now();
     final upcomingTasks = tasks
         .where((t) =>
-            t.dueDate != null &&
-            t.dueDate!.isAfter(now) &&
-            t.dueDate!.isBefore(now.add(const Duration(days: 7))) &&
+            t.dueDate.isAfter(now) &&
+            t.dueDate.isBefore(now.add(const Duration(days: 7))) &&
             t.status != TaskStatus.done)
         .toList()
-      ..sort((a, b) => a.dueDate!.compareTo(b.dueDate!));
+      ..sort((a, b) => a.dueDate.compareTo(b.dueDate));
 
     return FadeTransition(
       opacity: _fadeAnim,
@@ -131,18 +131,25 @@ class _TodayOverviewWidgetState extends ConsumerState<TodayOverviewWidget>
                 const SizedBox(height: 28),
               ],
 
-              // ── Subject Progress ─────────────────────────────────────────
-              if (subjects.isNotEmpty) ...[
-                _SectionHeader(title: 'Subject Progress', icon: FeatherIcons.bookOpen),
-                const SizedBox(height: 14),
-                ...subjects.map((s) => _SubjectProgressRow(
-                      name: s.name,
-                      progress: s.progress,
-                      teacher: s.teacher,
-                      pendingTasks: s.pendingTasks,
-                    )),
-                const SizedBox(height: 28),
-              ],
+              // ── Subject Progress (real channels) ───────────────────────────
+              channelsAsync.whenOrNull(
+                data: (channels) => channels.isEmpty
+                    ? const SizedBox.shrink()
+                    : Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _SectionHeader(title: 'Enrolled Subjects', icon: FeatherIcons.bookOpen),
+                          const SizedBox(height: 14),
+                          ...channels.map((ch) => _SubjectProgressRow(
+                                name: ch.subjectName.isNotEmpty ? ch.subjectName : ch.channelName,
+                                progress: 0.0, // progress tracked via assignments in future
+                                teacher: ch.teacherName ?? 'Faculty',
+                                pendingTasks: 0,
+                              )),
+                          const SizedBox(height: 28),
+                        ],
+                      ),
+              ) ?? const SizedBox.shrink(),
 
               // ── Task Board ───────────────────────────────────────────────
               _SectionHeader(title: 'Task Board', icon: FeatherIcons.trello),
@@ -198,7 +205,7 @@ class _HeroBanner extends StatelessWidget {
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF58A6FF).withOpacity(0.35),
+              color: const Color(0xFF58A6FF).withValues(alpha: 0.35),
               blurRadius: 28,
               offset: const Offset(0, 10),
             ),
@@ -214,7 +221,7 @@ class _HeroBanner extends StatelessWidget {
                 width: 120,
                 height: 120,
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.07),
+                  color: Colors.white.withValues(alpha: 0.07),
                   shape: BoxShape.circle,
                 ),
               ),
@@ -226,7 +233,7 @@ class _HeroBanner extends StatelessWidget {
                 width: 80,
                 height: 80,
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.05),
+                  color: Colors.white.withValues(alpha: 0.05),
                   shape: BoxShape.circle,
                 ),
               ),
@@ -254,7 +261,7 @@ class _HeroBanner extends StatelessWidget {
                   date,
                   style: GoogleFonts.outfit(
                     fontSize: 13,
-                    color: Colors.white.withOpacity(0.8),
+                    color: Colors.white.withValues(alpha: 0.8),
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -296,11 +303,11 @@ class _StatChip extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
       decoration: BoxDecoration(
         color: isUrgent
-            ? Colors.red.withOpacity(0.25)
-            : Colors.white.withOpacity(0.18),
+            ? Colors.red.withValues(alpha: 0.25)
+            : Colors.white.withValues(alpha: 0.18),
         borderRadius: BorderRadius.circular(50),
         border: isUrgent
-            ? Border.all(color: Colors.red.withOpacity(0.5))
+            ? Border.all(color: Colors.red.withValues(alpha: 0.5))
             : null,
       ),
       child: Row(
@@ -385,19 +392,19 @@ class _QuickActionCardState extends State<_QuickActionCard> {
           padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
           decoration: BoxDecoration(
             color: _hovered
-                ? widget.action.color.withOpacity(0.15)
+                ? widget.action.color.withValues(alpha: 0.15)
                 : AppColors.getSurfaceColor(context),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: _hovered
-                  ? widget.action.color.withOpacity(0.5)
+                  ? widget.action.color.withValues(alpha: 0.5)
                   : AppColors.getBorderColor(context),
               width: 1.5,
             ),
             boxShadow: _hovered
                 ? [
                     BoxShadow(
-                      color: widget.action.color.withOpacity(0.2),
+                      color: widget.action.color.withValues(alpha: 0.2),
                       blurRadius: 14,
                       offset: const Offset(0, 4),
                     )
@@ -410,7 +417,7 @@ class _QuickActionCardState extends State<_QuickActionCard> {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: widget.action.color.withOpacity(0.15),
+                  color: widget.action.color.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(widget.action.icon, color: widget.action.color, size: 20),
@@ -441,7 +448,7 @@ class _DeadlineCard extends StatelessWidget {
   const _DeadlineCard({required this.task});
 
   int get _daysLeft {
-    final diff = task.dueDate!.difference(DateTime.now());
+    final diff = task.dueDate.difference(DateTime.now());
     return diff.inDays;
   }
 
@@ -465,7 +472,7 @@ class _DeadlineCard extends StatelessWidget {
         border: Border.all(color: AppColors.getBorderColor(context)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -513,7 +520,7 @@ class _DeadlineCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
             decoration: BoxDecoration(
-              color: _urgencyColor.withOpacity(0.15),
+              color: _urgencyColor.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Text(
@@ -615,7 +622,7 @@ class _SubjectProgressRowState extends State<_SubjectProgressRow>
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.12),
+                  color: color.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
@@ -632,7 +639,7 @@ class _SubjectProgressRowState extends State<_SubjectProgressRow>
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFD29922).withOpacity(0.12),
+                    color: const Color(0xFFD29922).withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Text(
@@ -655,7 +662,7 @@ class _SubjectProgressRowState extends State<_SubjectProgressRow>
                 borderRadius: BorderRadius.circular(4),
                 child: LinearProgressIndicator(
                   value: _barAnim.value,
-                  backgroundColor: AppColors.getBorderColor(context).withOpacity(0.3),
+                  backgroundColor: AppColors.getBorderColor(context).withValues(alpha: 0.3),
                   valueColor: AlwaysStoppedAnimation<Color>(color),
                   minHeight: 6,
                 ),

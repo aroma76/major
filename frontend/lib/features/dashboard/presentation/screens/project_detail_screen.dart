@@ -64,7 +64,7 @@ class ProjectDetailScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: project.color.withOpacity(0.1),
+                  color: project.color.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
@@ -102,7 +102,7 @@ class ProjectDetailScreen extends StatelessWidget {
       children: [
         Container(
           padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(color: AppColors.getBodyColor(context).withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+          decoration: BoxDecoration(color: AppColors.getBodyColor(context).withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
           child: Icon(icon, size: 16, color: AppColors.getBodyColor(context)),
         ),
         const SizedBox(width: 12),
@@ -223,7 +223,7 @@ class ProjectDetailScreen extends StatelessWidget {
           ),
           child: Column(
             children: [
-              Icon(FeatherIcons.uploadCloud, size: 40, color: AppColors.getBodyColor(context).withOpacity(0.5)),
+              Icon(FeatherIcons.uploadCloud, size: 40, color: AppColors.getBodyColor(context).withValues(alpha: 0.5)),
               const SizedBox(height: 16),
               Text(
                 'Drag and drop files here',
@@ -232,7 +232,7 @@ class ProjectDetailScreen extends StatelessWidget {
               const SizedBox(height: 8),
               Text(
                 'Support PDF, ZIP, PNG (Max 50MB)',
-                style: TextStyle(color: AppColors.getBodyColor(context).withOpacity(0.5), fontSize: 12),
+                style: TextStyle(color: AppColors.getBodyColor(context).withValues(alpha: 0.5), fontSize: 12),
               ),
             ],
           ),

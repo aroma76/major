@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../../data/models/task_model.dart';
 import '../../data/models/subject_model.dart';
 import '../../data/models/project_model.dart';
-import '../../data/models/chat_model.dart';
 
 final taskProvider = NotifierProvider<TaskNotifier, List<TaskModel>>(() {
   return TaskNotifier();
@@ -69,98 +68,8 @@ class TaskNotifier extends Notifier<List<TaskModel>> {
     return _initialTasks;
   }
 
-  static final List<TaskModel> _initialTasks = [
-    TaskModel(
-      id: 'e1',
-      title: 'Good Friday',
-      description: 'Holiday',
-      subject: 'Holiday',
-      status: TaskStatus.todo,
-      priority: TaskPriority.low,
-      dueDate: DateTime(2026, 4, 3),
-    ),
-    TaskModel(
-      id: 'e2',
-      title: 'Bohag Bihu',
-      description: 'Holiday',
-      subject: 'Holiday',
-      status: TaskStatus.todo,
-      priority: TaskPriority.low,
-      dueDate: DateTime(2026, 4, 13),
-    ),
-    TaskModel(
-      id: 'e3',
-      title: 'Bohag Bihu',
-      description: 'Holiday',
-      subject: 'Holiday',
-      status: TaskStatus.todo,
-      priority: TaskPriority.low,
-      dueDate: DateTime(2026, 4, 14),
-    ),
-    TaskModel(
-      id: 'e4',
-      title: 'Bohag Bihu',
-      description: 'Holiday',
-      subject: 'Holiday',
-      status: TaskStatus.todo,
-      priority: TaskPriority.low,
-      dueDate: DateTime(2026, 4, 15),
-    ),
-    TaskModel(
-      id: 'e5',
-      title: '2nd Sessional Examination',
-      description: 'Start of 2nd Sessional Examination for Even Semester',
-      subject: 'Examination',
-      status: TaskStatus.todo,
-      priority: TaskPriority.high,
-      dueDate: DateTime(2026, 4, 20),
-    ),
-    TaskModel(
-      id: 'e6',
-      title: 'May Day & Buddha Purnima',
-      description: 'Holiday',
-      subject: 'Holiday',
-      status: TaskStatus.todo,
-      priority: TaskPriority.low,
-      dueDate: DateTime(2026, 5, 1),
-    ),
-    TaskModel(
-      id: 'e7',
-      title: 'Id-Ul-Zuha',
-      description: 'Holiday',
-      subject: 'Holiday',
-      status: TaskStatus.todo,
-      priority: TaskPriority.low,
-      dueDate: DateTime(2026, 5, 27),
-    ),
-    TaskModel(
-      id: 'e8',
-      title: 'Even Semester Examination Start',
-      description: 'Start of Even Semester Examinations',
-      subject: 'Examination',
-      status: TaskStatus.todo,
-      priority: TaskPriority.high,
-      dueDate: DateTime(2026, 6, 8),
-    ),
-    TaskModel(
-      id: 'e9',
-      title: 'Summer Vacation Starts',
-      description: 'Summer vacation for Students starts',
-      subject: 'Holiday',
-      status: TaskStatus.todo,
-      priority: TaskPriority.low,
-      dueDate: DateTime(2026, 7, 1),
-    ),
-    TaskModel(
-      id: 'e10',
-      title: 'Independence Day Celebration',
-      description: 'Holiday',
-      subject: 'Holiday',
-      status: TaskStatus.todo,
-      priority: TaskPriority.medium,
-      dueDate: DateTime(2026, 8, 15),
-    ),
-  ];
+  // Kanban starts empty — students add their own tasks
+  static final List<TaskModel> _initialTasks = [];
 
   void addTask(TaskModel task) {
     state = [...state, task];
@@ -273,41 +182,4 @@ class ProjectNotifier extends Notifier<List<ProjectModel>> {
   ];
 }
 
-final chatProvider = NotifierProvider<ChatNotifier, List<ChatModel>>(() {
-  return ChatNotifier();
-});
-
-class ChatNotifier extends Notifier<List<ChatModel>> {
-  @override
-  List<ChatModel> build() {
-    return _initialChats;
-  }
-
-  static final List<ChatModel> _initialChats = [
-    ChatModel(
-      id: 'c1',
-      name: 'Class Group Chat',
-      lastMessage: 'Hey, has anyone finished Lab 4?',
-      lastMessageTime: '12:45 PM',
-      imageUrl: 'https://i.pravatar.cc/150?img=5',
-      unreadCount: 4,
-    ),
-    ChatModel(
-      id: 'c2',
-      name: 'Dr. Sarah Mitchell',
-      lastMessage: 'Can you share the notes for...',
-      lastMessageTime: '10:30 AM',
-      imageUrl: 'https://i.pravatar.cc/150?img=1',
-      unreadCount: 0,
-      isOnline: true,
-    ),
-    ChatModel(
-      id: 'c3',
-      name: 'Project Team Alpha',
-      lastMessage: 'Let\'s meet at 5:00 PM.',
-      lastMessageTime: 'Yesterday',
-      imageUrl: 'https://i.pravatar.cc/150?img=8',
-      unreadCount: 1,
-    ),
-  ];
-}
+// chatProvider removed — real unread counts come from messagesNotifierProvider

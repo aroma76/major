@@ -1,5 +1,6 @@
 import 'storage_service.dart';
 import 'api_service.dart';
+import 'socket_service.dart';
 
 class AuthService {
   static final AuthService _instance = AuthService._internal();
@@ -65,6 +66,9 @@ class AuthService {
 
   Future<void> logout() async {
     _currentUser = null;
+    // Disconnect the socket so the old JWT connection is fully closed
+    // before a new user logs in and creates a fresh authenticated connection.
+    SocketService().disconnect();
     await _storage.delete('adtu_token');
   }
 

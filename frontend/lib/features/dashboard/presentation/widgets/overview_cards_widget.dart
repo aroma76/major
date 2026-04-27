@@ -126,7 +126,7 @@ class OverviewCardsWidget extends ConsumerWidget {
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                  BoxShadow(
-                   color: (gradient as LinearGradient).colors.first.withOpacity(0.3),
+                   color: (gradient as LinearGradient).colors.first.withValues(alpha: 0.3),
                    blurRadius: 10,
                    offset: const Offset(0, 4),
                  ),

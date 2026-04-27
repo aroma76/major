@@ -37,7 +37,6 @@ class MyApp extends ConsumerWidget {
         colorScheme: const ColorScheme.dark(
           primary: AppColors.accent,
           surface: AppColors.surface,
-          background: AppColors.background,
         ),
         useMaterial3: true,
         textTheme: GoogleFonts.outfitTextTheme(ThemeData.dark().textTheme)
@@ -70,7 +69,6 @@ class MyApp extends ConsumerWidget {
         colorScheme: const ColorScheme.light(
           primary: AppColors.accent,
           surface: AppColors.lightSurface,
-          background: AppColors.lightBackground,
         ),
         useMaterial3: true,
         textTheme: GoogleFonts.outfitTextTheme(ThemeData.light().textTheme)

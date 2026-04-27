@@ -198,7 +198,7 @@ class SettingsViewWidget extends ConsumerWidget {
           style: TextStyle(color: AppColors.getHeadingColor(context), fontSize: 14),
           decoration: InputDecoration(
             hintText: hint ?? placeholder,
-            hintStyle: TextStyle(color: AppColors.getBodyColor(context).withOpacity(0.5)),
+            hintStyle: TextStyle(color: AppColors.getBodyColor(context).withValues(alpha: 0.5)),
             filled: true,
             fillColor: AppColors.getBackgroundColor(context),
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
@@ -219,7 +219,7 @@ class SettingsViewWidget extends ConsumerWidget {
           width: double.infinity,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
-            color: AppColors.getBorderColor(context).withOpacity(0.3),
+            color: AppColors.getBorderColor(context).withValues(alpha: 0.3),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Row(
@@ -227,7 +227,7 @@ class SettingsViewWidget extends ConsumerWidget {
               Expanded(
                 child: Text(value, style: TextStyle(color: AppColors.getBodyColor(context), fontSize: 14)),
               ),
-              Icon(Icons.lock_outline, size: 14, color: AppColors.getBodyColor(context).withOpacity(0.4)),
+              Icon(Icons.lock_outline, size: 14, color: AppColors.getBodyColor(context).withValues(alpha: 0.4)),
             ],
           ),
         ),
@@ -270,7 +270,7 @@ class SettingsViewWidget extends ConsumerWidget {
                 children: [
                   CircleAvatar(
                     radius: 32,
-                    backgroundColor: AppColors.accent.withOpacity(0.15),
+                    backgroundColor: AppColors.accent.withValues(alpha: 0.15),
                     child: Text(
                       userName.isNotEmpty ? userName[0].toUpperCase() : 'S',
                       style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.accent),
@@ -388,7 +388,7 @@ class SettingsViewWidget extends ConsumerWidget {
         style: TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.bold,
-          color: AppColors.getBodyColor(context).withOpacity(0.7),
+          color: AppColors.getBodyColor(context).withValues(alpha: 0.7),
           letterSpacing: 1.2,
         ),
       ),
@@ -403,7 +403,7 @@ class SettingsViewWidget extends ConsumerWidget {
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: AppColors.getBorderColor(context), width: 1),
         boxShadow: [
-           BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4)),
+           BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10, offset: const Offset(0, 4)),
         ],
       ),
       child: child,
@@ -418,7 +418,7 @@ class SettingsViewWidget extends ConsumerWidget {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: AppColors.getBorderColor(context).withOpacity(0.1),
+              color: AppColors.getBorderColor(context).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(icon, color: AppColors.getHeadingColor(context), size: 20),
@@ -436,7 +436,7 @@ class SettingsViewWidget extends ConsumerWidget {
           Switch(
             value: value,
             onChanged: onChanged,
-            activeColor: AppColors.accent,
+            activeThumbColor: AppColors.accent,
           ),
         ],
       ),
@@ -454,7 +454,7 @@ class SettingsViewWidget extends ConsumerWidget {
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: (isDanger ? Colors.red : AppColors.getBorderColor(context)).withOpacity(0.1),
+                color: (isDanger ? Colors.red : AppColors.getBorderColor(context)).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(icon, color: isDanger ? Colors.red : AppColors.getHeadingColor(context), size: 20),
@@ -469,7 +469,7 @@ class SettingsViewWidget extends ConsumerWidget {
                 ],
               ),
             ),
-            Icon(Icons.chevron_right, size: 20, color: AppColors.getBodyColor(context).withOpacity(0.3)),
+            Icon(Icons.chevron_right, size: 20, color: AppColors.getBodyColor(context).withValues(alpha: 0.3)),
           ],
         ),
       ),

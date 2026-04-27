@@ -143,10 +143,10 @@ class _CalendarViewWidgetState extends ConsumerState<CalendarViewWidget> {
                           ),
                         ),
                         selectedColor    : color,
-                        backgroundColor  : color.withOpacity(0.08),
+                        backgroundColor  : color.withValues(alpha: 0.08),
                         checkmarkColor   : Colors.white,
                         side: BorderSide(
-                            color: selected ? color : color.withOpacity(0.3)),
+                            color: selected ? color : color.withValues(alpha: 0.3)),
                         onSelected: (_) => setState(() => _filterType = t),
                       ),
                     );
@@ -165,7 +165,7 @@ class _CalendarViewWidgetState extends ConsumerState<CalendarViewWidget> {
                       color: AppColors.getBorderColor(context)),
                   boxShadow   : [
                     BoxShadow(
-                        color    : Colors.black.withOpacity(0.05),
+                        color    : Colors.black.withValues(alpha: 0.05),
                         blurRadius: 20,
                         offset   : const Offset(0, 10)),
                   ],
@@ -208,7 +208,7 @@ class _CalendarViewWidgetState extends ConsumerState<CalendarViewWidget> {
                   ),
                   calendarStyle: CalendarStyle(
                     todayDecoration: BoxDecoration(
-                        color: AppColors.accent.withOpacity(0.2),
+                        color: AppColors.accent.withValues(alpha: 0.2),
                         shape: BoxShape.circle),
                     todayTextStyle: const TextStyle(
                         color: AppColors.accent, fontWeight: FontWeight.bold),
@@ -220,7 +220,7 @@ class _CalendarViewWidgetState extends ConsumerState<CalendarViewWidget> {
                     defaultTextStyle:
                         TextStyle(color: AppColors.getHeadingColor(context)),
                     outsideTextStyle: TextStyle(
-                        color: AppColors.getBodyColor(context).withOpacity(0.5)),
+                        color: AppColors.getBodyColor(context).withValues(alpha: 0.5)),
                   ),
                   headerStyle: HeaderStyle(
                     formatButtonVisible  : false,
@@ -299,7 +299,7 @@ class _CalendarViewWidgetState extends ConsumerState<CalendarViewWidget> {
             children: [
               Icon(Icons.event_busy,
                   size : 48,
-                  color: AppColors.getBodyColor(context).withOpacity(0.3)),
+                  color: AppColors.getBodyColor(context).withValues(alpha: 0.3)),
               const SizedBox(height: 16),
               Text(
                 'No events found for this period',
@@ -335,7 +335,7 @@ class _CalendarViewWidgetState extends ConsumerState<CalendarViewWidget> {
             borderRadius: BorderRadius.circular(16),
             border      : Border.all(
                 color: isImportant
-                    ? color.withOpacity(0.5)
+                    ? color.withValues(alpha: 0.5)
                     : AppColors.getBorderColor(context)),
           ),
           child: ListTile(
@@ -344,7 +344,7 @@ class _CalendarViewWidgetState extends ConsumerState<CalendarViewWidget> {
             leading: Container(
               padding   : const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                  color : color.withOpacity(0.12),
+                  color : color.withValues(alpha: 0.12),
                   shape : BoxShape.circle),
               child: Icon(icon, color: color, size: 18),
             ),
@@ -365,7 +365,7 @@ class _CalendarViewWidgetState extends ConsumerState<CalendarViewWidget> {
                     padding: const EdgeInsets.symmetric(
                         horizontal: 8, vertical: 2),
                     decoration: BoxDecoration(
-                      color       : color.withOpacity(0.12),
+                      color       : color.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
@@ -399,7 +399,7 @@ class _CalendarViewWidgetState extends ConsumerState<CalendarViewWidget> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 6, vertical: 1),
                       decoration: BoxDecoration(
-                        color       : color.withOpacity(0.1),
+                        color       : color.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(

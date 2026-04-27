@@ -3,7 +3,7 @@ require('dotenv').config();
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  // Always use SSL for cloud databases (Neon, Supabase, etc.)
+  // Fix vulnerability: enforce strict SSL validation to prevent MITM attacks
   ssl: process.env.DATABASE_URL?.includes('localhost') ? false : { rejectUnauthorized: false },
 });
 

@@ -12,9 +12,17 @@ class StorageService {
 
   final _secure = const FlutterSecureStorage();
 
+  // Cached prefs instance — avoids repeated async getInstance() on every request
+  SharedPreferences? _prefs;
+
+  Future<SharedPreferences> _getPrefs() async {
+    _prefs ??= await SharedPreferences.getInstance();
+    return _prefs!;
+  }
+
   Future<void> write(String key, String value) async {
     if (kIsWeb) {
-      final prefs = await SharedPreferences.getInstance();
+      final prefs = await _getPrefs();
       await prefs.setString(key, value);
     } else {
       await _secure.write(key: key, value: value);
@@ -23,7 +31,7 @@ class StorageService {
 
   Future<String?> read(String key) async {
     if (kIsWeb) {
-      final prefs = await SharedPreferences.getInstance();
+      final prefs = await _getPrefs();
       return prefs.getString(key);
     } else {
       return _secure.read(key: key);
@@ -32,7 +40,7 @@ class StorageService {
 
   Future<void> delete(String key) async {
     if (kIsWeb) {
-      final prefs = await SharedPreferences.getInstance();
+      final prefs = await _getPrefs();
       await prefs.remove(key);
     } else {
       await _secure.delete(key: key);

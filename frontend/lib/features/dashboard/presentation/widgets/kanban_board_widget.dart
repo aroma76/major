@@ -71,7 +71,7 @@ class KanbanBoardWidget extends ConsumerWidget {
     Color accentColor, {
     required double width,
   }) {
-    return Container(
+    return SizedBox(
       width: width,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -127,7 +127,7 @@ class KanbanBoardWidget extends ConsumerWidget {
               return Container(
                 decoration: BoxDecoration(
                   color: candidateData.isNotEmpty 
-                    ? AppColors.accent.withOpacity(0.05) 
+                    ? AppColors.accent.withValues(alpha: 0.05) 
                     : Colors.transparent,
                   borderRadius: BorderRadius.circular(16),
                 ),
@@ -198,7 +198,7 @@ class KanbanBoardWidget extends ConsumerWidget {
         ),
         boxShadow: isDragging ? [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
+            color: Colors.black.withValues(alpha: 0.2),
             blurRadius: 20,
             spreadRadius: 5,
           ),
@@ -213,7 +213,7 @@ class KanbanBoardWidget extends ConsumerWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: priorityColor.withOpacity(0.1),
+                  color: priorityColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(

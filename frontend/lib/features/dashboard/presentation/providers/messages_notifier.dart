@@ -42,8 +42,11 @@ class MessagesNotifier extends Notifier<MessagesState> {
 
   final int channelId;
 
+  bool _disposed = false;
+
   @override
   MessagesState build() {
+    ref.onDispose(() => _disposed = true);
     Future.microtask(_init);
     return const MessagesState();
   }
@@ -57,18 +60,23 @@ class MessagesNotifier extends Notifier<MessagesState> {
       try {
         final List<dynamic> jsonList = jsonDecode(cachedStr);
         cachedMsgs = jsonList.map((e) => ApiMessageModel.fromJson(e)).toList();
+        if (_disposed) return;
         state = state.copyWith(messages: cachedMsgs, isLoading: true);
       } catch (_) {}
     }
 
     try {
       final response = await ApiService().getMessages(channelId, limit: 50);
+      if (_disposed) return;
       final data = response.data as Map<String, dynamic>;
       final list = data['messages'] as List<dynamic>? ?? [];
       final msgs = list
           .map((e) => ApiMessageModel.fromJson(e as Map<String, dynamic>))
           .toList();
-      prefs.setString('chat_cache_$channelId', jsonEncode(list));
+      // Cache using toJson() so read + write paths are consistent
+      prefs.setString('chat_cache_$channelId',
+          jsonEncode(msgs.map((m) => m.toJson()).toList()));
+      if (_disposed) return;
       state = state.copyWith(
         messages: msgs,
         isLoading: false,
@@ -76,6 +84,7 @@ class MessagesNotifier extends Notifier<MessagesState> {
         error: null,
       );
     } catch (e) {
+      if (_disposed) return;
       if (cachedMsgs.isNotEmpty) {
         state = state.copyWith(messages: cachedMsgs, isLoading: false);
       } else {
@@ -85,16 +94,19 @@ class MessagesNotifier extends Notifier<MessagesState> {
   }
 
   void append(ApiMessageModel msg) {
+    if (_disposed) return;
     state = state.copyWith(messages: [...state.messages, msg]);
   }
 
   Future<void> loadMore() async {
     if (!state.hasMore || state.isFetchingMore || state.messages.isEmpty) return;
+    if (_disposed) return;
     state = state.copyWith(isFetchingMore: true);
     final cursorId = state.messages.first.id;
     try {
       final response = await ApiService()
           .getMessages(channelId, cursor: cursorId, limit: 50);
+      if (_disposed) return;
       final data = response.data as Map<String, dynamic>;
       final list = data['messages'] as List<dynamic>? ?? [];
       final moreMsgs = list
@@ -106,6 +118,7 @@ class MessagesNotifier extends Notifier<MessagesState> {
         isFetchingMore: false,
       );
     } catch (_) {
+      if (_disposed) return;
       state = state.copyWith(isFetchingMore: false);
     }
   }

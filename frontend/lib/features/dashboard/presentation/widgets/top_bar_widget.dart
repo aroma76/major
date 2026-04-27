@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_feather_icons/flutter_feather_icons.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../features/auth/auth_provider.dart';
 import 'create_task_dialog.dart';
 import 'notification_panel.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/task_provider.dart';
+import '../providers/api_providers.dart';
 
 class TopBarWidget extends ConsumerStatefulWidget {
   const TopBarWidget({super.key});
@@ -17,46 +19,73 @@ class _TopBarWidgetState extends ConsumerState<TopBarWidget> {
   final LayerLink _notificationLink = LayerLink();
   OverlayEntry? _overlayEntry;
 
+  void _dismissOverlay() {
+    _overlayEntry?.remove();
+    _overlayEntry = null;
+  }
+
   void _toggleNotifications() {
     if (_overlayEntry == null) {
       _overlayEntry = _createOverlayEntry();
       Overlay.of(context).insert(_overlayEntry!);
     } else {
-      _overlayEntry?.remove();
-      _overlayEntry = null;
+      _dismissOverlay();
     }
   }
 
   OverlayEntry _createOverlayEntry() {
-    RenderBox renderBox = context.findRenderObject() as RenderBox;
     return OverlayEntry(
-      builder: (context) => Positioned(
-        width: 350,
-        child: CompositedTransformFollower(
-          link: _notificationLink,
-          showWhenUnlinked: false,
-          offset: const Offset(-310, 50),
-          child: Material(
-            elevation: 8,
-            borderRadius: BorderRadius.circular(16),
-            child: const NotificationPanel(),
+      builder: (context) => Stack(
+        children: [
+          // Invisible full-screen tap barrier — tapping outside closes the panel
+          Positioned.fill(
+            child: GestureDetector(
+              onTap: _dismissOverlay,
+              behavior: HitTestBehavior.translucent,
+            ),
           ),
-        ),
+          Positioned(
+            width: 350,
+            child: CompositedTransformFollower(
+              link: _notificationLink,
+              showWhenUnlinked: false,
+              offset: const Offset(-310, 50),
+              child: Material(
+                elevation: 8,
+                borderRadius: BorderRadius.circular(16),
+                child: const NotificationPanel(),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final notifications = ref.watch(notificationProvider);
+    final notifAsync = ref.watch(notificationsApiProvider);
+    final unreadCount = notifAsync.whenOrNull(
+      data: (list) => list.where((n) => !(n['is_read'] as bool? ?? false)).length,
+    ) ?? 0;
     final themeMode = ref.watch(themeModeProvider);
     final selectedIndex = ref.watch(navigationProvider);
-    final isMobile = MediaQuery.of(context).size.width < 850;
 
-    const sectionTitles = [
+    // Auto-dismiss notification overlay when the user switches tabs
+    ref.listen(navigationProvider, (_, __) => _dismissOverlay());
+
+    final isMobile = MediaQuery.of(context).size.width < 850;
+    final isFaculty = ref.watch(authProvider).value?.isFaculty ?? false;
+
+    final studentTitles = [
       'Dashboard', 'Subjects', 'Assignments',
       'Projects', 'Calendar', 'Messages', 'Settings',
     ];
+    final facultyTitles = [
+      'Dashboard', 'Manage Subjects', 'Submissions & Grading',
+      'Student Projects', 'Schedule', 'Messages', 'Settings',
+    ];
+    final sectionTitles = isFaculty ? facultyTitles : studentTitles;
     final currentTitle = selectedIndex < sectionTitles.length
         ? sectionTitles[selectedIndex]
         : 'Dashboard';
@@ -76,8 +105,9 @@ class _TopBarWidgetState extends ConsumerState<TopBarWidget> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
 
-          Row(
-            children: [
+          Expanded(
+            child: Row(
+              children: [
               if (isMobile)
                 Padding(
                   padding: const EdgeInsets.only(right: 12.0),
@@ -136,6 +166,7 @@ class _TopBarWidgetState extends ConsumerState<TopBarWidget> {
               ),
             ],
           ),
+          ),
           
           // Action Icons and Notifications
           Row(
@@ -157,27 +188,27 @@ class _TopBarWidgetState extends ConsumerState<TopBarWidget> {
                        clipBehavior: Clip.none,
                        children: [
                          Icon(FeatherIcons.bell, size: 20, color: AppColors.getHeadingColor(context)),
-                         if (notifications.isNotEmpty)
-                           Positioned(
-                             top: -2,
-                             right: -2,
-                             child: Container(
-                               padding: const EdgeInsets.all(4),
-                               decoration: const BoxDecoration(
-                                 color: Colors.red,
-                                 shape: BoxShape.circle,
-                               ),
-                               constraints: const BoxConstraints(
-                                 minWidth: 12,
-                                 minHeight: 12,
-                               ),
-                               child: Text(
-                                 '${notifications.length}',
-                                 style: const TextStyle(fontSize: 8, color: Colors.white, fontWeight: FontWeight.bold),
-                                 textAlign: TextAlign.center,
-                               ),
-                             ),
-                           ),
+                          if (unreadCount > 0)
+                            Positioned(
+                              top: -2,
+                              right: -2,
+                              child: Container(
+                                padding: const EdgeInsets.all(4),
+                                decoration: const BoxDecoration(
+                                  color: Colors.red,
+                                  shape: BoxShape.circle,
+                                ),
+                                constraints: const BoxConstraints(
+                                  minWidth: 12,
+                                  minHeight: 12,
+                                ),
+                                child: Text(
+                                  '$unreadCount',
+                                  style: const TextStyle(fontSize: 8, color: Colors.white, fontWeight: FontWeight.bold),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                            ),
                        ],
                      ),
                    ),
@@ -240,7 +271,7 @@ class _TopBarWidgetState extends ConsumerState<TopBarWidget> {
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
-                        color: AppColors.accent.withOpacity(0.3),
+                        color: AppColors.accent.withValues(alpha: 0.3),
                         blurRadius: 10,
                         offset: const Offset(0, 4),
                       ),
@@ -251,9 +282,9 @@ class _TopBarWidgetState extends ConsumerState<TopBarWidget> {
                       const Icon(Icons.add, color: Colors.white, size: 18),
                       if (!isMobile) const SizedBox(width: 8),
                       if (!isMobile)
-                        const Text(
-                          'Create New',
-                          style: TextStyle(
+                        Text(
+                          isFaculty ? 'Post / Create' : 'Create New',
+                          style: const TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
                           ),
@@ -310,7 +341,7 @@ class _TopBarWidgetState extends ConsumerState<TopBarWidget> {
 
   @override
   void dispose() {
-    _overlayEntry?.remove();
+    _dismissOverlay();
     super.dispose();
   }
 }

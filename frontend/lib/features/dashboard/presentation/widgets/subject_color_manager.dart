@@ -22,13 +22,13 @@ class SubjectColorManager {
   }
 
   static Color forSubjectDark(String subjectName) {
-    return forSubject(subjectName).withOpacity(0.85);
+    return forSubject(subjectName).withValues(alpha: 0.85);
   }
 
   static LinearGradient gradientForSubject(String subjectName) {
     final base = forSubject(subjectName);
     return LinearGradient(
-      colors: [base, base.withOpacity(0.6)],
+      colors: [base, base.withValues(alpha: 0.6)],
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
     );

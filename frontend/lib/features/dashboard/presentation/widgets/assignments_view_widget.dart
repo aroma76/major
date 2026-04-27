@@ -115,7 +115,7 @@ class AssignmentsViewWidget extends ConsumerWidget {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.accent.withOpacity(0.1) : Colors.transparent,
+          color: isSelected ? AppColors.accent.withValues(alpha: 0.1) : Colors.transparent,
           borderRadius: BorderRadius.circular(8),
         ),
         child: Row(
@@ -204,7 +204,7 @@ class AssignmentsViewWidget extends ConsumerWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.assignment_late_outlined, size: 48, color: AppColors.getBodyColor(context).withOpacity(0.5)),
+            Icon(Icons.assignment_late_outlined, size: 48, color: AppColors.getBodyColor(context).withValues(alpha: 0.5)),
             const SizedBox(height: 16),
             Text('No assignments found matching these filters', style: TextStyle(color: AppColors.getBodyColor(context))),
           ],
@@ -292,7 +292,7 @@ class AssignmentsViewWidget extends ConsumerWidget {
     }
     return Container(
       padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(color: color.withOpacity(0.1), shape: BoxShape.circle),
+      decoration: BoxDecoration(color: color.withValues(alpha: 0.1), shape: BoxShape.circle),
       child: Icon(icon, color: color, size: 20),
     );
   }
@@ -306,7 +306,7 @@ class AssignmentsViewWidget extends ConsumerWidget {
     }
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(6)),
+      decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(6)),
       child: Text(
         priority.name.toUpperCase(),
         style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.bold),
