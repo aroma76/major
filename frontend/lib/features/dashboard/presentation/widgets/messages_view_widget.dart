@@ -6,6 +6,7 @@ import 'package:dio/dio.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/services/socket_service.dart';
@@ -598,7 +599,7 @@ class _MessageBubbleState extends State<_MessageBubble> {
       bottomLeft: Radius.circular(isMe ? 16 : 0),
       bottomRight: Radius.circular(isMe ? 0 : 16),
     );
-    final time = '${msg.createdAt.hour}:${msg.createdAt.minute.toString().padLeft(2, '0')}';
+    final time = DateFormat('h:mm a').format(msg.createdAt.toLocal());
     final isFaculty = msg.senderRole == 'faculty';
 
     return Align(
