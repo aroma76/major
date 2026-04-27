@@ -142,9 +142,6 @@ npm install
 # Copy and fill in environment variables
 cp .env.example .env
 
-# Seed the database (creates all tables + mock data)
-node seed.js
-
 # Start development server
 npm run dev
 # → http://localhost:5000
@@ -169,7 +166,7 @@ flutter run -d chrome
 
 ## 🔐 Test Accounts
 
-After running `node seed.js`:
+Default accounts available in the database:
 
 | Role | Login Portal | Credential | Password |
 |------|-------------|-----------|---------|
@@ -187,42 +184,29 @@ After running `node seed.js`:
 major-project/
 ├── backend/                   # Express.js + Socket.io server
 │   ├── config/                # Database config & schema
-│   ├── controllers/           # Business logic (11 modules)
+│   ├── controllers/           # Business logic
 │   ├── middleware/            # auth.js, upload.js (Multer + Cloudinary)
-│   ├── routes/                # Express API routing (10 modules)
+│   ├── routes/                # Express API routing
 │   ├── socket/                # Socket.io event handlers
-│   ├── server.js              # Main entry point
-│   └── seed.js                # Database seeder
+│   └── server.js              # Main entry point
 │
-├── frontend/                  # Flutter Web application
-│   └── lib/
-│       ├── core/
-│       │   ├── config/        # App config (API URL)
-│       │   ├── services/      # ApiService, AuthService, StorageService
-│       │   └── theme/         # Colors, typography
-│       └── features/
-│           ├── auth/          # Login screen + auth provider
-│           └── dashboard/
-│               ├── data/
-│               │   ├── models/       # Dart model classes
-│               │   └── repositories/ # Data access layer
-│               └── presentation/
-│                   ├── screens/      # Main screens
-│                   ├── providers/    # Riverpod state providers
-│                   └── widgets/      # Reusable UI components
-│
-└── docs/                      # Setup, API, and deployment guides
+└── frontend/                  # Flutter Web application
+    └── lib/
+        ├── core/
+        │   ├── config/        # App config (API URL)
+        │   ├── services/      # ApiService, AuthService, StorageService
+        │   └── theme/         # Colors, typography
+        └── features/
+            ├── auth/          # Login screen + auth provider
+            └── dashboard/
+                ├── data/
+                │   ├── models/       # Dart model classes
+                │   └── repositories/ # Data access layer
+                └── presentation/
+                    ├── screens/      # Main screens
+                    ├── providers/    # Riverpod state providers
+                    └── widgets/      # Reusable UI components
 ```
-
----
-
-## 📖 Documentation
-
-| Doc | Description |
-|-----|-------------|
-| [SETUP.md](docs/SETUP.md) | Full local setup guide |
-| [DEPLOYMENT.md](docs/DEPLOYMENT.md) | Cloud deployment guide |
-| [API.md](docs/API.md) | REST API & Socket.io reference |
 
 ---
 
