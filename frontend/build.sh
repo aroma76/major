@@ -22,4 +22,11 @@ flutter pub get
 # Build the web app
 flutter build web --release
 
-echo "Build completed successfully!"
+# Move the built files to a 'public' directory
+# Vercel automatically serves the 'public' directory if Output Directory is not set!
+echo "Copying build/web to public directory for Vercel..."
+rm -rf public
+mkdir -p public
+cp -r build/web/* public/
+
+echo "Build and copy completed successfully!"
