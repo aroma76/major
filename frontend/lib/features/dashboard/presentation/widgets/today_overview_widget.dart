@@ -10,7 +10,6 @@ import '../../data/models/task_model.dart';
 import 'subject_color_manager.dart';
 import 'kanban_board_widget.dart';
 import 'announcements_panel.dart';
-import 'notes_questions_widget.dart';
 
 class TodayOverviewWidget extends ConsumerStatefulWidget {
   const TodayOverviewWidget({super.key});
@@ -158,12 +157,6 @@ class _TodayOverviewWidgetState extends ConsumerState<TodayOverviewWidget>
               _SectionHeader(title: 'Task Board', icon: FeatherIcons.trello),
               const SizedBox(height: 14),
               const KanbanBoardWidget(),
-              const SizedBox(height: 32),
-
-              // ── Notes & Questions ────────────────────────────────────────
-              _SectionHeader(title: 'Notes & Questions', icon: FeatherIcons.edit3),
-              const SizedBox(height: 14),
-              const NotesQuestionsWidget(),
               const SizedBox(height: 32),
 
               // ── Recent Announcements ─────────────────────────────────────
@@ -345,69 +338,61 @@ class _QuickActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // All 6 quick-access destinations
     final actions = [
-      _QuickAction(icon: FeatherIcons.fileText, label: 'Assignments', color: const Color(0xFFD29922), navIndex: 2),
-      _QuickAction(icon: FeatherIcons.messageSquare, label: 'Messages', color: const Color(0xFF58A6FF), navIndex: 5),
-      _QuickAction(icon: FeatherIcons.calendar, label: 'Calendar', color: const Color(0xFF238636), navIndex: 4),
-      _QuickAction(icon: FeatherIcons.folder, label: 'Projects', color: const Color(0xFFA475F9), navIndex: 3),
+      _QuickAction(icon: FeatherIcons.fileText,      label: 'Assignments',      color: const Color(0xFFD29922), navIndex: 2),
+      _QuickAction(icon: FeatherIcons.messageSquare, label: 'Messages',          color: const Color(0xFF58A6FF), navIndex: 5),
+      _QuickAction(icon: FeatherIcons.calendar,      label: 'Calendar',          color: const Color(0xFF238636), navIndex: 4),
+      _QuickAction(icon: FeatherIcons.folder,        label: 'Projects',          color: const Color(0xFFA475F9), navIndex: 3),
+      _QuickAction(icon: FeatherIcons.bookOpen,      label: 'Notes',             color: const Color(0xFF1F6FEB), navIndex: 6),
+      _QuickAction(icon: FeatherIcons.fileMinus,     label: 'Question Papers',   color: const Color(0xFFE05252), navIndex: 7),
     ];
 
+    // Helper: build a card tapping to the given index
+    Widget card(_QuickAction action) => _QuickActionCard(
+          action: action,
+          onTap: () => ref.read(navigationProvider.notifier).navigateTo(action.navIndex),
+        );
+
     if (isMobile) {
-      // 2x2 grid on mobile
+      // 3 rows × 2 columns on mobile
       return Column(
         children: [
-          Row(
-            children: actions.sublist(0, 2).map((action) {
-              return Expanded(
-                child: Padding(
-                  padding: EdgeInsets.only(
-                    right: action == actions[0] ? 8 : 0,
-                  ),
-                  child: _QuickActionCard(
-                    action: action,
-                    onTap: () => ref.read(navigationProvider.notifier).navigateTo(action.navIndex),
-                  ),
-                ),
-              );
-            }).toList(),
-          ),
-          const SizedBox(height: 10),
-          Row(
-            children: actions.sublist(2, 4).map((action) {
-              return Expanded(
-                child: Padding(
-                  padding: EdgeInsets.only(
-                    right: action == actions[2] ? 8 : 0,
-                  ),
-                  child: _QuickActionCard(
-                    action: action,
-                    onTap: () => ref.read(navigationProvider.notifier).navigateTo(action.navIndex),
-                  ),
-                ),
-              );
-            }).toList(),
-          ),
+          for (int row = 0; row < 3; row++) ...[
+            Row(
+              children: [
+                Expanded(child: Padding(padding: const EdgeInsets.only(right: 8), child: card(actions[row * 2]))),
+                Expanded(child: card(actions[row * 2 + 1])),
+              ],
+            ),
+            if (row < 2) const SizedBox(height: 10),
+          ],
         ],
       );
     }
 
-    return LayoutBuilder(builder: (context, constraints) {
-      return Row(
-        children: actions.map((action) {
-          return Expanded(
+    // Desktop: 2 rows × 3 columns
+    return Column(
+      children: [
+        Row(
+          children: actions.sublist(0, 3).map((a) => Expanded(
             child: Padding(
-              padding: EdgeInsets.only(
-                right: actions.indexOf(action) == actions.length - 1 ? 0 : 12,
-              ),
-              child: _QuickActionCard(
-                action: action,
-                onTap: () => ref.read(navigationProvider.notifier).navigateTo(action.navIndex),
-              ),
+              padding: EdgeInsets.only(right: actions.indexOf(a) == 2 ? 0 : 12),
+              child: card(a),
             ),
-          );
-        }).toList(),
-      );
-    });
+          )).toList(),
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: actions.sublist(3, 6).map((a) => Expanded(
+            child: Padding(
+              padding: EdgeInsets.only(right: actions.indexOf(a) == 5 ? 0 : 12),
+              child: card(a),
+            ),
+          )).toList(),
+        ),
+      ],
+    );
   }
 }
 
