@@ -82,7 +82,8 @@ class _TopBarWidgetState extends ConsumerState<TopBarWidget> {
 
     final studentTitles = [
       'Dashboard', 'Subjects', 'Assignments',
-      'Projects', 'Calendar', 'Messages', 'Settings',
+      'Projects', 'Calendar', 'Messages',
+      'Notes', 'Question Papers', 'Settings',
     ];
     final facultyTitles = [
       'Dashboard', 'Manage Subjects', 'Submissions & Grading',

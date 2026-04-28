@@ -9,6 +9,8 @@ import '../widgets/subjects_view_widget.dart';
 import '../widgets/assignments_view_widget.dart';
 import '../widgets/projects_view_widget.dart';
 import '../widgets/messages_view_widget.dart';
+import '../widgets/notes_view_widget.dart';
+import '../widgets/question_papers_view_widget.dart';
 import '../widgets/settings_view_widget.dart';
 import '../widgets/today_overview_widget.dart';
 import '../widgets/teacher_overview_widget.dart';
@@ -128,6 +130,8 @@ class MainDashboardScreen extends ConsumerWidget {
                       const ProjectsViewWidget(),
                       const CalendarViewWidget(),
                       const MessagesViewWidget(),
+                      const NotesViewWidget(),
+                      const QuestionPapersViewWidget(),
                       const SettingsViewWidget(),
                     ],
                   ),

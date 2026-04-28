@@ -9,14 +9,16 @@ import '../../../../features/auth/auth_provider.dart';
 class SidebarWidget extends ConsumerWidget {
   const SidebarWidget({super.key});
 
-  // ── Student nav items ─────────────────────────────────────────────────────
+  // ── Student nav items ─────────────────────────────────────────────────────────────────────────────
   static final List<SidebarItemModel> studentItems = [
-    SidebarItemModel(icon: FeatherIcons.grid, title: 'Dashboard'),
-    SidebarItemModel(icon: FeatherIcons.book, title: 'Subjects'),
-    SidebarItemModel(icon: FeatherIcons.fileText, title: 'Assignments'),
-    SidebarItemModel(icon: FeatherIcons.folder, title: 'Projects'),
-    SidebarItemModel(icon: FeatherIcons.calendar, title: 'Calendar'),
+    SidebarItemModel(icon: FeatherIcons.grid,          title: 'Dashboard'),
+    SidebarItemModel(icon: FeatherIcons.book,          title: 'Subjects'),
+    SidebarItemModel(icon: FeatherIcons.fileText,      title: 'Assignments'),
+    SidebarItemModel(icon: FeatherIcons.folder,        title: 'Projects'),
+    SidebarItemModel(icon: FeatherIcons.calendar,      title: 'Calendar'),
     SidebarItemModel(icon: FeatherIcons.messageSquare, title: 'Messages'),
+    SidebarItemModel(icon: FeatherIcons.bookOpen,      title: 'Notes'),
+    SidebarItemModel(icon: FeatherIcons.fileMinus,     title: 'Question Papers'),
   ];
 
   // ── Faculty / Teacher nav items ───────────────────────────────────────────
@@ -146,6 +148,59 @@ class SidebarWidget extends ConsumerWidget {
             ),
           ),
 
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+            child: Divider(color: AppColors.getBorderColor(context)),
+          ),
+          // Settings item
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 0, 12, 4),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(12),
+              onTap: () {
+                ref.read(navigationProvider.notifier).navigateTo(8);
+                if (Navigator.of(context).canPop()) Navigator.of(context).pop();
+              },
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 180),
+                padding: const EdgeInsets.symmetric(vertical: 13, horizontal: 16),
+                decoration: BoxDecoration(
+                  color: ref.watch(navigationProvider) == 8
+                      ? AppColors.accent.withValues(alpha: 0.12)
+                      : Colors.transparent,
+                  borderRadius: BorderRadius.circular(12),
+                  border: ref.watch(navigationProvider) == 8
+                      ? Border.all(color: AppColors.accent.withValues(alpha: 0.3))
+                      : null,
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      FeatherIcons.settings,
+                      size: 20,
+                      color: ref.watch(navigationProvider) == 8
+                          ? AppColors.accent
+                          : AppColors.getBodyColor(context),
+                    ),
+                    const SizedBox(width: 14),
+                    Text(
+                      'Settings',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: ref.watch(navigationProvider) == 8
+                            ? FontWeight.w600
+                            : FontWeight.w500,
+                        color: ref.watch(navigationProvider) == 8
+                            ? AppColors.accent
+                            : AppColors.getBodyColor(context),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
           // User Profile at bottom
           Padding(
             padding: const EdgeInsets.all(16.0),
@@ -168,7 +223,7 @@ class SidebarWidget extends ConsumerWidget {
                       Expanded(
                         child: InkWell(
                           onTap: () {
-                            ref.read(navigationProvider.notifier).navigateTo(6);
+                                              ref.read(navigationProvider.notifier).navigateTo(8);
                             if (Navigator.of(context).canPop()) Navigator.of(context).pop();
                           },
                           borderRadius: BorderRadius.circular(10),

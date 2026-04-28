@@ -16,6 +16,7 @@ import '../../data/models/channel_model.dart';
 import '../../data/models/api_message_model.dart';
 import '../providers/api_providers.dart';
 import '../providers/messages_notifier.dart';
+import '../providers/saved_files_provider.dart';
 
 class MessagesViewWidget extends ConsumerStatefulWidget {
   const MessagesViewWidget({super.key});
@@ -458,7 +459,11 @@ class _ChatArea extends ConsumerWidget {
                             return InkWell(
                               onLongPress: () => onReply(msg),
                               hoverColor: AppColors.getBorderColor(context).withValues(alpha: 0.1),
-                              child: _MessageBubble(msg: msg, isMe: isMe),
+                              child: _MessageBubble(
+                                msg: msg,
+                                isMe: isMe,
+                                channel: channel,
+                              ),
                             );
                           },
                         ),
@@ -484,22 +489,27 @@ class _ChatArea extends ConsumerWidget {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-class _MessageBubble extends StatefulWidget {
+// _MessageBubble now extends ConsumerStatefulWidget so it can access providers
+class _MessageBubble extends ConsumerStatefulWidget {
   final ApiMessageModel msg;
   final bool isMe;
+  final ChannelModel channel;
 
-  const _MessageBubble({required this.msg, required this.isMe});
+  const _MessageBubble({
+    required this.msg,
+    required this.isMe,
+    required this.channel,
+  });
 
   @override
-  State<_MessageBubble> createState() => _MessageBubbleState();
+  ConsumerState<_MessageBubble> createState() => _MessageBubbleState();
 }
 
-class _MessageBubbleState extends State<_MessageBubble> {
+class _MessageBubbleState extends ConsumerState<_MessageBubble> {
   static const _emojis = ['👍', '❤️', '😂', '🔥', '👀'];
   final Map<String, int> _reactions = {};
   String? _myReaction;
   bool _showPicker = false;
-  bool _isStarred = false;
 
   void _togglePicker() => setState(() => _showPicker = !_showPicker);
 
@@ -667,7 +677,7 @@ class _MessageBubbleState extends State<_MessageBubble> {
                                 Icon(_fileIcon(msg.fileName), color: textColor, size: 22),
                                 const SizedBox(width: 10),
                                 ConstrainedBox(
-                                  constraints: const BoxConstraints(maxWidth: 160),
+                                  constraints: const BoxConstraints(maxWidth: 140),
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
@@ -698,28 +708,26 @@ class _MessageBubbleState extends State<_MessageBubble> {
                             ),
                           ),
                           const SizedBox(width: 6),
-                          // ── Star / Mark button ──
-                          Tooltip(
-                            message: _isStarred ? 'Unmark' : 'Mark as important',
-                            child: InkWell(
-                              onTap: () => setState(() => _isStarred = !_isStarred),
-                              borderRadius: BorderRadius.circular(8),
-                              child: AnimatedContainer(
-                                duration: const Duration(milliseconds: 200),
-                                padding: const EdgeInsets.all(6),
-                                decoration: BoxDecoration(
-                                  color: _isStarred
-                                      ? Colors.amber.withValues(alpha: 0.25)
-                                      : textColor.withValues(alpha: 0.15),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Icon(
-                                  _isStarred ? Icons.star_rounded : Icons.star_outline_rounded,
-                                  color: _isStarred ? Colors.amber : textColor,
-                                  size: 14,
-                                ),
-                              ),
-                            ),
+                          // ── Save as Note ──
+                          _SaveFileBtn(
+                            msg: msg,
+                            channel: widget.channel,
+                            fileType: SavedFileType.note,
+                            tooltip: 'Save as Note',
+                            icon: FeatherIcons.bookOpen,
+                            activeColor: const Color(0xFF58A6FF),
+                            textColor: textColor,
+                          ),
+                          const SizedBox(width: 6),
+                          // ── Save as Question Paper ──
+                          _SaveFileBtn(
+                            msg: msg,
+                            channel: widget.channel,
+                            fileType: SavedFileType.questionPaper,
+                            tooltip: 'Save as Question Paper',
+                            icon: FeatherIcons.fileMinus,
+                            activeColor: const Color(0xFF238636),
+                            textColor: textColor,
                           ),
                         ],
                       ),
@@ -904,6 +912,84 @@ class _InputBar extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+/// Button inside a file bubble to save/unsave the file to Notes or Q-Papers.
+class _SaveFileBtn extends ConsumerWidget {
+  final ApiMessageModel msg;
+  final ChannelModel channel;
+  final SavedFileType fileType;
+  final String tooltip;
+  final IconData icon;
+  final Color activeColor;
+  final Color textColor;
+
+  const _SaveFileBtn({
+    required this.msg,
+    required this.channel,
+    required this.fileType,
+    required this.tooltip,
+    required this.icon,
+    required this.activeColor,
+    required this.textColor,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final notifier = ref.watch(savedFilesProvider.notifier);
+    ref.watch(savedFilesProvider); // rebuild on state change
+    final saved = notifier.isSaved(msg.id.toString(), fileType);
+
+    return Tooltip(
+      message: saved ? 'Remove from $tooltip' : tooltip,
+      child: InkWell(
+        onTap: () {
+          if (saved) {
+            notifier.remove('${msg.id}_${fileType.name}');
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Removed from ${fileType == SavedFileType.note ? 'Notes' : 'Question Papers'}'),
+                backgroundColor: Colors.red.shade700,
+                duration: const Duration(seconds: 2),
+              ),
+            );
+          } else {
+            notifier.save(
+              msgId: msg.id.toString(),
+              channelId: channel.id,
+              subjectName: channel.subjectName.isNotEmpty
+                  ? channel.subjectName
+                  : channel.channelName,
+              fileName: msg.fileName ?? 'attachment',
+              fileUrl: msg.fileUrl ?? '',
+              type: fileType,
+              sharedBy: msg.senderName,
+            );
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Saved to ${fileType == SavedFileType.note ? 'Notes' : 'Question Papers'} — ${channel.subjectName}'),
+                backgroundColor: activeColor,
+                duration: const Duration(seconds: 2),
+              ),
+            );
+          }
+        },
+        borderRadius: BorderRadius.circular(8),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.all(6),
+          decoration: BoxDecoration(
+            color: saved
+                ? activeColor.withValues(alpha: 0.25)
+                : textColor.withValues(alpha: 0.15),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(icon, size: 14, color: saved ? activeColor : textColor),
+        ),
       ),
     );
   }
