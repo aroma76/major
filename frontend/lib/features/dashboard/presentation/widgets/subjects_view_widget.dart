@@ -23,6 +23,7 @@ class SubjectsViewWidget extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final channelsAsync = ref.watch(channelsProvider);
+    final isMobile = MediaQuery.of(context).size.width < 600;
 
     return channelsAsync.when(
       loading: () => const Center(child: CircularProgressIndicator(color: AppColors.accent)),
@@ -44,7 +45,7 @@ class SubjectsViewWidget extends ConsumerWidget {
         ),
       ),
       data: (channels) => SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
+        padding: EdgeInsets.all(isMobile ? 14 : 24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -58,36 +59,37 @@ class SubjectsViewWidget extends ConsumerWidget {
                       Text(
                         'My Subjects',
                         style: GoogleFonts.outfit(
-                          fontSize: 28,
+                          fontSize: isMobile ? 20 : 28,
                           fontWeight: FontWeight.bold,
                           color: AppColors.getHeadingColor(context),
                         ),
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 2),
                       Text(
-                        '${channels.length} enrolled courses this semester',
+                        '${channels.length} enrolled courses',
                         style: GoogleFonts.outfit(
-                          fontSize: 14,
+                          fontSize: isMobile ? 12 : 14,
                           color: AppColors.getBodyColor(context),
                         ),
                       ),
                     ],
                   ),
                 ),
-                ElevatedButton.icon(
-                  onPressed: () => ref.invalidate(channelsProvider),
-                  icon: const Icon(FeatherIcons.refreshCw, size: 14),
-                  label: const Text('Refresh'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.getBorderColor(context),
-                    foregroundColor: AppColors.getHeadingColor(context),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    elevation: 0,
+                if (!isMobile)
+                  ElevatedButton.icon(
+                    onPressed: () => ref.invalidate(channelsProvider),
+                    icon: const Icon(FeatherIcons.refreshCw, size: 14),
+                    label: const Text('Refresh'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.getBorderColor(context),
+                      foregroundColor: AppColors.getHeadingColor(context),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      elevation: 0,
+                    ),
                   ),
-                ),
               ],
             ),
-            const SizedBox(height: 32),
+            SizedBox(height: isMobile ? 14 : 28),
 
             // ── Empty state ──────────────────────────────────────────────────
             if (channels.isEmpty)
@@ -105,9 +107,11 @@ class SubjectsViewWidget extends ConsumerWidget {
                         child: Icon(FeatherIcons.book, size: 52, color: AppColors.accent.withValues(alpha: 0.4)),
                       ),
                       const SizedBox(height: 24),
-                      Text('No subjects enrolled yet', style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.getHeadingColor(context))),
+                      Text('No subjects enrolled yet',
+                          style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.getHeadingColor(context))),
                       const SizedBox(height: 8),
-                      Text('Contact your administrator to enrol in channels.', style: GoogleFonts.outfit(fontSize: 14, color: AppColors.getBodyColor(context))),
+                      Text('Contact your administrator to enrol in channels.',
+                          style: GoogleFonts.outfit(fontSize: 14, color: AppColors.getBodyColor(context))),
                     ],
                   ),
                 ),
@@ -115,22 +119,25 @@ class SubjectsViewWidget extends ConsumerWidget {
             else
               // ── Grid ──────────────────────────────────────────────────────
               LayoutBuilder(
-                builder: (context, constraints) {
-                  final cols = constraints.maxWidth > 900 ? 3 : constraints.maxWidth > 550 ? 2 : 1;
+                builder: (ctx, constraints) {
+                  // Always 2 cols on mobile, 2 on tablet, 3 on desktop
+                  final cols = constraints.maxWidth > 900 ? 3 : 2;
+                  // Compact cards on mobile
+                  final ratio = isMobile ? 2.1 : 1.75;
                   return GridView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: cols,
-                      crossAxisSpacing: 20,
-                      mainAxisSpacing: 20,
-                      childAspectRatio: 1.75,
+                      crossAxisSpacing: isMobile ? 10 : 20,
+                      mainAxisSpacing: isMobile ? 10 : 20,
+                      childAspectRatio: ratio,
                     ),
                     itemCount: channels.length,
                     itemBuilder: (context, index) {
                       final ch = channels[index];
                       final color = _palette[index % _palette.length];
-                      return _SubjectCard(channel: ch, color: color);
+                      return _SubjectCard(channel: ch, color: color, isMobile: isMobile);
                     },
                   );
                 },
@@ -146,8 +153,9 @@ class SubjectsViewWidget extends ConsumerWidget {
 class _SubjectCard extends ConsumerStatefulWidget {
   final ChannelModel channel;
   final Color color;
+  final bool isMobile;
 
-  const _SubjectCard({required this.channel, required this.color});
+  const _SubjectCard({required this.channel, required this.color, this.isMobile = false});
 
   @override
   ConsumerState<_SubjectCard> createState() => _SubjectCardState();
@@ -160,6 +168,7 @@ class _SubjectCardState extends ConsumerState<_SubjectCard> {
   Widget build(BuildContext context) {
     final ch = widget.channel;
     final color = widget.color;
+    final m = widget.isMobile;
 
     return MouseRegion(
       onEnter: (_) => setState(() => _hovered = true),
@@ -171,10 +180,10 @@ class _SubjectCardState extends ConsumerState<_SubjectCard> {
         },
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(m ? 10 : 16),
           decoration: BoxDecoration(
             color: _hovered ? color.withValues(alpha: 0.07) : AppColors.getSurfaceColor(context),
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: _hovered ? color.withValues(alpha: 0.5) : AppColors.getBorderColor(context),
               width: 1.5,
@@ -191,43 +200,43 @@ class _SubjectCardState extends ConsumerState<_SubjectCard> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(8),
+                    padding: EdgeInsets.all(m ? 6 : 8),
                     decoration: BoxDecoration(
                       color: color.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                    child: Icon(FeatherIcons.book, color: color, size: 18),
+                    child: Icon(FeatherIcons.book, color: color, size: m ? 14 : 18),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    padding: EdgeInsets.symmetric(horizontal: m ? 6 : 8, vertical: 2),
                     decoration: BoxDecoration(
                       color: color.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
                       'Sem ${ch.semesterNumber}',
-                      style: GoogleFonts.outfit(fontSize: 10, fontWeight: FontWeight.w600, color: color),
+                      style: GoogleFonts.outfit(fontSize: m ? 9 : 10, fontWeight: FontWeight.w600, color: color),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 10),
+              SizedBox(height: m ? 6 : 10),
 
               // ── Subject name ───────────────────────────────────────────
               Text(
                 ch.subjectName.isNotEmpty ? ch.subjectName : ch.channelName,
                 style: GoogleFonts.outfit(
-                  fontSize: 13,
+                  fontSize: m ? 12 : 13,
                   fontWeight: FontWeight.bold,
                   color: AppColors.getHeadingColor(context),
                 ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
-              const SizedBox(height: 3),
+              if (!m) const SizedBox(height: 3),
 
-              // ── Teacher name ───────────────────────────────────────────
-              if (ch.teacherName != null)
+              // ── Teacher name (hide on very small mobile) ───────────────
+              if (ch.teacherName != null && !m)
                 Row(
                   children: [
                     Icon(FeatherIcons.user, size: 10, color: AppColors.getBodyColor(context)),
@@ -248,14 +257,14 @@ class _SubjectCardState extends ConsumerState<_SubjectCard> {
               // ── Open chat row ──────────────────────────────────────────
               Row(
                 children: [
-                  Icon(FeatherIcons.messageSquare, size: 12, color: color),
-                  const SizedBox(width: 5),
+                  Icon(FeatherIcons.messageSquare, size: m ? 10 : 12, color: color),
+                  const SizedBox(width: 4),
                   Text(
                     'Open Chat',
-                    style: GoogleFonts.outfit(fontSize: 11, color: color, fontWeight: FontWeight.w600),
+                    style: GoogleFonts.outfit(fontSize: m ? 10 : 11, color: color, fontWeight: FontWeight.w600),
                   ),
                   const Spacer(),
-                  Icon(FeatherIcons.arrowRight, size: 12, color: color),
+                  Icon(FeatherIcons.arrowRight, size: m ? 10 : 12, color: color),
                 ],
               ),
             ],
@@ -265,4 +274,3 @@ class _SubjectCardState extends ConsumerState<_SubjectCard> {
     );
   }
 }
-

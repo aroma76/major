@@ -18,11 +18,18 @@ import '../providers/task_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../features/auth/auth_provider.dart';
 
-class MainDashboardScreen extends ConsumerWidget {
+class MainDashboardScreen extends ConsumerStatefulWidget {
   const MainDashboardScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<MainDashboardScreen> createState() => _MainDashboardScreenState();
+}
+
+class _MainDashboardScreenState extends ConsumerState<MainDashboardScreen> {
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  @override
+  Widget build(BuildContext context) {
     final selectedIndex = ref.watch(navigationProvider);
     final isMobile = MediaQuery.of(context).size.width < 850;
     final isFaculty = ref.read(authProvider).value?.isFaculty ?? false;
@@ -36,16 +43,17 @@ class MainDashboardScreen extends ConsumerWidget {
       _MobileNavItem(icon: FeatherIcons.menu,          label: 'More',        index: -1),
     ];
     final facultyBottomItems = [
-      _MobileNavItem(icon: FeatherIcons.grid,      label: 'Home',       index: 0),
-      _MobileNavItem(icon: FeatherIcons.bookOpen,  label: 'Subjects',   index: 1),
-      _MobileNavItem(icon: FeatherIcons.edit3,     label: 'Grades',     index: 2),
-      _MobileNavItem(icon: FeatherIcons.messageSquare, label: 'Messages', index: 5),
-      _MobileNavItem(icon: FeatherIcons.menu,      label: 'More',       index: -1),
+      _MobileNavItem(icon: FeatherIcons.grid,          label: 'Home',       index: 0),
+      _MobileNavItem(icon: FeatherIcons.bookOpen,      label: 'Subjects',   index: 1),
+      _MobileNavItem(icon: FeatherIcons.edit3,         label: 'Grades',     index: 2),
+      _MobileNavItem(icon: FeatherIcons.messageSquare, label: 'Messages',   index: 5),
+      _MobileNavItem(icon: FeatherIcons.menu,          label: 'More',       index: -1),
     ];
 
     final bottomItems = isFaculty ? facultyBottomItems : studentBottomItems;
 
     return Scaffold(
+      key: _scaffoldKey,
       drawer: Drawer(
         width: 280,
         backgroundColor: Theme.of(context).brightness == Brightness.dark
@@ -97,8 +105,8 @@ class MainDashboardScreen extends ConsumerWidget {
               selectedIndex: selectedIndex,
               onTap: (item) {
                 if (item.index == -1) {
-                  // "More" → open sidebar drawer
-                  Scaffold.of(context).openDrawer();
+                  // "More" → open sidebar drawer via key
+                  _scaffoldKey.currentState?.openDrawer();
                 } else {
                   ref.read(navigationProvider.notifier).navigateTo(item.index);
                 }
@@ -162,6 +170,7 @@ class MainDashboardScreen extends ConsumerWidget {
     );
   }
 }
+
 
 // ─────────────────────────────────────────────────────────────────────────────
 

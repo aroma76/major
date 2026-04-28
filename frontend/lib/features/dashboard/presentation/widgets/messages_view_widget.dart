@@ -253,78 +253,138 @@ class _MessagesViewWidgetState extends ConsumerState<MessagesViewWidget> {
   Widget build(BuildContext context) {
     final channelsAsync    = ref.watch(channelsProvider);
     final selectedChannel  = ref.watch(selectedChannelProvider);
+    final isMobile = MediaQuery.of(context).size.width < 700;
 
+    // ── Mobile: single-panel — channel list OR chat ──────────────────────────
+    if (isMobile) {
+      if (selectedChannel != null) {
+        return _ChatArea(
+          channel     : selectedChannel,
+          inputCtrl   : _inputCtrl,
+          scrollCtrl  : _scrollCtrl,
+          pendingFile : _pendingFile,
+          isSending   : _isSending,
+          typingUser  : _typingUser,
+          replyingTo  : _replyingTo,
+          onSend      : _send,
+          onPickFile  : _pickFile,
+          onClearFile : _clearFile,
+          onTyping    : _emitTyping,
+          onReply     : _setReply,
+          onClearReply: _clearReply,
+          showBackButton: true,
+          onBack: () {
+            SocketService().leaveChannel(selectedChannel.id);
+            ref.read(selectedChannelProvider.notifier).select(null);
+          },
+        );
+      }
+
+      // No channel selected → full-screen channel list
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 20, 16, 12),
+            child: Row(
+              children: [
+                Text('Messages',
+                    style: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.bold,
+                        color: AppColors.getHeadingColor(context))),
+                const Spacer(),
+                Icon(FeatherIcons.hash, color: AppColors.accent, size: 18),
+              ],
+            ),
+          ),
+          Divider(height: 1, color: AppColors.getBorderColor(context)),
+          Expanded(
+            child: channelsAsync.when(
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (e, _) => const Center(child: Text('Error loading channels')),
+              data: (channels) {
+                if (channels.isEmpty) return const Center(child: Text('No channels.'));
+                return ListView.builder(
+                  itemCount: channels.length,
+                  itemBuilder: (_, i) => _ChannelTile(
+                    channel   : channels[i],
+                    isSelected: false,
+                    onTap     : () => _selectChannel(channels[i]),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      );
+    }
+
+    // ── Desktop: two-panel layout ────────────────────────────────────────────
     return LayoutBuilder(
       builder: (context, constraints) {
         final panelWidth = (constraints.maxWidth * 0.28).clamp(240.0, 340.0);
         return Row(
-      children: [
-        // ── Left: Channel List ───────────────────────────────────────────
-        Container(
-          width: panelWidth,
-
-          decoration: BoxDecoration(border: Border(right: BorderSide(color: AppColors.getBorderColor(context)))),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
-                child: Row(
-                  children: [
-                    Text('Messages', style: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.getHeadingColor(context))),
-                    const Spacer(),
-                    Icon(FeatherIcons.hash, color: AppColors.accent, size: 18),
-                  ],
-                ),
+          children: [
+            Container(
+              width: panelWidth,
+              decoration: BoxDecoration(border: Border(right: BorderSide(color: AppColors.getBorderColor(context)))),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+                    child: Row(
+                      children: [
+                        Text('Messages', style: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.getHeadingColor(context))),
+                        const Spacer(),
+                        Icon(FeatherIcons.hash, color: AppColors.accent, size: 18),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: channelsAsync.when(
+                      loading: () => const Center(child: CircularProgressIndicator()),
+                      error: (e, _) => const Center(child: Text('Error loading channels')),
+                      data: (channels) {
+                        if (channels.isEmpty) return const Center(child: Text('No channels.'));
+                        return ListView.builder(
+                          itemCount: channels.length,
+                          itemBuilder: (_, i) => _ChannelTile(
+                            channel   : channels[i],
+                            isSelected: selectedChannel?.id == channels[i].id,
+                            onTap     : () => _selectChannel(channels[i]),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
               ),
-              Expanded(
-                child: channelsAsync.when(
-                  loading: () => const Center(child: CircularProgressIndicator()),
-                  error: (e, _) => Center(child: Text('Error loading channels')),
-                  data: (channels) {
-                    if (channels.isEmpty) return const Center(child: Text('No channels.'));
-                    return ListView.builder(
-                      itemCount: channels.length,
-                      itemBuilder: (_, i) => _ChannelTile(
-                        channel   : channels[i],
-                        isSelected: selectedChannel?.id == channels[i].id,
-                        onTap     : () => _selectChannel(channels[i]),
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
-        ),
-
-        // ── Right: Chat Area ─────────────────────────────────────────────
-        Expanded(
-          child: selectedChannel == null
-              ? _EmptyState()
-              : _ChatArea(
-                  channel    : selectedChannel,
-                  inputCtrl  : _inputCtrl,
-                  scrollCtrl : _scrollCtrl,
-                  pendingFile: _pendingFile,
-                  isSending  : _isSending,
-                  typingUser : _typingUser,
-                  replyingTo : _replyingTo,
-                  onSend     : _send,
-                  onPickFile : _pickFile,
-                  onClearFile: _clearFile,
-                  onTyping   : _emitTyping,
-                  onReply    : _setReply,
-                  onClearReply: _clearReply,
-                ),
-        ),
-      ],
-    );
+            ),
+            Expanded(
+              child: selectedChannel == null
+                  ? _EmptyState()
+                  : _ChatArea(
+                      channel     : selectedChannel,
+                      inputCtrl   : _inputCtrl,
+                      scrollCtrl  : _scrollCtrl,
+                      pendingFile : _pendingFile,
+                      isSending   : _isSending,
+                      typingUser  : _typingUser,
+                      replyingTo  : _replyingTo,
+                      onSend      : _send,
+                      onPickFile  : _pickFile,
+                      onClearFile : _clearFile,
+                      onTyping    : _emitTyping,
+                      onReply     : _setReply,
+                      onClearReply: _clearReply,
+                    ),
+            ),
+          ],
+        );
       },
     );
   }
 }
-
 
 // ─────────────────────────────────────────────────────────────────────────────
 class _ChannelTile extends StatelessWidget {
@@ -398,11 +458,15 @@ class _ChatArea extends ConsumerWidget {
   final void Function(ApiMessageModel) onReply;
   final VoidCallback onClearReply;
 
+  final bool showBackButton;
+  final VoidCallback? onBack;
+
   const _ChatArea({
     required this.channel, required this.inputCtrl, required this.scrollCtrl, required this.pendingFile,
     required this.isSending, required this.typingUser, required this.replyingTo,
     required this.onSend, required this.onPickFile, required this.onClearFile,
     required this.onTyping, required this.onReply, required this.onClearReply,
+    this.showBackButton = false, this.onBack,
   });
 
   @override
@@ -414,17 +478,28 @@ class _ChatArea extends ConsumerWidget {
       children: [
         // ── Header ────────────────────────────────────────────────────────
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
           decoration: BoxDecoration(border: Border(bottom: BorderSide(color: AppColors.getBorderColor(context)))),
           child: Row(
             children: [
+              if (showBackButton) ...[
+                InkWell(
+                  onTap: onBack,
+                  borderRadius: BorderRadius.circular(8),
+                  child: Padding(
+                    padding: const EdgeInsets.all(6),
+                    child: Icon(FeatherIcons.arrowLeft, color: AppColors.accent, size: 20),
+                  ),
+                ),
+                const SizedBox(width: 4),
+              ],
               Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: AppColors.accent.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)), child: Icon(FeatherIcons.hash, color: AppColors.accent, size: 16)),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(channel.subjectName, style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.getHeadingColor(context))),
+                    Text(channel.subjectName, style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 15, color: AppColors.getHeadingColor(context)), overflow: TextOverflow.ellipsis),
                     if (channel.teacherName != null) Text('Teacher: ${channel.teacherName}', style: GoogleFonts.outfit(fontSize: 11, color: AppColors.getBodyColor(context))),
                   ],
                 ),
