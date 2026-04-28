@@ -70,8 +70,6 @@ class SidebarWidget extends ConsumerWidget {
               itemBuilder: (context, index) {
                 final item = items[index];
                 final isSelected = selectedIndex == index;
-                // Unread badge for Messages (index 5)
-                // TODO: wire to messagesNotifierProvider for real unread count
                 const int unreadCount = 0;
 
                 return Padding(
@@ -219,8 +217,7 @@ class SidebarWidget extends ConsumerWidget {
                         ),
                       ),
                       const SizedBox(width: 4),
-                      // Logout button — clearly tappable
-
+                      // Logout button
                       Tooltip(
                         message: 'Logout',
                         child: InkWell(

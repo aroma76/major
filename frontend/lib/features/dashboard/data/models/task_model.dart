@@ -11,6 +11,8 @@ class TaskModel {
   final TaskPriority priority;
   final DateTime dueDate;
   final String? attachments;
+  final String? notes;
+  final String? questions;
 
   TaskModel({
     required this.id,
@@ -21,6 +23,8 @@ class TaskModel {
     required this.priority,
     required this.dueDate,
     this.attachments,
+    this.notes,
+    this.questions,
   });
 
   TaskModel copyWith({
@@ -32,6 +36,8 @@ class TaskModel {
     TaskPriority? priority,
     DateTime? dueDate,
     String? attachments,
+    String? notes,
+    String? questions,
   }) {
     return TaskModel(
       id: id ?? this.id,
@@ -42,6 +48,8 @@ class TaskModel {
       priority: priority ?? this.priority,
       dueDate: dueDate ?? this.dueDate,
       attachments: attachments ?? this.attachments,
+      notes: notes ?? this.notes,
+      questions: questions ?? this.questions,
     );
   }
 }

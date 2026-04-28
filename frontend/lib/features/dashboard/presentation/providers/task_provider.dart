@@ -183,3 +183,67 @@ class ProjectNotifier extends Notifier<List<ProjectModel>> {
 }
 
 // chatProvider removed — real unread counts come from messagesNotifierProvider
+
+// ── Dashboard Notes & Questions ───────────────────────────────────────────────
+
+enum DashboardNoteType { note, question }
+
+class DashboardNote {
+  final String id;
+  final String content;
+  final DashboardNoteType type;
+  final DateTime createdAt;
+  final bool isResolved; // for questions: marks answered
+
+  DashboardNote({
+    required this.id,
+    required this.content,
+    required this.type,
+    required this.createdAt,
+    this.isResolved = false,
+  });
+
+  DashboardNote copyWith({
+    String? content,
+    DashboardNoteType? type,
+    bool? isResolved,
+  }) =>
+      DashboardNote(
+        id: id,
+        content: content ?? this.content,
+        type: type ?? this.type,
+        createdAt: createdAt,
+        isResolved: isResolved ?? this.isResolved,
+      );
+}
+
+final dashboardNotesProvider =
+    NotifierProvider<DashboardNotesNotifier, List<DashboardNote>>(
+        DashboardNotesNotifier.new);
+
+class DashboardNotesNotifier extends Notifier<List<DashboardNote>> {
+  @override
+  List<DashboardNote> build() => [];
+
+  void add(String content, DashboardNoteType type) {
+    state = [
+      ...state,
+      DashboardNote(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        content: content,
+        type: type,
+        createdAt: DateTime.now(),
+      ),
+    ];
+  }
+
+  void toggleResolved(String id) {
+    state = [
+      for (final n in state)
+        if (n.id == id) n.copyWith(isResolved: !n.isResolved) else n,
+    ];
+  }
+
+  void remove(String id) => state = state.where((n) => n.id != id).toList();
+}
+

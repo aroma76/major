@@ -10,6 +10,7 @@ import '../../data/models/task_model.dart';
 import 'subject_color_manager.dart';
 import 'kanban_board_widget.dart';
 import 'announcements_panel.dart';
+import 'notes_questions_widget.dart';
 
 class TodayOverviewWidget extends ConsumerStatefulWidget {
   const TodayOverviewWidget({super.key});
@@ -75,6 +76,7 @@ class _TodayOverviewWidgetState extends ConsumerState<TodayOverviewWidget>
     final tasks = ref.watch(taskProvider);
     final channelsAsync = ref.watch(channelsProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isMobile = MediaQuery.of(context).size.width < 600;
 
     final pendingCount = tasks.where((t) => t.status != TaskStatus.done).length;
     final urgentCount = tasks.where((t) =>
@@ -95,7 +97,7 @@ class _TodayOverviewWidgetState extends ConsumerState<TodayOverviewWidget>
       child: SlideTransition(
         position: _slideAnim,
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
+          padding: EdgeInsets.all(isMobile ? 16 : 24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -107,12 +109,13 @@ class _TodayOverviewWidgetState extends ConsumerState<TodayOverviewWidget>
                 pendingCount: pendingCount,
                 urgentCount: urgentCount,
                 isDark: isDark,
+                isMobile: isMobile,
               ),
-              const SizedBox(height: 28),
+              const SizedBox(height: 24),
 
               // ── Quick Action Buttons ─────────────────────────────────────
-              _QuickActions(ref: ref),
-              const SizedBox(height: 28),
+              _QuickActions(ref: ref, isMobile: isMobile),
+              const SizedBox(height: 24),
 
               // ── Upcoming Deadlines ───────────────────────────────────────
               if (upcomingTasks.isNotEmpty) ...[
@@ -128,7 +131,7 @@ class _TodayOverviewWidgetState extends ConsumerState<TodayOverviewWidget>
                         _DeadlineCard(task: upcomingTasks[index]),
                   ),
                 ),
-                const SizedBox(height: 28),
+                const SizedBox(height: 24),
               ],
 
               // ── Subject Progress (real channels) ───────────────────────────
@@ -142,11 +145,11 @@ class _TodayOverviewWidgetState extends ConsumerState<TodayOverviewWidget>
                           const SizedBox(height: 14),
                           ...channels.map((ch) => _SubjectProgressRow(
                                 name: ch.subjectName.isNotEmpty ? ch.subjectName : ch.channelName,
-                                progress: 0.0, // progress tracked via assignments in future
+                                progress: 0.0,
                                 teacher: ch.teacherName ?? 'Faculty',
                                 pendingTasks: 0,
                               )),
-                          const SizedBox(height: 28),
+                          const SizedBox(height: 24),
                         ],
                       ),
               ) ?? const SizedBox.shrink(),
@@ -155,6 +158,12 @@ class _TodayOverviewWidgetState extends ConsumerState<TodayOverviewWidget>
               _SectionHeader(title: 'Task Board', icon: FeatherIcons.trello),
               const SizedBox(height: 14),
               const KanbanBoardWidget(),
+              const SizedBox(height: 32),
+
+              // ── Notes & Questions ────────────────────────────────────────
+              _SectionHeader(title: 'Notes & Questions', icon: FeatherIcons.edit3),
+              const SizedBox(height: 14),
+              const NotesQuestionsWidget(),
               const SizedBox(height: 32),
 
               // ── Recent Announcements ─────────────────────────────────────
@@ -177,6 +186,7 @@ class _HeroBanner extends StatelessWidget {
   final int pendingCount;
   final int urgentCount;
   final bool isDark;
+  final bool isMobile;
 
   const _HeroBanner({
     required this.greeting,
@@ -185,6 +195,7 @@ class _HeroBanner extends StatelessWidget {
     required this.pendingCount,
     required this.urgentCount,
     required this.isDark,
+    this.isMobile = false,
   });
 
   @override
@@ -195,7 +206,7 @@ class _HeroBanner extends StatelessWidget {
 
       return Container(
         width: double.infinity,
-        padding: const EdgeInsets.all(28),
+        padding: EdgeInsets.all(isMobile ? 18 : 28),
         decoration: BoxDecoration(
           gradient: const LinearGradient(
             colors: [Color(0xFF1F6FEB), Color(0xFF58A6FF), Color(0xFF3FB950)],
@@ -329,7 +340,8 @@ class _StatChip extends StatelessWidget {
 // ─────────────────────────────────────────────────────────────────────────────
 class _QuickActions extends StatelessWidget {
   final WidgetRef ref;
-  const _QuickActions({required this.ref});
+  final bool isMobile;
+  const _QuickActions({required this.ref, this.isMobile = false});
 
   @override
   Widget build(BuildContext context) {
@@ -339,6 +351,45 @@ class _QuickActions extends StatelessWidget {
       _QuickAction(icon: FeatherIcons.calendar, label: 'Calendar', color: const Color(0xFF238636), navIndex: 4),
       _QuickAction(icon: FeatherIcons.folder, label: 'Projects', color: const Color(0xFFA475F9), navIndex: 3),
     ];
+
+    if (isMobile) {
+      // 2x2 grid on mobile
+      return Column(
+        children: [
+          Row(
+            children: actions.sublist(0, 2).map((action) {
+              return Expanded(
+                child: Padding(
+                  padding: EdgeInsets.only(
+                    right: action == actions[0] ? 8 : 0,
+                  ),
+                  child: _QuickActionCard(
+                    action: action,
+                    onTap: () => ref.read(navigationProvider.notifier).navigateTo(action.navIndex),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: actions.sublist(2, 4).map((action) {
+              return Expanded(
+                child: Padding(
+                  padding: EdgeInsets.only(
+                    right: action == actions[2] ? 8 : 0,
+                  ),
+                  child: _QuickActionCard(
+                    action: action,
+                    onTap: () => ref.read(navigationProvider.notifier).navigateTo(action.navIndex),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ],
+      );
+    }
 
     return LayoutBuilder(builder: (context, constraints) {
       return Row(

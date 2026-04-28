@@ -24,47 +24,78 @@ class AssignmentsViewWidget extends ConsumerWidget {
       return matchesSubject && matchesPriority;
     }).toList();
 
+    final isMobile = MediaQuery.of(context).size.width < 600;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Header (Non-sticky part of the header)
+        // Header
         Padding(
-          padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Assignments',
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.getHeadingColor(context),
+          padding: EdgeInsets.fromLTRB(
+              isMobile ? 16 : 24, isMobile ? 16 : 24, isMobile ? 16 : 24, 0),
+          child: isMobile
+              ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Assignments',
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.getHeadingColor(context),
+                      ),
                     ),
-                  ),
-                  Text(
-                    'Manage and track your academic assignments',
-                    style: TextStyle(color: AppColors.getBodyColor(context), fontSize: 14),
-                  ),
-                ],
-              ),
-              _buildViewToggler(context, ref, viewType),
-            ],
-          ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Manage and track your academic assignments',
+                      style: TextStyle(
+                          color: AppColors.getBodyColor(context), fontSize: 12),
+                    ),
+                    const SizedBox(height: 12),
+                    _buildViewToggler(context, ref, viewType),
+                  ],
+                )
+              : Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Assignments',
+                          style: TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.getHeadingColor(context),
+                          ),
+                        ),
+                        Text(
+                          'Manage and track your academic assignments',
+                          style: TextStyle(
+                              color: AppColors.getBodyColor(context),
+                              fontSize: 14),
+                        ),
+                      ],
+                    ),
+                    _buildViewToggler(context, ref, viewType),
+                  ],
+                ),
         ),
-        
-        // Sticky Filter Bar
+
+        // Filter Bar
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          padding: EdgeInsets.symmetric(
+              horizontal: isMobile ? 16 : 24, vertical: 12),
           color: Theme.of(context).scaffoldBackgroundColor,
-          child: _buildFilterBar(context, ref, tasks, selectedSubject, selectedPriority),
+          child: _buildFilterBar(
+              context, ref, tasks, selectedSubject, selectedPriority,
+              isMobile: isMobile),
         ),
-        
+
         Expanded(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
+            padding:
+                EdgeInsets.symmetric(horizontal: isMobile ? 12 : 24),
             child: AnimatedSwitcher(
               duration: const Duration(milliseconds: 300),
               child: viewType == AssignmentViewType.kanban
@@ -135,37 +166,65 @@ class AssignmentsViewWidget extends ConsumerWidget {
     );
   }
 
-  Widget _buildFilterBar(BuildContext context, WidgetRef ref, List<TaskModel> allTasks, String? subject, TaskPriority? priority) {
+  Widget _buildFilterBar(BuildContext context, WidgetRef ref,
+      List<TaskModel> allTasks, String? subject, TaskPriority? priority,
+      {bool isMobile = false}) {
     final subjects = allTasks.map((t) => t.subject).toSet().toList();
+    final subjectDropdown = _buildDropdownFilter<String?>(
+      context,
+      hint: 'All Subjects',
+      value: subject,
+      items: [
+        const DropdownMenuItem(value: null, child: Text('All Subjects')),
+        ...subjects.map((s) => DropdownMenuItem(value: s, child: Text(s))),
+      ],
+      onChanged: (val) =>
+          ref.read(selectedSubjectFilterProvider.notifier).set(val),
+    );
+    final priorityDropdown = _buildDropdownFilter<TaskPriority?>(
+      context,
+      hint: 'All Priorities',
+      value: priority,
+      items: [
+        const DropdownMenuItem(value: null, child: Text('All Priorities')),
+        ...TaskPriority.values.map(
+            (p) => DropdownMenuItem(value: p, child: Text(p.name.toUpperCase()))),
+      ],
+      onChanged: (val) =>
+          ref.read(selectedPriorityFilterProvider.notifier).set(val),
+    );
+    final countLabel = Text(
+      'Total: ${allTasks.length}',
+      style: TextStyle(
+          color: AppColors.getBodyColor(context),
+          fontWeight: FontWeight.bold,
+          fontSize: 12),
+    );
+
+    if (isMobile) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(child: subjectDropdown),
+              const SizedBox(width: 10),
+              Expanded(child: priorityDropdown),
+            ],
+          ),
+          const SizedBox(height: 8),
+          countLabel,
+        ],
+      );
+    }
 
     return Row(
       children: [
-        _buildDropdownFilter<String?>(
-          context,
-          hint: 'All Subjects',
-          value: subject,
-          items: [
-            const DropdownMenuItem(value: null, child: Text('All Subjects')),
-            ...subjects.map((s) => DropdownMenuItem(value: s, child: Text(s))),
-          ],
-          onChanged: (val) => ref.read(selectedSubjectFilterProvider.notifier).set(val),
-        ),
+        subjectDropdown,
         const SizedBox(width: 16),
-        _buildDropdownFilter<TaskPriority?>(
-          context,
-          hint: 'All Priorities',
-          value: priority,
-          items: [
-            const DropdownMenuItem(value: null, child: Text('All Priorities')),
-            ...TaskPriority.values.map((p) => DropdownMenuItem(value: p, child: Text(p.name.toUpperCase()))),
-          ],
-          onChanged: (val) => ref.read(selectedPriorityFilterProvider.notifier).set(val),
-        ),
+        priorityDropdown,
         const Spacer(),
-        Text(
-          'Total: ${allTasks.length}',
-          style: TextStyle(color: AppColors.getBodyColor(context), fontWeight: FontWeight.bold),
-        ),
+        countLabel,
       ],
     );
   }
@@ -199,14 +258,18 @@ class AssignmentsViewWidget extends ConsumerWidget {
   }
 
   Widget _buildListView(BuildContext context, List<TaskModel> tasks) {
+    final isMobile = MediaQuery.of(context).size.width < 600;
     if (tasks.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.assignment_late_outlined, size: 48, color: AppColors.getBodyColor(context).withValues(alpha: 0.5)),
+            Icon(Icons.assignment_late_outlined,
+                size: 48,
+                color: AppColors.getBodyColor(context).withValues(alpha: 0.5)),
             const SizedBox(height: 16),
-            Text('No assignments found matching these filters', style: TextStyle(color: AppColors.getBodyColor(context))),
+            Text('No assignments found matching these filters',
+                style: TextStyle(color: AppColors.getBodyColor(context))),
           ],
         ),
       );
@@ -221,51 +284,123 @@ class AssignmentsViewWidget extends ConsumerWidget {
           padding: const EdgeInsets.only(bottom: 12),
           child: InkWell(
             onTap: () {
-               showDialog(
+              showDialog(
                 context: context,
                 builder: (context) => TaskDetailsDialog(task: task),
               );
             },
             borderRadius: BorderRadius.circular(16),
             child: Container(
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.all(isMobile ? 12 : 16),
               decoration: BoxDecoration(
                 color: AppColors.getSurfaceColor(context),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: AppColors.getBorderColor(context)),
               ),
-              child: Row(
-                children: [
-                  _buildStatusIcon(task.status),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
+              child: isMobile
+                  ? Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          task.title,
-                          style: TextStyle(color: AppColors.getHeadingColor(context), fontWeight: FontWeight.bold, fontSize: 16),
-                        ),
-                        const SizedBox(height: 4),
                         Row(
                           children: [
-                            Text(task.subject, style: TextStyle(color: AppColors.getBodyColor(context), fontSize: 13)),
-                            const SizedBox(width: 8),
-                            Container(width: 4, height: 4, decoration: BoxDecoration(color: AppColors.getBodyColor(context), shape: BoxShape.circle)),
-                            const SizedBox(width: 8),
-                            Icon(Icons.calendar_today, size: 12, color: AppColors.getBodyColor(context)),
-                            const SizedBox(width: 4),
-                            Text(DateFormat('MMM d, y').format(task.dueDate), style: TextStyle(color: AppColors.getBodyColor(context), fontSize: 12)),
+                            _buildStatusIcon(task.status),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                task.title,
+                                style: TextStyle(
+                                    color: AppColors.getHeadingColor(context),
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14),
+                              ),
+                            ),
+                            _buildPriorityTag(task.priority),
                           ],
                         ),
+                        const SizedBox(height: 8),
+                        Padding(
+                          padding: const EdgeInsets.only(left: 42),
+                          child: Row(
+                            children: [
+                              Icon(Icons.book_outlined,
+                                  size: 11,
+                                  color: AppColors.getBodyColor(context)),
+                              const SizedBox(width: 4),
+                              Expanded(
+                                child: Text(
+                                  task.subject,
+                                  style: TextStyle(
+                                      color: AppColors.getBodyColor(context),
+                                      fontSize: 11),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Icon(Icons.calendar_today,
+                                  size: 11,
+                                  color: AppColors.getBodyColor(context)),
+                              const SizedBox(width: 4),
+                              Text(
+                                DateFormat('MMM d, y').format(task.dueDate),
+                                style: TextStyle(
+                                    color: AppColors.getBodyColor(context),
+                                    fontSize: 11),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    )
+                  : Row(
+                      children: [
+                        _buildStatusIcon(task.status),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                task.title,
+                                style: TextStyle(
+                                    color: AppColors.getHeadingColor(context),
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16),
+                              ),
+                              const SizedBox(height: 4),
+                              Row(
+                                children: [
+                                  Text(task.subject,
+                                      style: TextStyle(
+                                          color: AppColors.getBodyColor(context),
+                                          fontSize: 13)),
+                                  const SizedBox(width: 8),
+                                  Container(
+                                      width: 4,
+                                      height: 4,
+                                      decoration: BoxDecoration(
+                                          color: AppColors.getBodyColor(context),
+                                          shape: BoxShape.circle)),
+                                  const SizedBox(width: 8),
+                                  Icon(Icons.calendar_today,
+                                      size: 12,
+                                      color: AppColors.getBodyColor(context)),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                      DateFormat('MMM d, y').format(task.dueDate),
+                                      style: TextStyle(
+                                          color: AppColors.getBodyColor(context),
+                                          fontSize: 12)),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        _buildPriorityTag(task.priority),
+                        const SizedBox(width: 16),
+                        Icon(Icons.chevron_right,
+                            color: AppColors.getBodyColor(context)),
                       ],
                     ),
-                  ),
-                  _buildPriorityTag(task.priority),
-                  const SizedBox(width: 16),
-                  Icon(Icons.chevron_right, color: AppColors.getBodyColor(context)),
-                ],
-              ),
             ),
           ),
         );
