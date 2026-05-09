@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_feather_icons/flutter_feather_icons.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:desktop_drop/desktop_drop.dart';
 import 'package:dio/dio.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -29,10 +30,11 @@ class _MessagesViewWidgetState extends ConsumerState<MessagesViewWidget> {
   final TextEditingController _inputCtrl    = TextEditingController();
   final ScrollController       _scrollCtrl  = ScrollController();
 
-  PlatformFile?    _pendingFile;
+  List<PlatformFile> _pendingFiles = [];   // multi-file queue
   bool             _isSending  = false;
   String?          _typingUser;
   ApiMessageModel? _replyingTo;
+  bool             _isDragging = false;
 
   // ── Lifecycle ─────────────────────────────────────────────────────────────
   @override
@@ -122,12 +124,12 @@ class _MessagesViewWidgetState extends ConsumerState<MessagesViewWidget> {
     if (channel == null) return;
 
     final text = _inputCtrl.text.trim();
-    if (text.isEmpty && _pendingFile == null) return;
+    if (text.isEmpty && _pendingFiles.isEmpty) return;
 
     final parentId = _replyingTo?.id;
 
-    if (_pendingFile != null) {
-      await _uploadFile(channel.id, text, parentId);
+    if (_pendingFiles.isNotEmpty) {
+      await _uploadFiles(channel.id, text, parentId);
     } else {
       // Optimistically append the message so the sender sees it immediately
       final currentUser = AuthService().currentUser;
@@ -155,56 +157,39 @@ class _MessagesViewWidgetState extends ConsumerState<MessagesViewWidget> {
     }
   }
 
-  Future<void> _uploadFile(int channelId, String caption, int? parentId) async {
-    final file = _pendingFile!;
-
-    // Guard: bytes must exist (Flutter Web requires withData: true in picker)
-    final bytes = file.bytes;
-    if (bytes == null || bytes.isEmpty) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Could not read file data. Please try picking the file again.'),
-          backgroundColor: Colors.orange,
-        ));
-      }
-      setState(() => _pendingFile = null);
-      return;
-    }
-
+  Future<void> _uploadFiles(int channelId, String caption, int? parentId) async {
+    if (_pendingFiles.isEmpty) return;
     setState(() => _isSending = true);
+    final files = List<PlatformFile>.from(_pendingFiles);
+    setState(() => _pendingFiles = []);
+    _inputCtrl.clear();
+    _clearReply();
     try {
-      // Derive MIME type from extension so Cloudinary resource_type:auto works correctly
-      final ext  = file.extension?.toLowerCase() ?? '';
-      final mime = _mimeFromExt(ext);
-      final parts = mime.split('/');
-
-      final formData = FormData.fromMap({
-        'content': caption.isNotEmpty ? caption : file.name,
-        'file': MultipartFile.fromBytes(
-          bytes,
-          filename: file.name,
-          contentType: MediaType(parts[0], parts.length > 1 ? parts[1] : 'octet-stream'),
-        ),
-        if (parentId != null) 'parent_id': parentId,
-      });
-
-      final response = await ApiService().sendMessage(channelId, formData);
-      final saved = (response.data as Map<String, dynamic>)['message']
-          as Map<String, dynamic>?;
-
-      // Optimistically show the file in chat for the sender
-      // (the socket broadcast is suppressed for self-sent messages)
-      if (saved != null && mounted) {
-        final msg = ApiMessageModel.fromJson(saved);
-        ref.read(messagesNotifierProvider(channelId).notifier).append(msg);
-        _scrollToBottom();
+      for (final file in files) {
+        final bytes = file.bytes;
+        if (bytes == null || bytes.isEmpty) continue;
+        final ext  = file.extension?.toLowerCase() ?? '';
+        final mime = _mimeFromExt(ext);
+        final parts = mime.split('/');
+        final formData = FormData.fromMap({
+          'content': caption.isNotEmpty ? caption : file.name,
+          'file': MultipartFile.fromBytes(
+            bytes,
+            filename: file.name,
+            contentType: MediaType(parts[0], parts.length > 1 ? parts[1] : 'octet-stream'),
+          ),
+          if (parentId != null) 'parent_id': parentId,
+        });
+        final response = await ApiService().sendMessage(channelId, formData);
+        final saved = (response.data as Map<String, dynamic>)['message']
+            as Map<String, dynamic>?;
+        if (saved != null && mounted) {
+          final msg = ApiMessageModel.fromJson(saved);
+          ref.read(messagesNotifierProvider(channelId).notifier).append(msg);
+          _scrollToBottom();
+        }
+        caption = ''; // only add caption to first file
       }
-
-      setState(() {
-        _pendingFile = null;
-        _inputCtrl.clear();
-      });
-      _clearReply();
     } catch (e) {
       if (mounted) {
         final msg = e is DioException
@@ -222,9 +207,11 @@ class _MessagesViewWidgetState extends ConsumerState<MessagesViewWidget> {
   /// Returns a MIME type string for a given file extension.
   static String _mimeFromExt(String ext) {
     const map = {
+      // Images
       'jpg': 'image/jpeg', 'jpeg': 'image/jpeg', 'png': 'image/png',
       'gif': 'image/gif',  'webp': 'image/webp', 'bmp': 'image/bmp',
       'svg': 'image/svg+xml',
+      // Documents
       'pdf': 'application/pdf',
       'doc': 'application/msword',
       'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
@@ -232,21 +219,47 @@ class _MessagesViewWidgetState extends ConsumerState<MessagesViewWidget> {
       'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
       'ppt': 'application/vnd.ms-powerpoint',
       'pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+      // Text & code
       'txt': 'text/plain',
+      'md':  'text/markdown',
+      'py':  'text/x-python',
+      'js':  'text/javascript',
+      'ts':  'text/typescript',
+      'dart':'text/plain',
+      'java':'text/plain',
+      'c':   'text/plain',
+      'cpp': 'text/plain',
+      'cs':  'text/plain',
+      'go':  'text/plain',
+      'rb':  'text/plain',
+      'sh':  'text/plain',
+      // Data
+      'json':'application/json',
+      'xml': 'application/xml',
+      'csv': 'text/csv',
+      'yaml':'text/yaml',
+      'yml': 'text/yaml',
+      // Archives
       'zip': 'application/zip',
-      'mp4': 'video/mp4',  'mov': 'video/quicktime',
-      'mp3': 'audio/mpeg', 'wav': 'audio/wav',
+      'rar': 'application/x-rar-compressed',
+      '7z':  'application/x-7z-compressed',
     };
     return map[ext] ?? 'application/octet-stream';
   }
 
   Future<void> _pickFile() async {
-    final result = await FilePicker.platform.pickFiles(type: FileType.any, withData: true);
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.any,
+      withData: true,
+      allowMultiple: true,   // WhatsApp-style: pick many at once
+    );
     if (result != null && result.files.isNotEmpty) {
-      setState(() => _pendingFile = result.files.first);
+      setState(() => _pendingFiles = [..._pendingFiles, ...result.files]);
     }
   }
-  void _clearFile() => setState(() => _pendingFile = null);
+
+  void _clearFile(int index) => setState(() => _pendingFiles.removeAt(index));
+  void _clearAllFiles() => setState(() => _pendingFiles = []);
 
   // ── Build ─────────────────────────────────────────────────────────────────
   @override
@@ -258,25 +271,30 @@ class _MessagesViewWidgetState extends ConsumerState<MessagesViewWidget> {
     // ── Mobile: single-panel — channel list OR chat ──────────────────────────
     if (isMobile) {
       if (selectedChannel != null) {
-        return _ChatArea(
-          channel     : selectedChannel,
-          inputCtrl   : _inputCtrl,
-          scrollCtrl  : _scrollCtrl,
-          pendingFile : _pendingFile,
-          isSending   : _isSending,
-          typingUser  : _typingUser,
-          replyingTo  : _replyingTo,
-          onSend      : _send,
-          onPickFile  : _pickFile,
-          onClearFile : _clearFile,
-          onTyping    : _emitTyping,
-          onReply     : _setReply,
-          onClearReply: _clearReply,
-          showBackButton: true,
-          onBack: () {
-            SocketService().leaveChannel(selectedChannel.id);
-            ref.read(selectedChannelProvider.notifier).select(null);
-          },
+        return _buildDropTarget(
+          selectedChannel,
+          _ChatArea(
+            channel     : selectedChannel,
+            inputCtrl   : _inputCtrl,
+            scrollCtrl  : _scrollCtrl,
+            pendingFiles: _pendingFiles,
+            isSending   : _isSending,
+            isDragging  : _isDragging,
+            typingUser  : _typingUser,
+            replyingTo  : _replyingTo,
+            onSend      : _send,
+            onPickFile  : _pickFile,
+            onClearFile : _clearFile,
+            onClearAllFiles: _clearAllFiles,
+            onTyping    : _emitTyping,
+            onReply     : _setReply,
+            onClearReply: _clearReply,
+            showBackButton: true,
+            onBack: () {
+              SocketService().leaveChannel(selectedChannel.id);
+              ref.read(selectedChannelProvider.notifier).select(null);
+            },
+          ),
         );
       }
 
@@ -363,25 +381,80 @@ class _MessagesViewWidgetState extends ConsumerState<MessagesViewWidget> {
             Expanded(
               child: selectedChannel == null
                   ? _EmptyState()
-                  : _ChatArea(
-                      channel     : selectedChannel,
-                      inputCtrl   : _inputCtrl,
-                      scrollCtrl  : _scrollCtrl,
-                      pendingFile : _pendingFile,
-                      isSending   : _isSending,
-                      typingUser  : _typingUser,
-                      replyingTo  : _replyingTo,
-                      onSend      : _send,
-                      onPickFile  : _pickFile,
-                      onClearFile : _clearFile,
-                      onTyping    : _emitTyping,
-                      onReply     : _setReply,
-                      onClearReply: _clearReply,
+                  : _buildDropTarget(
+                      selectedChannel,
+                      _ChatArea(
+                        channel     : selectedChannel,
+                        inputCtrl   : _inputCtrl,
+                        scrollCtrl  : _scrollCtrl,
+                        pendingFiles: _pendingFiles,
+                        isSending   : _isSending,
+                        isDragging  : _isDragging,
+                        typingUser  : _typingUser,
+                        replyingTo  : _replyingTo,
+                        onSend      : _send,
+                        onPickFile  : _pickFile,
+                        onClearFile : _clearFile,
+                        onClearAllFiles: _clearAllFiles,
+                        onTyping    : _emitTyping,
+                        onReply     : _setReply,
+                        onClearReply: _clearReply,
+                      ),
                     ),
             ),
           ],
         );
       },
+    );
+  }
+
+
+  /// Wraps [child] in a [DropTarget] that accepts OS-level file drags.
+  Widget _buildDropTarget(ChannelModel channel, Widget child) {
+    return DropTarget(
+      onDragEntered: (_) => setState(() => _isDragging = true),
+      onDragExited:  (_) => setState(() => _isDragging = false),
+      onDragDone: (details) async {
+        setState(() => _isDragging = false);
+        final dropped = <PlatformFile>[];
+        for (final f in details.files) {
+          final bytes = await f.readAsBytes();
+          final name  = f.name;
+          dropped.add(PlatformFile(
+            name: name,
+            size: bytes.length,
+            bytes: bytes,
+            readStream: null,
+          ));
+        }
+        if (dropped.isNotEmpty) setState(() => _pendingFiles = [..._pendingFiles, ...dropped]);
+      },
+      child: Stack(
+        children: [
+          child,
+          if (_isDragging)
+            Positioned.fill(
+              child: Container(
+                decoration: BoxDecoration(
+                  color: AppColors.accent.withValues(alpha: 0.12),
+                  border: Border.all(color: AppColors.accent, width: 2),
+                ),
+                child: Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(FeatherIcons.uploadCloud, size: 48, color: AppColors.accent),
+                      const SizedBox(height: 12),
+                      Text('Drop files to send',
+                          style: GoogleFonts.outfit(fontSize: 18,
+                              fontWeight: FontWeight.bold, color: AppColors.accent)),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
     );
   }
 }
@@ -447,13 +520,15 @@ class _ChatArea extends ConsumerWidget {
   final ChannelModel channel;
   final TextEditingController inputCtrl;
   final ScrollController scrollCtrl;
-  final PlatformFile? pendingFile;
+  final List<PlatformFile> pendingFiles;
   final bool isSending;
+  final bool isDragging;
   final String? typingUser;
   final ApiMessageModel? replyingTo;
   final Future<void> Function() onSend;
   final Future<void> Function() onPickFile;
-  final VoidCallback onClearFile;
+  final void Function(int) onClearFile;
+  final VoidCallback onClearAllFiles;
   final VoidCallback onTyping;
   final void Function(ApiMessageModel) onReply;
   final VoidCallback onClearReply;
@@ -462,9 +537,11 @@ class _ChatArea extends ConsumerWidget {
   final VoidCallback? onBack;
 
   const _ChatArea({
-    required this.channel, required this.inputCtrl, required this.scrollCtrl, required this.pendingFile,
-    required this.isSending, required this.typingUser, required this.replyingTo,
-    required this.onSend, required this.onPickFile, required this.onClearFile,
+    required this.channel, required this.inputCtrl, required this.scrollCtrl,
+    required this.pendingFiles, required this.isSending, required this.isDragging,
+    required this.typingUser, required this.replyingTo,
+    required this.onSend, required this.onPickFile,
+    required this.onClearFile, required this.onClearAllFiles,
     required this.onTyping, required this.onReply, required this.onClearReply,
     this.showBackButton = false, this.onBack,
   });
@@ -555,8 +632,11 @@ class _ChatArea extends ConsumerWidget {
 
         // ── Input Bar ─────────────────────────────────────────────────────
         _InputBar(
-          inputCtrl: inputCtrl, pendingFile: pendingFile, isSending: isSending, replyingTo: replyingTo,
-          onSend: onSend, onPickFile: onPickFile, onClearFile: onClearFile, onTyping: onTyping, onClearReply: onClearReply,
+          inputCtrl: inputCtrl, pendingFiles: pendingFiles,
+          isSending: isSending, replyingTo: replyingTo,
+          onSend: onSend, onPickFile: onPickFile,
+          onClearFile: onClearFile, onClearAllFiles: onClearAllFiles,
+          onTyping: onTyping, onClearReply: onClearReply,
         ),
       ],
     );
@@ -608,8 +688,20 @@ class _MessageBubbleState extends ConsumerState<_MessageBubble> {
 
   static IconData _fileIcon(String? name) {
     final ext = name?.split('.').last.toLowerCase() ?? '';
-    if (['jpg', 'jpeg', 'png', 'gif', 'webp'].contains(ext)) return FeatherIcons.image;
-    if (ext == 'pdf') return FeatherIcons.fileText;
+    const images = ['jpg','jpeg','png','gif','webp','bmp','svg'];
+    const code   = ['py','js','ts','dart','java','c','cpp','cs','go','rb','sh','json','xml','yaml','yml','ipynb'];
+    const sheets = ['xls','xlsx','csv'];
+    const slides = ['ppt','pptx'];
+    const docs   = ['doc','docx'];
+    const arch   = ['zip','rar','7z'];
+    if (images.contains(ext))  return FeatherIcons.image;
+    if (ext == 'pdf')          return FeatherIcons.fileText;
+    if (docs.contains(ext))    return FeatherIcons.file;
+    if (sheets.contains(ext))  return FeatherIcons.grid;
+    if (slides.contains(ext))  return FeatherIcons.monitor;
+    if (code.contains(ext))    return FeatherIcons.code;
+    if (['txt','md'].contains(ext)) return FeatherIcons.alignLeft;
+    if (arch.contains(ext))    return FeatherIcons.archive;
     return FeatherIcons.paperclip;
   }
 
@@ -924,19 +1016,38 @@ class _MessageBubbleState extends ConsumerState<_MessageBubble> {
 // ─────────────────────────────────────────────────────────────────────────────
 class _InputBar extends StatelessWidget {
   final TextEditingController inputCtrl;
-  final PlatformFile? pendingFile;
+  final List<PlatformFile> pendingFiles;
   final bool isSending;
   final ApiMessageModel? replyingTo;
   final Future<void> Function() onSend;
   final Future<void> Function() onPickFile;
-  final VoidCallback onClearFile;
+  final void Function(int) onClearFile;
+  final VoidCallback onClearAllFiles;
   final VoidCallback onTyping;
   final VoidCallback onClearReply;
 
   const _InputBar({
-    required this.inputCtrl, required this.pendingFile, required this.isSending, required this.replyingTo,
-    required this.onSend, required this.onPickFile, required this.onClearFile, required this.onTyping, required this.onClearReply,
+    required this.inputCtrl, required this.pendingFiles, required this.isSending,
+    required this.replyingTo, required this.onSend, required this.onPickFile,
+    required this.onClearFile, required this.onClearAllFiles,
+    required this.onTyping, required this.onClearReply,
   });
+
+  static IconData _fileChipIcon(String name) {
+    final ext = name.contains('.') ? name.split('.').last.toLowerCase() : '';
+    const images = ['jpg','jpeg','png','gif','webp','bmp','svg'];
+    const docs   = ['pdf','doc','docx','ppt','pptx','xls','xlsx'];
+    const code   = ['py','js','ts','dart','java','c','cpp','cs','go','rb','sh','json','xml','yaml','yml','ipynb'];
+    const text   = ['txt','md','csv'];
+    const arch   = ['zip','rar','7z'];
+    if (images.contains(ext)) return FeatherIcons.image;
+    if (ext == 'pdf')         return FeatherIcons.fileText;
+    if (docs.contains(ext))   return FeatherIcons.file;
+    if (code.contains(ext))   return FeatherIcons.code;
+    if (text.contains(ext))   return FeatherIcons.alignLeft;
+    if (arch.contains(ext))   return FeatherIcons.archive;
+    return FeatherIcons.paperclip;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -944,12 +1055,16 @@ class _InputBar extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
       child: Column(
         children: [
-          // Replying to chip
+          // ── Replying-to chip ─────────────────────────────────────────
           if (replyingTo != null)
             Container(
               margin: const EdgeInsets.only(bottom: 8),
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-              decoration: BoxDecoration(color: AppColors.getBorderColor(context).withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10), border: Border(left: BorderSide(color: AppColors.accent, width: 4))),
+              decoration: BoxDecoration(
+                color: AppColors.getBorderColor(context).withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(10),
+                border: Border(left: BorderSide(color: AppColors.accent, width: 4)),
+              ),
               child: Row(
                 children: [
                   Icon(FeatherIcons.cornerUpLeft, color: AppColors.accent, size: 14),
@@ -958,46 +1073,143 @@ class _InputBar extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Replying to ${replyingTo!.senderName}', style: GoogleFonts.outfit(color: AppColors.accent, fontSize: 11, fontWeight: FontWeight.bold)),
-                        Text(replyingTo!.content ?? 'Attachment', style: GoogleFonts.outfit(color: AppColors.getBodyColor(context), fontSize: 12), overflow: TextOverflow.ellipsis, maxLines: 1),
+                        Text('Replying to ${replyingTo!.senderName}',
+                            style: GoogleFonts.outfit(color: AppColors.accent, fontSize: 11, fontWeight: FontWeight.bold)),
+                        Text(replyingTo!.content ?? 'Attachment',
+                            style: GoogleFonts.outfit(color: AppColors.getBodyColor(context), fontSize: 12),
+                            overflow: TextOverflow.ellipsis, maxLines: 1),
                       ],
                     ),
                   ),
-                  GestureDetector(onTap: onClearReply, child: Icon(Icons.close, size: 16, color: AppColors.getBodyColor(context))),
+                  GestureDetector(onTap: onClearReply,
+                      child: Icon(Icons.close, size: 16, color: AppColors.getBodyColor(context))),
                 ],
               ),
             ),
 
-          if (pendingFile != null)
+          // ── Pending files — horizontal scrolling chips ────────────────────
+          if (pendingFiles.isNotEmpty)
             Container(
-              margin: const EdgeInsets.only(bottom: 8), padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-              decoration: BoxDecoration(color: AppColors.accent.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(10), border: Border.all(color: AppColors.accent.withValues(alpha: 0.25))),
+              margin: const EdgeInsets.only(bottom: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+              decoration: BoxDecoration(
+                color: AppColors.accent.withValues(alpha: 0.06),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: AppColors.accent.withValues(alpha: 0.2)),
+              ),
               child: Row(
                 children: [
-                  Icon(FeatherIcons.paperclip, color: AppColors.accent, size: 16),
-                  const SizedBox(width: 8),
-                  Expanded(child: Text(pendingFile!.name, style: GoogleFonts.outfit(color: AppColors.getHeadingColor(context), fontSize: 12), overflow: TextOverflow.ellipsis)),
-                  GestureDetector(onTap: onClearFile, child: Padding(padding: const EdgeInsets.only(left: 6), child: Icon(Icons.close, size: 14, color: AppColors.getBodyColor(context)))),
+                  Expanded(
+                    child: SizedBox(
+                      height: 36,
+                      child: ListView.separated(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: pendingFiles.length,
+                        separatorBuilder: (_, __) => const SizedBox(width: 6),
+                        itemBuilder: (context, i) {
+                          final f = pendingFiles[i];
+                          return Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: AppColors.getSurfaceColor(context),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(color: AppColors.accent.withValues(alpha: 0.3)),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(_fileChipIcon(f.name), size: 13, color: AppColors.accent),
+                                const SizedBox(width: 5),
+                                ConstrainedBox(
+                                  constraints: const BoxConstraints(maxWidth: 100),
+                                  child: Text(f.name,
+                                      style: GoogleFonts.outfit(fontSize: 11,
+                                          color: AppColors.getHeadingColor(context),
+                                          fontWeight: FontWeight.w500),
+                                      overflow: TextOverflow.ellipsis),
+                                ),
+                                const SizedBox(width: 4),
+                                GestureDetector(
+                                  onTap: () => onClearFile(i),
+                                  child: Icon(Icons.close, size: 12,
+                                      color: AppColors.getBodyColor(context)),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                  // Clear all
+                  GestureDetector(
+                    onTap: onClearAllFiles,
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 8),
+                      child: Text('Clear all',
+                          style: GoogleFonts.outfit(
+                              fontSize: 11, color: AppColors.getBodyColor(context))),
+                    ),
+                  ),
                 ],
               ),
             ),
 
+          // ── Main input row ──────────────────────────────────────────
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-            decoration: BoxDecoration(color: AppColors.getSurfaceColor(context), borderRadius: BorderRadius.circular(16), border: Border.all(color: AppColors.getBorderColor(context))),
+            decoration: BoxDecoration(
+              color: AppColors.getSurfaceColor(context),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppColors.getBorderColor(context)),
+            ),
             child: Row(
               children: [
-                IconButton(icon: Icon(FeatherIcons.paperclip, color: pendingFile != null ? AppColors.accent : AppColors.getBodyColor(context), size: 20), onPressed: isSending ? null : onPickFile),
+                Tooltip(
+                  message: 'Attach files (multiple allowed)',
+                  child: IconButton(
+                    icon: Icon(FeatherIcons.paperclip,
+                        color: pendingFiles.isNotEmpty
+                            ? AppColors.accent
+                            : AppColors.getBodyColor(context),
+                        size: 20),
+                    onPressed: isSending ? null : onPickFile,
+                  ),
+                ),
                 Expanded(
                   child: TextField(
-                    controller: inputCtrl, maxLines: null, keyboardType: TextInputType.multiline, onChanged: (_) => onTyping(), onSubmitted: (_) => onSend(),
-                    decoration: InputDecoration(hintText: 'Type a message...', hintStyle: GoogleFonts.outfit(color: AppColors.getBodyColor(context), fontSize: 14), border: InputBorder.none, contentPadding: const EdgeInsets.symmetric(horizontal: 12)),
-                    style: GoogleFonts.outfit(color: AppColors.getHeadingColor(context), fontSize: 14),
+                    controller: inputCtrl,
+                    maxLines: null,
+                    keyboardType: TextInputType.multiline,
+                    onChanged: (_) => onTyping(),
+                    onSubmitted: (_) => onSend(),
+                    decoration: InputDecoration(
+                      hintText: pendingFiles.isEmpty
+                          ? 'Type a message or drop files here…'
+                          : '${pendingFiles.length} file(s) ready — add a caption (optional)',
+                      hintStyle: GoogleFonts.outfit(
+                          color: AppColors.getBodyColor(context), fontSize: 14),
+                      border: InputBorder.none,
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+                    ),
+                    style: GoogleFonts.outfit(
+                        color: AppColors.getHeadingColor(context), fontSize: 14),
                   ),
                 ),
                 isSending
-                    ? const SizedBox(width: 36, height: 36, child: Center(child: SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))))
-                    : GestureDetector(onTap: onSend, child: Container(padding: const EdgeInsets.all(10), decoration: BoxDecoration(gradient: AppColors.accentGradient, borderRadius: BorderRadius.circular(12)), child: const Icon(FeatherIcons.send, color: Colors.white, size: 18))),
+                    ? const SizedBox(width: 36, height: 36,
+                        child: Center(child: SizedBox(width: 18, height: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2))))
+                    : GestureDetector(
+                        onTap: onSend,
+                        child: Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                              gradient: AppColors.accentGradient,
+                              borderRadius: BorderRadius.circular(12)),
+                          child: const Icon(FeatherIcons.send, color: Colors.white, size: 18),
+                        ),
+                      ),
               ],
             ),
           ),
