@@ -110,7 +110,7 @@ const getStudentRecentActivity = async (req, res) => {
     [studentId]
   );
 
-  const channelIds = enrollRes.rows.map(r => r.id ?? r.channel_id);
+  const channelIds = enrollRes.rows.map(r => parseInt(r.channel_id));
 
   if (channelIds.length === 0) {
     return res.json({ success: true, announcements: [], recentMessages: [] });
