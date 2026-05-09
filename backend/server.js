@@ -11,6 +11,7 @@ const { Server } = require('socket.io');
 const errorHandler  = require('./middleware/errorHandler');
 const socketHandler = require('./socket/socketHandler');
 const { setIO }     = require('./controllers/messageController');
+const compression   = require('compression');
 
 const authRoutes         = require('./routes/authRoutes');
 const channelRoutes      = require('./routes/subjectRoutes');
@@ -60,6 +61,7 @@ const io = new Server(server, {
 socketHandler(io);
 setIO(io); // allow REST controllers to broadcast via socket
 
+app.use(compression()); // gzip all JSON responses (~80% size reduction)
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

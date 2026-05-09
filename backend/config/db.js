@@ -3,8 +3,10 @@ require('dotenv').config();
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  // Fix vulnerability: enforce strict SSL validation to prevent MITM attacks
   ssl: process.env.DATABASE_URL?.includes('localhost') ? false : { rejectUnauthorized: false },
+  max: 5,                    // Neon free tier safe — prevents "too many clients"
+  idleTimeoutMillis: 30000,  // release idle connections after 30s
+  connectionTimeoutMillis: 5000, // fail fast if no connection available in 5s
 });
 
 pool.on('connect', () => {

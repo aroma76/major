@@ -57,6 +57,7 @@ final channelAnnouncementsProvider =
 
 final notificationsApiProvider =
     FutureProvider<List<Map<String, dynamic>>>((ref) async {
+  ref.keepAlive(); // don't re-fetch on every notification panel open
   return _notificationRepo.getNotifications();
 });
 

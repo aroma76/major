@@ -4,7 +4,6 @@ import 'package:flutter_feather_icons/flutter_feather_icons.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../providers/api_providers.dart';
-import '../providers/task_provider.dart';
 import '../../data/models/channel_model.dart';
 import 'subject_hub_widget.dart';
 

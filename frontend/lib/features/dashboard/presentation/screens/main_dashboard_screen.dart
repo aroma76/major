@@ -6,7 +6,7 @@ import '../widgets/top_bar_widget.dart';
 import '../widgets/announcements_panel.dart';
 import '../widgets/calendar_view_widget.dart';
 import '../widgets/subjects_view_widget.dart';
-import '../widgets/assignments_view_widget.dart'; // kept for potential future use
+// kept for potential future use
 
 import '../widgets/projects_view_widget.dart';
 import '../widgets/messages_view_widget.dart';
