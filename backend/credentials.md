@@ -1,0 +1,532 @@
+# ADTU Collab - All Login Credentials
+
+> Password for ALL accounts: 2004-05-15
+> Students log in with Roll Number | Faculty/Admin log in with Email
+
+---
+
+## FACULTY & ADMIN (27 accounts)
+
+| Role | Name | Email | Password |
+|------|------|-------|----------|
+| faculty | Dr Deepjyoti Roy | deepjyoti.roy@adtu.ac.in | 2004-05-15 |
+| faculty | Dr Pranjit Dewri | pranjit.dewri@adtu.ac.in | 2004-05-15 |
+| faculty | Dr. Manoj Sarma | manoj.sarma.F06@adtu.in | 2004-05-15 |
+| faculty | Dr. Manoj Sarma | manoj.sarma.F02@adtu.in | 2004-05-15 |
+| faculty | Dr. Manoj Sarma | manoj.sarma.F10@adtu.in | 2004-05-15 |
+| faculty | Dr. Manoj Sarma | manoj.sarma.F01@adtu.in | 2004-05-15 |
+| faculty | Dr. Manoj Sarma | manoj.sarma.F03@adtu.in | 2004-05-15 |
+| faculty | Dr. Manoj Sarma | manoj.sarma.F07@adtu.in | 2004-05-15 |
+| faculty | Dr. Manoj Sarma | manoj.sarma.F04@adtu.in | 2004-05-15 |
+| faculty | Dr. Manoj Sarma | manoj.sarma.F08@adtu.in | 2004-05-15 |
+| faculty | Dr. Manoj Sarma | manoj.sarma.F09@adtu.in | 2004-05-15 |
+| faculty | Dr. Manoj Sarma | manoj.sarma.F05@adtu.in | 2004-05-15 |
+| faculty | Dr. Priya Sharma | priya.test@adtu.in | 2004-05-15 |
+| faculty | Mr Gourab Bhagabati | gourab.bhagabati@adtu.ac.in | 2004-05-15 |
+| faculty | Mr Kaustav Pratim Mahanta | kaustav.mahanta@adtu.ac.in | 2004-05-15 |
+| faculty | Mr Parag J Das | parag.das@adtu.ac.in | 2004-05-15 |
+| faculty | Prof. Anita Gogoi | anita.gogoi.F07@adtu.in | 2004-05-15 |
+| faculty | Prof. Anita Gogoi | anita.gogoi.F08@adtu.in | 2004-05-15 |
+| faculty | Prof. Anita Gogoi | anita.gogoi.F09@adtu.in | 2004-05-15 |
+| faculty | Prof. Anita Gogoi | anita.gogoi.F02@adtu.in | 2004-05-15 |
+| faculty | Prof. Anita Gogoi | anita.gogoi.F05@adtu.in | 2004-05-15 |
+| faculty | Prof. Anita Gogoi | anita.gogoi.F04@adtu.in | 2004-05-15 |
+| faculty | Prof. Anita Gogoi | anita.gogoi.F01@adtu.in | 2004-05-15 |
+| faculty | Prof. Anita Gogoi | anita.gogoi.F03@adtu.in | 2004-05-15 |
+| faculty | Prof. Anita Gogoi | anita.gogoi.F10@adtu.in | 2004-05-15 |
+| faculty | Prof. Anita Gogoi | anita.gogoi.F06@adtu.in | 2004-05-15 |
+| admin | Admin ADTU | admin@adtu.in | 2004-05-15 |
+
+---
+
+## STUDENTS (487 accounts)
+
+| Name | Roll Number | Password |
+|------|------------|----------|
+| Abhijit Dey | ADTU/2022-2026/BTECH-CSE-DS/006 | 2004-05-15 |
+| Abhijit Dey | ADTU/2022-2026/BSC-AGRI/006 | 2004-05-15 |
+| Abhijit Dey | ADTU/2022-2026/BPT/006 | 2004-05-15 |
+| Abhijit Dey | ADTU/2022-2026/BPHARM/006 | 2004-05-15 |
+| Abhijit Dey | ADTU/2022-2026/BSC-NURSING/006 | 2004-05-15 |
+| Abhijit Dey | ADTU/2022-2026/BTECH-ECE/006 | 2004-05-15 |
+| Abhijit Dey | ADTU/2022-2026/BTECH-CE/006 | 2004-05-15 |
+| Abhijit Dey | ADTU/2022-2026/BTECH-CSE-AIML/006 | 2004-05-15 |
+| Abhijit Dey | ADTU/2022-2026/BTECH-CSE/006 | 2004-05-15 |
+| Ankita Das | ADTU/2024-2026/DPHARM/003 | 2004-05-15 |
+| Ankita Das | ADTU/2024-2028/BPHARM/003 | 2004-05-15 |
+| Ankita Das | ADTU/2024-2027/BCA/003 | 2004-05-15 |
+| Ankita Das | ADTU/2024-2028/BSC-NURSING/003 | 2004-05-15 |
+| Ankita Das | ADTU/2024-2028/BTECH-CSE-AIML/003 | 2004-05-15 |
+| Ankita Das | ADTU/2024-2026/MBA/003 | 2004-05-15 |
+| Ankita Das | ADTU/2024-2027/BBA/003 | 2004-05-15 |
+| Ankita Das | ADTU/2024-2028/BTECH-ECE/003 | 2004-05-15 |
+| Ankita Das | ADTU/2024-2028/BTECH-CSE/003 | 2004-05-15 |
+| Ankita Das | ADTU/2024-2028/BTECH-CE/003 | 2004-05-15 |
+| Ankita Das | ADTU/2024-2027/BSC-HM/003 | 2004-05-15 |
+| Ankita Das | ADTU/2024-2028/BSC-AGRI/003 | 2004-05-15 |
+| Ankita Das | ADTU/2024-2028/BTECH-CSE-DS/003 | 2004-05-15 |
+| Ankita Das | ADTU/2024-2028/BPT/003 | 2004-05-15 |
+| Ankita Das | ADTU/2024-2026/MCA/003 | 2004-05-15 |
+| Ankita Das | ADTU/2024-2027/BSC-MICRO/003 | 2004-05-15 |
+| Ankita Das | ADTU/2024-2027/BSC-BIOTECH/003 | 2004-05-15 |
+| Ankita Das | ADTU/2024-2027/BSC-MLT/003 | 2004-05-15 |
+| Anurag Baruah | ADTU/2025-2028/BSC-BIOTECH/006 | 2004-05-15 |
+| Anurag Baruah | ADTU/2025-2029/BTECH-CSE/006 | 2004-05-15 |
+| Anurag Baruah | ADTU/2025-2029/BTECH-CSE-DS/006 | 2004-05-15 |
+| Anurag Baruah | ADTU/2025-2029/BTECH-CSE-AIML/006 | 2004-05-15 |
+| Anurag Baruah | ADTU/2025-2028/BCA/006 | 2004-05-15 |
+| Anurag Baruah | ADTU/2025-2027/MCA/006 | 2004-05-15 |
+| Anurag Baruah | ADTU/2025-2029/BTECH-CE/006 | 2004-05-15 |
+| Anurag Baruah | ADTU/2025-2029/BTECH-ECE/006 | 2004-05-15 |
+| Anurag Baruah | ADTU/2025-2028/BBA/006 | 2004-05-15 |
+| Anurag Baruah | ADTU/2025-2027/MBA/006 | 2004-05-15 |
+| Anurag Baruah | ADTU/2025-2029/BSC-NURSING/006 | 2004-05-15 |
+| Anurag Baruah | ADTU/2025-2029/BPHARM/006 | 2004-05-15 |
+| Anurag Baruah | ADTU/2025-2027/DPHARM/006 | 2004-05-15 |
+| Anurag Baruah | ADTU/2025-2028/BSC-MLT/006 | 2004-05-15 |
+| Anurag Baruah | ADTU/2025-2028/BSC-MICRO/006 | 2004-05-15 |
+| Anurag Baruah | ADTU/2025-2029/BPT/006 | 2004-05-15 |
+| Anurag Baruah | ADTU/2025-2029/BSC-AGRI/006 | 2004-05-15 |
+| Anurag Baruah | ADTU/2025-2028/BSC-HM/006 | 2004-05-15 |
+| Aryan Sharma | ADTU001 | 2004-05-15 |
+| Bedanta Chaliha | ADTU/2023-2026/BSC-MICRO/008 | 2004-05-15 |
+| Bedanta Chaliha | ADTU/2023-2026/BBA/008 | 2004-05-15 |
+| Bedanta Chaliha | ADTU/2023-2027/BTECH-CE/008 | 2004-05-15 |
+| Bedanta Chaliha | ADTU/2023-2027/BPHARM/008 | 2004-05-15 |
+| Bedanta Chaliha | ADTU/2023-2026/BSC-HM/008 | 2004-05-15 |
+| Bedanta Chaliha | ADTU/2023-2027/BTECH-CSE-DS/008 | 2004-05-15 |
+| Bedanta Chaliha | ADTU/2023-2027/BTECH-CSE/008 | 2004-05-15 |
+| Bedanta Chaliha | ADTU/2023-2026/BSC-BIOTECH/008 | 2004-05-15 |
+| Bedanta Chaliha | ADTU/2023-2027/BSC-AGRI/008 | 2004-05-15 |
+| Bedanta Chaliha | ADTU/2023-2027/BSC-NURSING/008 | 2004-05-15 |
+| Bedanta Chaliha | ADTU/2023-2027/BPT/008 | 2004-05-15 |
+| Bedanta Chaliha | ADTU/2023-2026/BCA/008 | 2004-05-15 |
+| Bedanta Chaliha | ADTU/2023-2026/BSC-MLT/008 | 2004-05-15 |
+| Bedanta Chaliha | ADTU/2023-2027/BTECH-ECE/008 | 2004-05-15 |
+| Bedanta Chaliha | ADTU/2023-2027/BTECH-CSE-AIML/008 | 2004-05-15 |
+| Bhaskar Nath | ADTU/2024-2028/BPT/006 | 2004-05-15 |
+| Bhaskar Nath | ADTU/2024-2028/BTECH-CSE/006 | 2004-05-15 |
+| Bhaskar Nath | ADTU/2024-2028/BTECH-CSE-AIML/006 | 2004-05-15 |
+| Bhaskar Nath | ADTU/2024-2028/BTECH-ECE/006 | 2004-05-15 |
+| Bhaskar Nath | ADTU/2024-2026/MBA/006 | 2004-05-15 |
+| Bhaskar Nath | ADTU/2024-2028/BSC-NURSING/006 | 2004-05-15 |
+| Bhaskar Nath | ADTU/2024-2027/BSC-HM/006 | 2004-05-15 |
+| Bhaskar Nath | ADTU/2024-2028/BPHARM/006 | 2004-05-15 |
+| Bhaskar Nath | ADTU/2024-2028/BTECH-CSE-DS/006 | 2004-05-15 |
+| Bhaskar Nath | ADTU/2024-2026/DPHARM/006 | 2004-05-15 |
+| Bhaskar Nath | ADTU/2024-2028/BTECH-CE/006 | 2004-05-15 |
+| Bhaskar Nath | ADTU/2024-2028/BSC-AGRI/006 | 2004-05-15 |
+| Bhaskar Nath | ADTU/2024-2027/BSC-MLT/006 | 2004-05-15 |
+| Bhaskar Nath | ADTU/2024-2026/MCA/006 | 2004-05-15 |
+| Bhaskar Nath | ADTU/2024-2027/BSC-BIOTECH/006 | 2004-05-15 |
+| Bhaskar Nath | ADTU/2024-2027/BCA/006 | 2004-05-15 |
+| Bhaskar Nath | ADTU/2024-2027/BSC-MICRO/006 | 2004-05-15 |
+| Bhaskar Nath | ADTU/2024-2027/BBA/006 | 2004-05-15 |
+| Bikash Saikia | ADTU/2023-2027/BTECH-CE/006 | 2004-05-15 |
+| Bikash Saikia | ADTU/2023-2026/BSC-MLT/006 | 2004-05-15 |
+| Bikash Saikia | ADTU/2023-2026/BSC-BIOTECH/006 | 2004-05-15 |
+| Bikash Saikia | ADTU/2023-2027/BSC-AGRI/006 | 2004-05-15 |
+| Bikash Saikia | ADTU/2023-2027/BPHARM/006 | 2004-05-15 |
+| Bikash Saikia | ADTU/2023-2026/BSC-HM/006 | 2004-05-15 |
+| Bikash Saikia | ADTU/2023-2027/BTECH-CSE-DS/006 | 2004-05-15 |
+| Bikash Saikia | ADTU/2023-2027/BPT/006 | 2004-05-15 |
+| Bikash Saikia | ADTU/2023-2026/BSC-MICRO/006 | 2004-05-15 |
+| Bikash Saikia | ADTU/2023-2027/BTECH-ECE/006 | 2004-05-15 |
+| Bikash Saikia | ADTU/2023-2026/BBA/006 | 2004-05-15 |
+| Bikash Saikia | ADTU/2023-2026/BCA/006 | 2004-05-15 |
+| Bikash Saikia | ADTU/2023-2027/BTECH-CSE-AIML/006 | 2004-05-15 |
+| Bikash Saikia | ADTU/2023-2027/BTECH-CSE/006 | 2004-05-15 |
+| Bikash Saikia | ADTU/2023-2027/BSC-NURSING/006 | 2004-05-15 |
+| Chandana Bhuyan | ADTU/2022-2026/BTECH-CE/008 | 2004-05-15 |
+| Chandana Bhuyan | ADTU/2022-2026/BTECH-CSE-DS/008 | 2004-05-15 |
+| Chandana Bhuyan | ADTU/2022-2026/BSC-AGRI/008 | 2004-05-15 |
+| Chandana Bhuyan | ADTU/2022-2026/BTECH-CSE-AIML/008 | 2004-05-15 |
+| Chandana Bhuyan | ADTU/2022-2026/BTECH-ECE/008 | 2004-05-15 |
+| Chandana Bhuyan | ADTU/2022-2026/BPT/008 | 2004-05-15 |
+| Chandana Bhuyan | ADTU/2022-2026/BTECH-CSE/008 | 2004-05-15 |
+| Chandana Bhuyan | ADTU/2022-2026/BPHARM/008 | 2004-05-15 |
+| Chandana Bhuyan | ADTU/2022-2026/BSC-NURSING/008 | 2004-05-15 |
+| Deepika Chetia | ADTU/2025-2029/BPHARM/002 | 2004-05-15 |
+| Deepika Chetia | ADTU/2025-2028/BBA/002 | 2004-05-15 |
+| Deepika Chetia | ADTU/2025-2028/BSC-HM/002 | 2004-05-15 |
+| Deepika Chetia | ADTU/2025-2029/BTECH-CSE-DS/002 | 2004-05-15 |
+| Deepika Chetia | ADTU/2025-2029/BSC-AGRI/002 | 2004-05-15 |
+| Deepika Chetia | ADTU/2025-2029/BPT/002 | 2004-05-15 |
+| Deepika Chetia | ADTU/2025-2029/BTECH-CSE-AIML/002 | 2004-05-15 |
+| Deepika Chetia | ADTU/2025-2028/BSC-MICRO/002 | 2004-05-15 |
+| Deepika Chetia | ADTU/2025-2028/BCA/002 | 2004-05-15 |
+| Deepika Chetia | ADTU/2025-2028/BSC-BIOTECH/002 | 2004-05-15 |
+| Deepika Chetia | ADTU/2025-2027/MCA/002 | 2004-05-15 |
+| Deepika Chetia | ADTU/2025-2028/BSC-MLT/002 | 2004-05-15 |
+| Deepika Chetia | ADTU/2025-2027/DPHARM/002 | 2004-05-15 |
+| Deepika Chetia | ADTU/2025-2029/BTECH-CE/002 | 2004-05-15 |
+| Deepika Chetia | ADTU/2025-2029/BSC-NURSING/002 | 2004-05-15 |
+| Deepika Chetia | ADTU/2025-2029/BTECH-ECE/002 | 2004-05-15 |
+| Deepika Chetia | ADTU/2025-2029/BTECH-CSE/002 | 2004-05-15 |
+| Deepika Chetia | ADTU/2025-2027/MBA/002 | 2004-05-15 |
+| Dipjyoti Kalita | ADTU/2024-2028/BSC-AGRI/004 | 2004-05-15 |
+| Dipjyoti Kalita | ADTU/2024-2027/BSC-HM/004 | 2004-05-15 |
+| Dipjyoti Kalita | ADTU/2024-2027/BSC-MLT/004 | 2004-05-15 |
+| Dipjyoti Kalita | ADTU/2024-2028/BTECH-CSE-DS/004 | 2004-05-15 |
+| Dipjyoti Kalita | ADTU/2024-2026/MCA/004 | 2004-05-15 |
+| Dipjyoti Kalita | ADTU/2024-2027/BSC-BIOTECH/004 | 2004-05-15 |
+| Dipjyoti Kalita | ADTU/2024-2028/BPHARM/004 | 2004-05-15 |
+| Dipjyoti Kalita | ADTU/2024-2028/BTECH-CSE/004 | 2004-05-15 |
+| Dipjyoti Kalita | ADTU/2024-2028/BSC-NURSING/004 | 2004-05-15 |
+| Dipjyoti Kalita | ADTU/2024-2027/BCA/004 | 2004-05-15 |
+| Dipjyoti Kalita | ADTU/2024-2028/BPT/004 | 2004-05-15 |
+| Dipjyoti Kalita | ADTU/2024-2026/MBA/004 | 2004-05-15 |
+| Dipjyoti Kalita | ADTU/2024-2028/BTECH-ECE/004 | 2004-05-15 |
+| Dipjyoti Kalita | ADTU/2024-2027/BSC-MICRO/004 | 2004-05-15 |
+| Dipjyoti Kalita | ADTU/2024-2026/DPHARM/004 | 2004-05-15 |
+| Dipjyoti Kalita | ADTU/2024-2028/BTECH-CSE-AIML/004 | 2004-05-15 |
+| Dipjyoti Kalita | ADTU/2024-2027/BBA/004 | 2004-05-15 |
+| Dipjyoti Kalita | ADTU/2024-2028/BTECH-CE/004 | 2004-05-15 |
+| Himanshu Gogoi | ADTU/2024-2026/DPHARM/008 | 2004-05-15 |
+| Himanshu Gogoi | ADTU/2024-2028/BSC-AGRI/008 | 2004-05-15 |
+| Himanshu Gogoi | ADTU/2024-2027/BSC-MLT/008 | 2004-05-15 |
+| Himanshu Gogoi | ADTU/2024-2026/MBA/008 | 2004-05-15 |
+| Himanshu Gogoi | ADTU/2024-2027/BCA/008 | 2004-05-15 |
+| Himanshu Gogoi | ADTU/2024-2028/BTECH-ECE/008 | 2004-05-15 |
+| Himanshu Gogoi | ADTU/2024-2027/BSC-HM/008 | 2004-05-15 |
+| Himanshu Gogoi | ADTU/2024-2028/BPT/008 | 2004-05-15 |
+| Himanshu Gogoi | ADTU/2024-2028/BSC-NURSING/008 | 2004-05-15 |
+| Himanshu Gogoi | ADTU/2024-2028/BTECH-CSE/008 | 2004-05-15 |
+| Himanshu Gogoi | ADTU/2024-2027/BSC-BIOTECH/008 | 2004-05-15 |
+| Himanshu Gogoi | ADTU/2024-2027/BSC-MICRO/008 | 2004-05-15 |
+| Himanshu Gogoi | ADTU/2024-2026/MCA/008 | 2004-05-15 |
+| Himanshu Gogoi | ADTU/2024-2028/BPHARM/008 | 2004-05-15 |
+| Himanshu Gogoi | ADTU/2024-2027/BBA/008 | 2004-05-15 |
+| Himanshu Gogoi | ADTU/2024-2028/BTECH-CSE-AIML/008 | 2004-05-15 |
+| Himanshu Gogoi | ADTU/2024-2028/BTECH-CE/008 | 2004-05-15 |
+| Himanshu Gogoi | ADTU/2024-2028/BTECH-CSE-DS/008 | 2004-05-15 |
+| Jahnabi Goswami | ADTU/2023-2026/BCA/005 | 2004-05-15 |
+| Jahnabi Goswami | ADTU/2023-2027/BTECH-CSE-AIML/005 | 2004-05-15 |
+| Jahnabi Goswami | ADTU/2023-2026/BSC-MICRO/005 | 2004-05-15 |
+| Jahnabi Goswami | ADTU/2023-2027/BSC-AGRI/005 | 2004-05-15 |
+| Jahnabi Goswami | ADTU/2023-2026/BBA/005 | 2004-05-15 |
+| Jahnabi Goswami | ADTU/2023-2026/BSC-BIOTECH/005 | 2004-05-15 |
+| Jahnabi Goswami | ADTU/2023-2026/BSC-MLT/005 | 2004-05-15 |
+| Jahnabi Goswami | ADTU/2023-2027/BTECH-CE/005 | 2004-05-15 |
+| Jahnabi Goswami | ADTU/2023-2026/BSC-HM/005 | 2004-05-15 |
+| Jahnabi Goswami | ADTU/2023-2027/BPHARM/005 | 2004-05-15 |
+| Jahnabi Goswami | ADTU/2023-2027/BTECH-CSE-DS/005 | 2004-05-15 |
+| Jahnabi Goswami | ADTU/2023-2027/BTECH-ECE/005 | 2004-05-15 |
+| Jahnabi Goswami | ADTU/2023-2027/BTECH-CSE/005 | 2004-05-15 |
+| Jahnabi Goswami | ADTU/2023-2027/BSC-NURSING/005 | 2004-05-15 |
+| Jahnabi Goswami | ADTU/2023-2027/BPT/005 | 2004-05-15 |
+| Junu Rabha | ADTU/2025-2029/BSC-NURSING/004 | 2004-05-15 |
+| Junu Rabha | ADTU/2025-2029/BTECH-CSE/004 | 2004-05-15 |
+| Junu Rabha | ADTU/2025-2028/BSC-MLT/004 | 2004-05-15 |
+| Junu Rabha | ADTU/2025-2029/BTECH-CSE-DS/004 | 2004-05-15 |
+| Junu Rabha | ADTU/2025-2028/BSC-BIOTECH/004 | 2004-05-15 |
+| Junu Rabha | ADTU/2025-2028/BBA/004 | 2004-05-15 |
+| Junu Rabha | ADTU/2025-2027/MBA/004 | 2004-05-15 |
+| Junu Rabha | ADTU/2025-2029/BTECH-CSE-AIML/004 | 2004-05-15 |
+| Junu Rabha | ADTU/2025-2029/BTECH-ECE/004 | 2004-05-15 |
+| Junu Rabha | ADTU/2025-2027/MCA/004 | 2004-05-15 |
+| Junu Rabha | ADTU/2025-2029/BPT/004 | 2004-05-15 |
+| Junu Rabha | ADTU/2025-2029/BTECH-CE/004 | 2004-05-15 |
+| Junu Rabha | ADTU/2025-2029/BPHARM/004 | 2004-05-15 |
+| Junu Rabha | ADTU/2025-2027/DPHARM/004 | 2004-05-15 |
+| Junu Rabha | ADTU/2025-2028/BSC-MICRO/004 | 2004-05-15 |
+| Junu Rabha | ADTU/2025-2029/BSC-AGRI/004 | 2004-05-15 |
+| Junu Rabha | ADTU/2025-2028/BSC-HM/004 | 2004-05-15 |
+| Junu Rabha | ADTU/2025-2028/BCA/004 | 2004-05-15 |
+| Kangana Roy | ADTU/2023-2026/BSC-MLT/007 | 2004-05-15 |
+| Kangana Roy | ADTU/2023-2026/BBA/007 | 2004-05-15 |
+| Kangana Roy | ADTU/2023-2027/BSC-AGRI/007 | 2004-05-15 |
+| Kangana Roy | ADTU/2023-2026/BSC-BIOTECH/007 | 2004-05-15 |
+| Kangana Roy | ADTU/2023-2027/BPHARM/007 | 2004-05-15 |
+| Kangana Roy | ADTU/2023-2026/BSC-HM/007 | 2004-05-15 |
+| Kangana Roy | ADTU/2023-2027/BTECH-CSE-DS/007 | 2004-05-15 |
+| Kangana Roy | ADTU/2023-2027/BTECH-CSE-AIML/007 | 2004-05-15 |
+| Kangana Roy | ADTU/2023-2027/BTECH-ECE/007 | 2004-05-15 |
+| Kangana Roy | ADTU/2023-2026/BSC-MICRO/007 | 2004-05-15 |
+| Kangana Roy | ADTU/2023-2027/BSC-NURSING/007 | 2004-05-15 |
+| Kangana Roy | ADTU/2023-2027/BTECH-CSE/007 | 2004-05-15 |
+| Kangana Roy | ADTU/2023-2027/BPT/007 | 2004-05-15 |
+| Kangana Roy | ADTU/2023-2026/BCA/007 | 2004-05-15 |
+| Kangana Roy | ADTU/2023-2027/BTECH-CE/007 | 2004-05-15 |
+| Karishma Bhuyan | ADTU/2025-2028/BCA/007 | 2004-05-15 |
+| Karishma Bhuyan | ADTU/2025-2028/BSC-BIOTECH/007 | 2004-05-15 |
+| Karishma Bhuyan | ADTU/2025-2029/BTECH-ECE/007 | 2004-05-15 |
+| Karishma Bhuyan | ADTU/2025-2028/BSC-MLT/007 | 2004-05-15 |
+| Karishma Bhuyan | ADTU/2025-2027/MCA/007 | 2004-05-15 |
+| Karishma Bhuyan | ADTU/2025-2028/BSC-HM/007 | 2004-05-15 |
+| Karishma Bhuyan | ADTU/2025-2029/BTECH-CSE/007 | 2004-05-15 |
+| Karishma Bhuyan | ADTU/2025-2029/BSC-NURSING/007 | 2004-05-15 |
+| Karishma Bhuyan | ADTU/2025-2027/DPHARM/007 | 2004-05-15 |
+| Karishma Bhuyan | ADTU/2025-2028/BSC-MICRO/007 | 2004-05-15 |
+| Karishma Bhuyan | ADTU/2025-2029/BTECH-CSE-DS/007 | 2004-05-15 |
+| Karishma Bhuyan | ADTU/2025-2029/BPT/007 | 2004-05-15 |
+| Karishma Bhuyan | ADTU/2025-2029/BTECH-CSE-AIML/007 | 2004-05-15 |
+| Karishma Bhuyan | ADTU/2025-2027/MBA/007 | 2004-05-15 |
+| Karishma Bhuyan | ADTU/2025-2029/BSC-AGRI/007 | 2004-05-15 |
+| Karishma Bhuyan | ADTU/2025-2029/BTECH-CE/007 | 2004-05-15 |
+| Karishma Bhuyan | ADTU/2025-2029/BPHARM/007 | 2004-05-15 |
+| Karishma Bhuyan | ADTU/2025-2028/BBA/007 | 2004-05-15 |
+| Lakhimi Borah | ADTU/2022-2026/BTECH-ECE/002 | 2004-05-15 |
+| Lakhimi Borah | ADTU/2022-2026/BTECH-CSE/002 | 2004-05-15 |
+| Lakhimi Borah | ADTU/2022-2026/BPHARM/002 | 2004-05-15 |
+| Lakhimi Borah | ADTU/2022-2026/BPT/002 | 2004-05-15 |
+| Lakhimi Borah | ADTU/2022-2026/BTECH-CSE-DS/002 | 2004-05-15 |
+| Lakhimi Borah | ADTU/2022-2026/BSC-NURSING/002 | 2004-05-15 |
+| Lakhimi Borah | ADTU/2022-2026/BSC-AGRI/002 | 2004-05-15 |
+| Lakhimi Borah | ADTU/2022-2026/BTECH-CE/002 | 2004-05-15 |
+| Lakhimi Borah | ADTU/2022-2026/BTECH-CSE-AIML/002 | 2004-05-15 |
+| Manash Pratim | ADTU/2023-2026/BBA/002 | 2004-05-15 |
+| Manash Pratim | ADTU/2023-2027/BTECH-CSE-DS/002 | 2004-05-15 |
+| Manash Pratim | ADTU/2023-2027/BTECH-CSE-AIML/002 | 2004-05-15 |
+| Manash Pratim | ADTU/2023-2026/BCA/002 | 2004-05-15 |
+| Manash Pratim | ADTU/2023-2027/BTECH-CE/002 | 2004-05-15 |
+| Manash Pratim | ADTU/2023-2027/BTECH-ECE/002 | 2004-05-15 |
+| Manash Pratim | ADTU/2023-2027/BSC-NURSING/002 | 2004-05-15 |
+| Manash Pratim | ADTU/2023-2027/BPHARM/002 | 2004-05-15 |
+| Manash Pratim | ADTU/2023-2026/BSC-MLT/002 | 2004-05-15 |
+| Manash Pratim | ADTU/2023-2026/BSC-BIOTECH/002 | 2004-05-15 |
+| Manash Pratim | ADTU/2023-2026/BSC-MICRO/002 | 2004-05-15 |
+| Manash Pratim | ADTU/2023-2027/BPT/002 | 2004-05-15 |
+| Manash Pratim | ADTU/2023-2027/BSC-AGRI/002 | 2004-05-15 |
+| Manash Pratim | ADTU/2023-2026/BSC-HM/002 | 2004-05-15 |
+| Manash Pratim | ADTU/2023-2027/BTECH-CSE/002 | 2004-05-15 |
+| Nayan Moni Saikia | ADTU/2022-2026/BPHARM/003 | 2004-05-15 |
+| Nayan Moni Saikia | ADTU/2022-2026/BPT/003 | 2004-05-15 |
+| Nayan Moni Saikia | ADTU/2022-2026/BTECH-CE/003 | 2004-05-15 |
+| Nayan Moni Saikia | ADTU/2022-2026/BTECH-ECE/003 | 2004-05-15 |
+| Nayan Moni Saikia | ADTU/2022-2026/BTECH-CSE-DS/003 | 2004-05-15 |
+| Nayan Moni Saikia | ADTU/2022-2026/BSC-NURSING/003 | 2004-05-15 |
+| Nayan Moni Saikia | ADTU/2022-2026/BTECH-CSE-AIML/003 | 2004-05-15 |
+| Nayan Moni Saikia | ADTU/2022-2026/BTECH-CSE/003 | 2004-05-15 |
+| Nayan Moni Saikia | ADTU/2022-2026/BSC-AGRI/003 | 2004-05-15 |
+| Nilufar Begum | ADTU/2025-2028/BCA/005 | 2004-05-15 |
+| Nilufar Begum | ADTU/2025-2029/BTECH-CE/005 | 2004-05-15 |
+| Nilufar Begum | ADTU/2025-2029/BTECH-CSE-AIML/005 | 2004-05-15 |
+| Nilufar Begum | ADTU/2025-2029/BPHARM/005 | 2004-05-15 |
+| Nilufar Begum | ADTU/2025-2028/BSC-BIOTECH/005 | 2004-05-15 |
+| Nilufar Begum | ADTU/2025-2028/BSC-HM/005 | 2004-05-15 |
+| Nilufar Begum | ADTU/2025-2029/BPT/005 | 2004-05-15 |
+| Nilufar Begum | ADTU/2025-2029/BTECH-CSE-DS/005 | 2004-05-15 |
+| Nilufar Begum | ADTU/2025-2029/BSC-NURSING/005 | 2004-05-15 |
+| Nilufar Begum | ADTU/2025-2029/BTECH-ECE/005 | 2004-05-15 |
+| Nilufar Begum | ADTU/2025-2028/BSC-MICRO/005 | 2004-05-15 |
+| Nilufar Begum | ADTU/2025-2028/BSC-MLT/005 | 2004-05-15 |
+| Nilufar Begum | ADTU/2025-2027/DPHARM/005 | 2004-05-15 |
+| Nilufar Begum | ADTU/2025-2027/MCA/005 | 2004-05-15 |
+| Nilufar Begum | ADTU/2025-2029/BSC-AGRI/005 | 2004-05-15 |
+| Nilufar Begum | ADTU/2025-2029/BTECH-CSE/005 | 2004-05-15 |
+| Nilufar Begum | ADTU/2025-2027/MBA/005 | 2004-05-15 |
+| Nilufar Begum | ADTU/2025-2028/BBA/005 | 2004-05-15 |
+| Nirab Mahanta | ADTU/2023-2026/BBA/004 | 2004-05-15 |
+| Nirab Mahanta | ADTU/2023-2027/BPT/004 | 2004-05-15 |
+| Nirab Mahanta | ADTU/2023-2026/BSC-MICRO/004 | 2004-05-15 |
+| Nirab Mahanta | ADTU/2023-2027/BTECH-CSE/004 | 2004-05-15 |
+| Nirab Mahanta | ADTU/2023-2027/BSC-NURSING/004 | 2004-05-15 |
+| Nirab Mahanta | ADTU/2023-2026/BCA/004 | 2004-05-15 |
+| Nirab Mahanta | ADTU/2023-2026/BSC-BIOTECH/004 | 2004-05-15 |
+| Nirab Mahanta | ADTU/2023-2027/BTECH-CSE-AIML/004 | 2004-05-15 |
+| Nirab Mahanta | ADTU/2023-2027/BTECH-CSE-DS/004 | 2004-05-15 |
+| Nirab Mahanta | ADTU/2023-2027/BTECH-ECE/004 | 2004-05-15 |
+| Nirab Mahanta | ADTU/2023-2026/BSC-HM/004 | 2004-05-15 |
+| Nirab Mahanta | ADTU/2023-2027/BTECH-CE/004 | 2004-05-15 |
+| Nirab Mahanta | ADTU/2023-2027/BPHARM/004 | 2004-05-15 |
+| Nirab Mahanta | ADTU/2023-2026/BSC-MLT/004 | 2004-05-15 |
+| Nirab Mahanta | ADTU/2023-2027/BSC-AGRI/004 | 2004-05-15 |
+| Parinita Gogoi | ADTU/2022-2026/BTECH-CSE/005 | 2004-05-15 |
+| Parinita Gogoi | ADTU/2022-2026/BSC-AGRI/005 | 2004-05-15 |
+| Parinita Gogoi | ADTU/2022-2026/BSC-NURSING/005 | 2004-05-15 |
+| Parinita Gogoi | ADTU/2022-2026/BPHARM/005 | 2004-05-15 |
+| Parinita Gogoi | ADTU/2022-2026/BTECH-CSE-DS/005 | 2004-05-15 |
+| Parinita Gogoi | ADTU/2022-2026/BTECH-CE/005 | 2004-05-15 |
+| Parinita Gogoi | ADTU/2022-2026/BPT/005 | 2004-05-15 |
+| Parinita Gogoi | ADTU/2022-2026/BTECH-CSE-AIML/005 | 2004-05-15 |
+| Parinita Gogoi | ADTU/2022-2026/BTECH-ECE/005 | 2004-05-15 |
+| Priya Bora | ADTU002 | 2004-05-15 |
+| Puja Sharma | ADTU/2024-2026/MBA/007 | 2004-05-15 |
+| Puja Sharma | ADTU/2024-2027/BCA/007 | 2004-05-15 |
+| Puja Sharma | ADTU/2024-2027/BBA/007 | 2004-05-15 |
+| Puja Sharma | ADTU/2024-2028/BSC-NURSING/007 | 2004-05-15 |
+| Puja Sharma | ADTU/2024-2028/BTECH-CSE/007 | 2004-05-15 |
+| Puja Sharma | ADTU/2024-2028/BTECH-ECE/007 | 2004-05-15 |
+| Puja Sharma | ADTU/2024-2026/MCA/007 | 2004-05-15 |
+| Puja Sharma | ADTU/2024-2027/BSC-HM/007 | 2004-05-15 |
+| Puja Sharma | ADTU/2024-2028/BPT/007 | 2004-05-15 |
+| Puja Sharma | ADTU/2024-2028/BTECH-CE/007 | 2004-05-15 |
+| Puja Sharma | ADTU/2024-2027/BSC-BIOTECH/007 | 2004-05-15 |
+| Puja Sharma | ADTU/2024-2028/BTECH-CSE-AIML/007 | 2004-05-15 |
+| Puja Sharma | ADTU/2024-2027/BSC-MLT/007 | 2004-05-15 |
+| Puja Sharma | ADTU/2024-2027/BSC-MICRO/007 | 2004-05-15 |
+| Puja Sharma | ADTU/2024-2028/BSC-AGRI/007 | 2004-05-15 |
+| Puja Sharma | ADTU/2024-2026/DPHARM/007 | 2004-05-15 |
+| Puja Sharma | ADTU/2024-2028/BPHARM/007 | 2004-05-15 |
+| Puja Sharma | ADTU/2024-2028/BTECH-CSE-DS/007 | 2004-05-15 |
+| Rahul Bora | ADTU/2024-2028/BTECH-CSE-DS/002 | 2004-05-15 |
+| Rahul Bora | ADTU/2024-2028/BSC-NURSING/002 | 2004-05-15 |
+| Rahul Bora | ADTU/2024-2027/BSC-HM/002 | 2004-05-15 |
+| Rahul Bora | ADTU/2024-2028/BTECH-ECE/002 | 2004-05-15 |
+| Rahul Bora | ADTU/2024-2026/MBA/002 | 2004-05-15 |
+| Rahul Bora | ADTU/2024-2028/BTECH-CSE/002 | 2004-05-15 |
+| Rahul Bora | ADTU/2024-2028/BPHARM/002 | 2004-05-15 |
+| Rahul Bora | ADTU/2024-2026/DPHARM/002 | 2004-05-15 |
+| Rahul Bora | ADTU/2024-2028/BSC-AGRI/002 | 2004-05-15 |
+| Rahul Bora | ADTU/2024-2028/BTECH-CE/002 | 2004-05-15 |
+| Rahul Bora | ADTU/2024-2027/BSC-MLT/002 | 2004-05-15 |
+| Rahul Bora | ADTU/2024-2027/BBA/002 | 2004-05-15 |
+| Rahul Bora | ADTU/2024-2028/BTECH-CSE-AIML/002 | 2004-05-15 |
+| Rahul Bora | ADTU/2024-2027/BSC-BIOTECH/002 | 2004-05-15 |
+| Rahul Bora | ADTU/2024-2026/MCA/002 | 2004-05-15 |
+| Rahul Bora | ADTU/2024-2028/BPT/002 | 2004-05-15 |
+| Rahul Bora | ADTU/2024-2027/BSC-MICRO/002 | 2004-05-15 |
+| Rahul Bora | ADTU/2024-2027/BCA/002 | 2004-05-15 |
+| Rimjhim Hazarika | ADTU/2024-2027/BCA/005 | 2004-05-15 |
+| Rimjhim Hazarika | ADTU/2024-2026/MBA/005 | 2004-05-15 |
+| Rimjhim Hazarika | ADTU/2024-2026/MCA/005 | 2004-05-15 |
+| Rimjhim Hazarika | ADTU/2024-2027/BSC-BIOTECH/005 | 2004-05-15 |
+| Rimjhim Hazarika | ADTU/2024-2028/BPT/005 | 2004-05-15 |
+| Rimjhim Hazarika | ADTU/2024-2028/BTECH-CSE-AIML/005 | 2004-05-15 |
+| Rimjhim Hazarika | ADTU/2024-2027/BBA/005 | 2004-05-15 |
+| Rimjhim Hazarika | ADTU/2024-2027/BSC-MICRO/005 | 2004-05-15 |
+| Rimjhim Hazarika | ADTU/2024-2026/DPHARM/005 | 2004-05-15 |
+| Rimjhim Hazarika | ADTU/2024-2027/BSC-MLT/005 | 2004-05-15 |
+| Rimjhim Hazarika | ADTU/2024-2028/BPHARM/005 | 2004-05-15 |
+| Rimjhim Hazarika | ADTU/2024-2028/BTECH-CE/005 | 2004-05-15 |
+| Rimjhim Hazarika | ADTU/2024-2028/BSC-AGRI/005 | 2004-05-15 |
+| Rimjhim Hazarika | ADTU/2024-2028/BTECH-CSE-DS/005 | 2004-05-15 |
+| Rimjhim Hazarika | ADTU/2024-2028/BTECH-ECE/005 | 2004-05-15 |
+| Rimjhim Hazarika | ADTU/2024-2028/BSC-NURSING/005 | 2004-05-15 |
+| Rimjhim Hazarika | ADTU/2024-2027/BSC-HM/005 | 2004-05-15 |
+| Rimjhim Hazarika | ADTU/2024-2028/BTECH-CSE/005 | 2004-05-15 |
+| Rupam Rajkhowa | ADTU/2025-2029/BPHARM/003 | 2004-05-15 |
+| Rupam Rajkhowa | ADTU/2025-2029/BTECH-ECE/003 | 2004-05-15 |
+| Rupam Rajkhowa | ADTU/2025-2028/BCA/003 | 2004-05-15 |
+| Rupam Rajkhowa | ADTU/2025-2028/BSC-HM/003 | 2004-05-15 |
+| Rupam Rajkhowa | ADTU/2025-2029/BPT/003 | 2004-05-15 |
+| Rupam Rajkhowa | ADTU/2025-2028/BBA/003 | 2004-05-15 |
+| Rupam Rajkhowa | ADTU/2025-2029/BTECH-CSE-DS/003 | 2004-05-15 |
+| Rupam Rajkhowa | ADTU/2025-2027/DPHARM/003 | 2004-05-15 |
+| Rupam Rajkhowa | ADTU/2025-2029/BTECH-CSE-AIML/003 | 2004-05-15 |
+| Rupam Rajkhowa | ADTU/2025-2028/BSC-MLT/003 | 2004-05-15 |
+| Rupam Rajkhowa | ADTU/2025-2028/BSC-BIOTECH/003 | 2004-05-15 |
+| Rupam Rajkhowa | ADTU/2025-2029/BTECH-CE/003 | 2004-05-15 |
+| Rupam Rajkhowa | ADTU/2025-2028/BSC-MICRO/003 | 2004-05-15 |
+| Rupam Rajkhowa | ADTU/2025-2029/BTECH-CSE/003 | 2004-05-15 |
+| Rupam Rajkhowa | ADTU/2025-2029/BSC-NURSING/003 | 2004-05-15 |
+| Rupam Rajkhowa | ADTU/2025-2027/MCA/003 | 2004-05-15 |
+| Rupam Rajkhowa | ADTU/2025-2029/BSC-AGRI/003 | 2004-05-15 |
+| Rupam Rajkhowa | ADTU/2025-2027/MBA/003 | 2004-05-15 |
+| Sangeeta Barman | ADTU/2023-2027/BTECH-CSE-DS/003 | 2004-05-15 |
+| Sangeeta Barman | ADTU/2023-2027/BSC-AGRI/003 | 2004-05-15 |
+| Sangeeta Barman | ADTU/2023-2026/BSC-MLT/003 | 2004-05-15 |
+| Sangeeta Barman | ADTU/2023-2027/BPHARM/003 | 2004-05-15 |
+| Sangeeta Barman | ADTU/2023-2027/BTECH-CE/003 | 2004-05-15 |
+| Sangeeta Barman | ADTU/2023-2027/BTECH-CSE-AIML/003 | 2004-05-15 |
+| Sangeeta Barman | ADTU/2023-2026/BSC-HM/003 | 2004-05-15 |
+| Sangeeta Barman | ADTU/2023-2027/BTECH-ECE/003 | 2004-05-15 |
+| Sangeeta Barman | ADTU/2023-2026/BCA/003 | 2004-05-15 |
+| Sangeeta Barman | ADTU/2023-2026/BSC-BIOTECH/003 | 2004-05-15 |
+| Sangeeta Barman | ADTU/2023-2027/BSC-NURSING/003 | 2004-05-15 |
+| Sangeeta Barman | ADTU/2023-2027/BTECH-CSE/003 | 2004-05-15 |
+| Sangeeta Barman | ADTU/2023-2026/BSC-MICRO/003 | 2004-05-15 |
+| Sangeeta Barman | ADTU/2023-2026/BBA/003 | 2004-05-15 |
+| Sangeeta Barman | ADTU/2023-2027/BPT/003 | 2004-05-15 |
+| Sourav Dutta | ADTU/2025-2029/BTECH-ECE/008 | 2004-05-15 |
+| Sourav Dutta | ADTU/2025-2028/BSC-BIOTECH/008 | 2004-05-15 |
+| Sourav Dutta | ADTU/2025-2028/BSC-HM/008 | 2004-05-15 |
+| Sourav Dutta | ADTU/2025-2029/BTECH-CSE-AIML/008 | 2004-05-15 |
+| Sourav Dutta | ADTU/2025-2029/BTECH-CSE/008 | 2004-05-15 |
+| Sourav Dutta | ADTU/2025-2029/BPHARM/008 | 2004-05-15 |
+| Sourav Dutta | ADTU/2025-2029/BSC-AGRI/008 | 2004-05-15 |
+| Sourav Dutta | ADTU/2025-2028/BCA/008 | 2004-05-15 |
+| Sourav Dutta | ADTU/2025-2028/BSC-MICRO/008 | 2004-05-15 |
+| Sourav Dutta | ADTU/2025-2027/MBA/008 | 2004-05-15 |
+| Sourav Dutta | ADTU/2025-2028/BSC-MLT/008 | 2004-05-15 |
+| Sourav Dutta | ADTU/2025-2029/BTECH-CE/008 | 2004-05-15 |
+| Sourav Dutta | ADTU/2025-2027/MCA/008 | 2004-05-15 |
+| Sourav Dutta | ADTU/2025-2027/DPHARM/008 | 2004-05-15 |
+| Sourav Dutta | ADTU/2025-2029/BTECH-CSE-DS/008 | 2004-05-15 |
+| Sourav Dutta | ADTU/2025-2029/BSC-NURSING/008 | 2004-05-15 |
+| Sourav Dutta | ADTU/2025-2028/BBA/008 | 2004-05-15 |
+| Sourav Dutta | ADTU/2025-2029/BPT/008 | 2004-05-15 |
+| Student 030 | ADTU/2022-26/BCS(I)/030 | 2004-05-15 |
+| Student 032 | ADTU/2022-26/BCS(I)/032 | 2004-05-15 |
+| Student 039 | ADTU/2022-26/BCS(I)/039 | 2004-05-15 |
+| Student 048 | ADTU/2022-26/BCS(I)/048 | 2004-05-15 |
+| Supriya Phukan | ADTU/2022-2026/BSC-AGRI/004 | 2004-05-15 |
+| Supriya Phukan | ADTU/2022-2026/BSC-NURSING/004 | 2004-05-15 |
+| Supriya Phukan | ADTU/2022-2026/BPHARM/004 | 2004-05-15 |
+| Supriya Phukan | ADTU/2022-2026/BTECH-ECE/004 | 2004-05-15 |
+| Supriya Phukan | ADTU/2022-2026/BTECH-CE/004 | 2004-05-15 |
+| Supriya Phukan | ADTU/2022-2026/BPT/004 | 2004-05-15 |
+| Supriya Phukan | ADTU/2022-2026/BTECH-CSE/004 | 2004-05-15 |
+| Supriya Phukan | ADTU/2022-2026/BTECH-CSE-AIML/004 | 2004-05-15 |
+| Supriya Phukan | ADTU/2022-2026/BTECH-CSE-DS/004 | 2004-05-15 |
+| Test User | TEST001 | 2004-05-15 |
+| Trideep Sarmah | ADTU/2022-2026/BSC-AGRI/007 | 2004-05-15 |
+| Trideep Sarmah | ADTU/2022-2026/BTECH-CSE-DS/007 | 2004-05-15 |
+| Trideep Sarmah | ADTU/2022-2026/BTECH-CSE/007 | 2004-05-15 |
+| Trideep Sarmah | ADTU/2022-2026/BSC-NURSING/007 | 2004-05-15 |
+| Trideep Sarmah | ADTU/2022-2026/BPHARM/007 | 2004-05-15 |
+| Trideep Sarmah | ADTU/2022-2026/BTECH-CE/007 | 2004-05-15 |
+| Trideep Sarmah | ADTU/2022-2026/BPT/007 | 2004-05-15 |
+| Trideep Sarmah | ADTU/2022-2026/BTECH-ECE/007 | 2004-05-15 |
+| Trideep Sarmah | ADTU/2022-2026/BTECH-CSE-AIML/007 | 2004-05-15 |
+| Anup Baruah | ADTU/2025-2028/BSC-MLT/001 | 2004-05-15 |
+| Anup Baruah | ADTU/2025-2028/BCA/001 | 2004-05-15 |
+| Anup Baruah | ADTU/2025-2029/BTECH-CSE-AIML/001 | 2004-05-15 |
+| Anup Baruah | ADTU/2025-2028/BSC-BIOTECH/001 | 2004-05-15 |
+| Anup Baruah | ADTU/2025-2027/MCA/001 | 2004-05-15 |
+| Anup Baruah | ADTU/2025-2029/BPT/001 | 2004-05-15 |
+| Anup Baruah | ADTU/2025-2027/DPHARM/001 | 2004-05-15 |
+| Anup Baruah | ADTU/2025-2029/BTECH-CE/001 | 2004-05-15 |
+| Anup Baruah | ADTU/2025-2029/BPHARM/001 | 2004-05-15 |
+| Anup Baruah | ADTU/2025-2029/BSC-AGRI/001 | 2004-05-15 |
+| Anup Baruah | ADTU/2025-2029/BTECH-CSE-DS/001 | 2004-05-15 |
+| Anup Baruah | ADTU/2025-2029/BSC-NURSING/001 | 2004-05-15 |
+| Anup Baruah | ADTU/2025-2029/BTECH-ECE/001 | 2004-05-15 |
+| Anup Baruah | ADTU/2025-2028/BSC-HM/001 | 2004-05-15 |
+| Anup Baruah | ADTU/2025-2029/BTECH-CSE/001 | 2004-05-15 |
+| Anup Baruah | ADTU/2025-2028/BBA/001 | 2004-05-15 |
+| Anup Baruah | ADTU/2025-2027/MBA/001 | 2004-05-15 |
+| Anup Baruah | ADTU/2025-2028/BSC-MICRO/001 | 2004-05-15 |
+| Priyanka Deka | ADTU/2024-2028/BSC-AGRI/001 | 2004-05-15 |
+| Priyanka Deka | ADTU/2024-2028/BPHARM/001 | 2004-05-15 |
+| Priyanka Deka | ADTU/2024-2027/BSC-MLT/001 | 2004-05-15 |
+| Priyanka Deka | ADTU/2024-2028/BTECH-ECE/001 | 2004-05-15 |
+| Priyanka Deka | ADTU/2024-2028/BTECH-CSE-DS/001 | 2004-05-15 |
+| Priyanka Deka | ADTU/2024-2027/BSC-HM/001 | 2004-05-15 |
+| Priyanka Deka | ADTU/2024-2028/BTECH-CSE-AIML/001 | 2004-05-15 |
+| Priyanka Deka | ADTU/2024-2027/BSC-BIOTECH/001 | 2004-05-15 |
+| Priyanka Deka | ADTU/2024-2028/BSC-NURSING/001 | 2004-05-15 |
+| Priyanka Deka | ADTU/2024-2027/BCA/001 | 2004-05-15 |
+| Priyanka Deka | ADTU/2024-2027/BBA/001 | 2004-05-15 |
+| Priyanka Deka | ADTU/2024-2026/MCA/001 | 2004-05-15 |
+| Priyanka Deka | ADTU/2024-2028/BPT/001 | 2004-05-15 |
+| Priyanka Deka | ADTU/2024-2028/BTECH-CSE/001 | 2004-05-15 |
+| Priyanka Deka | ADTU/2024-2027/BSC-MICRO/001 | 2004-05-15 |
+| Priyanka Deka | ADTU/2024-2026/MBA/001 | 2004-05-15 |
+| Priyanka Deka | ADTU/2024-2028/BTECH-CE/001 | 2004-05-15 |
+| Priyanka Deka | ADTU/2024-2026/DPHARM/001 | 2004-05-15 |
+| Riya Talukdar | ADTU/2023-2026/BCA/001 | 2004-05-15 |
+| Riya Talukdar | ADTU/2023-2027/BTECH-CE/001 | 2004-05-15 |
+| Riya Talukdar | ADTU/2023-2027/BPHARM/001 | 2004-05-15 |
+| Riya Talukdar | ADTU/2023-2026/BSC-HM/001 | 2004-05-15 |
+| Riya Talukdar | ADTU/2023-2027/BTECH-ECE/001 | 2004-05-15 |
+| Riya Talukdar | ADTU/2023-2027/BTECH-CSE-AIML/001 | 2004-05-15 |
+| Riya Talukdar | ADTU/2023-2027/BSC-NURSING/001 | 2004-05-15 |
+| Riya Talukdar | ADTU/2023-2026/BSC-MICRO/001 | 2004-05-15 |
+| Riya Talukdar | ADTU/2023-2027/BPT/001 | 2004-05-15 |
+| Riya Talukdar | ADTU/2023-2026/BSC-BIOTECH/001 | 2004-05-15 |
+| Riya Talukdar | ADTU/2023-2026/BBA/001 | 2004-05-15 |
+| Riya Talukdar | ADTU/2023-2027/BTECH-CSE-DS/001 | 2004-05-15 |
+| Riya Talukdar | ADTU/2023-2027/BSC-AGRI/001 | 2004-05-15 |
+| Riya Talukdar | ADTU/2023-2026/BSC-MLT/001 | 2004-05-15 |
+| Riya Talukdar | ADTU/2023-2027/BTECH-CSE/001 | 2004-05-15 |
+| Saurabh Borthakur | ADTU/2022-2026/BPT/001 | 2004-05-15 |
+| Saurabh Borthakur | ADTU/2022-2026/BPHARM/001 | 2004-05-15 |
+| Saurabh Borthakur | ADTU/2022-2026/BTECH-CSE-AIML/001 | 2004-05-15 |
+| Saurabh Borthakur | ADTU/2022-2026/BTECH-CSE/001 | 2004-05-15 |
+| Saurabh Borthakur | ADTU/2022-2026/BTECH-ECE/001 | 2004-05-15 |
+| Saurabh Borthakur | ADTU/2022-2026/BTECH-CE/001 | 2004-05-15 |
+| Saurabh Borthakur | ADTU/2022-2026/BTECH-CSE-DS/001 | 2004-05-15 |
+| Saurabh Borthakur | ADTU/2022-2026/BSC-NURSING/001 | 2004-05-15 |
+| Saurabh Borthakur | ADTU/2022-2026/BSC-AGRI/001 | 2004-05-15 |

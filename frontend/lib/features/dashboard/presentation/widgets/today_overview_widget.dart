@@ -340,12 +340,12 @@ class _QuickActions extends StatelessWidget {
   Widget build(BuildContext context) {
     // All 6 quick-access destinations
     final actions = [
-      _QuickAction(icon: FeatherIcons.fileText,      label: 'Assignments',      color: const Color(0xFFD29922), navIndex: 2),
-      _QuickAction(icon: FeatherIcons.messageSquare, label: 'Messages',          color: const Color(0xFF58A6FF), navIndex: 5),
-      _QuickAction(icon: FeatherIcons.calendar,      label: 'Calendar',          color: const Color(0xFF238636), navIndex: 4),
-      _QuickAction(icon: FeatherIcons.folder,        label: 'Projects',          color: const Color(0xFFA475F9), navIndex: 3),
-      _QuickAction(icon: FeatherIcons.bookOpen,      label: 'Notes',             color: const Color(0xFF1F6FEB), navIndex: 6),
-      _QuickAction(icon: FeatherIcons.fileMinus,     label: 'Question Papers',   color: const Color(0xFFE05252), navIndex: 7),
+      _QuickAction(icon: FeatherIcons.book,          label: 'Subjects',         color: const Color(0xFFD29922), navIndex: 1),
+      _QuickAction(icon: FeatherIcons.messageSquare, label: 'Messages',          color: const Color(0xFF58A6FF), navIndex: 4),
+      _QuickAction(icon: FeatherIcons.calendar,      label: 'Calendar',          color: const Color(0xFF238636), navIndex: 3),
+      _QuickAction(icon: FeatherIcons.folder,        label: 'Projects',          color: const Color(0xFFA475F9), navIndex: 2),
+      _QuickAction(icon: FeatherIcons.bookOpen,      label: 'Notes',             color: const Color(0xFF1F6FEB), navIndex: 5),
+      _QuickAction(icon: FeatherIcons.fileMinus,     label: 'Question Papers',   color: const Color(0xFFE05252), navIndex: 6),
     ];
 
     // Helper: build a card tapping to the given index

@@ -6,7 +6,8 @@ import '../widgets/top_bar_widget.dart';
 import '../widgets/announcements_panel.dart';
 import '../widgets/calendar_view_widget.dart';
 import '../widgets/subjects_view_widget.dart';
-import '../widgets/assignments_view_widget.dart';
+import '../widgets/assignments_view_widget.dart'; // kept for potential future use
+
 import '../widgets/projects_view_widget.dart';
 import '../widgets/messages_view_widget.dart';
 import '../widgets/notes_view_widget.dart';
@@ -34,20 +35,20 @@ class _MainDashboardScreenState extends ConsumerState<MainDashboardScreen> {
     final isMobile = MediaQuery.of(context).size.width < 850;
     final isFaculty = ref.read(authProvider).value?.isFaculty ?? false;
 
-    // ── Student bottom nav items (indices match IndexedStack order) ──────────
+    // ── Student bottom nav items (indices match IndexedStack order) ──────────────
     final studentBottomItems = [
-      _MobileNavItem(icon: FeatherIcons.grid,          label: 'Home',        index: 0),
-      _MobileNavItem(icon: FeatherIcons.book,          label: 'Subjects',    index: 1),
-      _MobileNavItem(icon: FeatherIcons.fileText,      label: 'Assignments', index: 2),
-      _MobileNavItem(icon: FeatherIcons.messageSquare, label: 'Messages',    index: 5),
-      _MobileNavItem(icon: FeatherIcons.menu,          label: 'More',        index: -1),
+      _MobileNavItem(icon: FeatherIcons.grid,          label: 'Home',     index: 0),
+      _MobileNavItem(icon: FeatherIcons.book,          label: 'Subjects', index: 1),
+      _MobileNavItem(icon: FeatherIcons.folder,        label: 'Projects', index: 2),
+      _MobileNavItem(icon: FeatherIcons.messageSquare, label: 'Messages', index: 4),
+      _MobileNavItem(icon: FeatherIcons.menu,          label: 'More',     index: -1),
     ];
     final facultyBottomItems = [
-      _MobileNavItem(icon: FeatherIcons.grid,          label: 'Home',       index: 0),
-      _MobileNavItem(icon: FeatherIcons.bookOpen,      label: 'Subjects',   index: 1),
-      _MobileNavItem(icon: FeatherIcons.edit3,         label: 'Grades',     index: 2),
-      _MobileNavItem(icon: FeatherIcons.messageSquare, label: 'Messages',   index: 5),
-      _MobileNavItem(icon: FeatherIcons.menu,          label: 'More',       index: -1),
+      _MobileNavItem(icon: FeatherIcons.grid,          label: 'Home',     index: 0),
+      _MobileNavItem(icon: FeatherIcons.bookOpen,      label: 'Subjects', index: 1),
+      _MobileNavItem(icon: FeatherIcons.folder,        label: 'Projects', index: 2),
+      _MobileNavItem(icon: FeatherIcons.messageSquare, label: 'Messages', index: 4),
+      _MobileNavItem(icon: FeatherIcons.menu,          label: 'More',     index: -1),
     ];
 
     final bottomItems = isFaculty ? facultyBottomItems : studentBottomItems;
@@ -130,16 +131,23 @@ class _MainDashboardScreenState extends ConsumerState<MainDashboardScreen> {
                   child: IndexedStack(
                     index: selectedIndex,
                     children: [
+                      // 0 – Dashboard
                       isFaculty
                           ? const TeacherOverviewWidget()
                           : const TodayOverviewWidget(),
+                      // 1 – Subjects (with built-in Assignments tab per subject)
                       const SubjectsViewWidget(),
-                      const AssignmentsViewWidget(),
+                      // 2 – Projects
                       const ProjectsViewWidget(),
+                      // 3 – Calendar
                       const CalendarViewWidget(),
+                      // 4 – Messages
                       const MessagesViewWidget(),
+                      // 5 – Notes
                       const NotesViewWidget(),
+                      // 6 – Question Papers
                       const QuestionPapersViewWidget(),
+                      // 7 – Settings
                       const SettingsViewWidget(),
                     ],
                   ),

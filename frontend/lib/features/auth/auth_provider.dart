@@ -93,6 +93,9 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
     ref.invalidate(allAssignmentsProvider);
     ref.invalidate(notificationsApiProvider);
     ref.invalidate(projectsProvider);
+    ref.invalidate(teacherStatsProvider);
+    ref.invalidate(dashboardRecentActivityProvider(true));
+    ref.invalidate(dashboardRecentActivityProvider(false));
     state = const AsyncData(
       AuthState(status: AuthStatus.unauthenticated),
     );

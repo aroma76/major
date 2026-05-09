@@ -37,6 +37,17 @@ const sendMessage = async (req, res) => {
   if (!content && !file_url)
     return res.status(400).json({ success: false, message: 'Message content or file required' });
 
+  // [M3] Cap message length
+  if (content && content.length > 5000)
+    return res.status(400).json({ success: false, message: 'Message too long (max 5000 characters)' });
+
+  // [H3] Validate parent_id belongs to the same channel (prevents cross-channel data leak)
+  if (parent_id) {
+    const parent = await pool.query('SELECT channel_id FROM messages WHERE id = $1', [parent_id]);
+    if (!parent.rows.length || String(parent.rows[0].channel_id) !== String(req.params.id))
+      return res.status(400).json({ success: false, message: 'Invalid parent message' });
+  }
+
   const result = await pool.query(
     `INSERT INTO messages (channel_id, sender_id, content, file_url, file_name, parent_id)
      VALUES ($1, $2, $3, $4, $5, $6)

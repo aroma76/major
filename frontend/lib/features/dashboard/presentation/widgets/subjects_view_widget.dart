@@ -6,6 +6,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../providers/api_providers.dart';
 import '../providers/task_provider.dart';
 import '../../data/models/channel_model.dart';
+import 'subject_hub_widget.dart';
 
 class SubjectsViewWidget extends ConsumerWidget {
   const SubjectsViewWidget({super.key});
@@ -175,8 +176,15 @@ class _SubjectCardState extends ConsumerState<_SubjectCard> {
       onExit: (_) => setState(() => _hovered = false),
       child: GestureDetector(
         onTap: () {
-          ref.read(selectedChannelProvider.notifier).select(ch);
-          ref.read(navigationProvider.notifier).navigateTo(5);
+          showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            backgroundColor: Colors.transparent,
+            builder: (_) => SubjectHubSheet(
+              channel: widget.channel,
+              color: widget.color,
+            ),
+          );
         },
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
@@ -254,13 +262,13 @@ class _SubjectCardState extends ConsumerState<_SubjectCard> {
 
               const Spacer(),
 
-              // ── Open chat row ──────────────────────────────────────────
+              // ── View Hub row ──────────────────────────────────────────
               Row(
                 children: [
-                  Icon(FeatherIcons.messageSquare, size: m ? 10 : 12, color: color),
+                  Icon(FeatherIcons.grid, size: m ? 10 : 12, color: color),
                   const SizedBox(width: 4),
                   Text(
-                    'Open Chat',
+                    'View Hub',
                     style: GoogleFonts.outfit(fontSize: m ? 10 : 11, color: color, fontWeight: FontWeight.w600),
                   ),
                   const Spacer(),

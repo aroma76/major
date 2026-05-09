@@ -616,8 +616,10 @@ class _MessageBubbleState extends ConsumerState<_MessageBubble> {
   void _showFileViewer(BuildContext context, String url, String? fileName) async {
     final ext = fileName?.split('.').last.toLowerCase() ?? '';
     final isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp'].contains(ext);
+    final isPdf = ext == 'pdf';
 
     if (isImage) {
+      // ── Image: full-screen zoomable overlay ────────────────────────────────
       showDialog(
         context: context,
         builder: (context) => Dialog(
@@ -653,7 +655,16 @@ class _MessageBubbleState extends ConsumerState<_MessageBubble> {
           ),
         ),
       );
+    } else if (isPdf) {
+      // ── PDF: open directly in a new browser tab ───────────────────────────
+      // The browser's built-in PDF viewer is far more reliable than an iframe.
+      // Cloudinary PDFs are served with correct MIME types, so this just works.
+      final uri = Uri.parse(url);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, webOnlyWindowName: '_blank');
+      }
     } else {
+      // ── Other file types (docx, pptx, etc.) — open in new tab ─────────────
       final uri = Uri.parse(url);
       if (await canLaunchUrl(uri)) {
         launchUrl(uri, webOnlyWindowName: '_blank');
@@ -662,10 +673,14 @@ class _MessageBubbleState extends ConsumerState<_MessageBubble> {
   }
 
   void _downloadFile(String url) async {
-    // Force download via Cloudinary's fl_attachment flag; works for any file type
-    final downloadUrl = url.contains('cloudinary.com')
-        ? '${url.split('?').first}?fl_attachment=true'
-        : url;
+    // For Cloudinary URLs, insert fl_attachment as a path transformation
+    // so the browser downloads the file instead of rendering it inline.
+    // e.g. .../upload/v123/... → .../upload/fl_attachment/v123/...
+    String downloadUrl = url.split('?').first; // strip any existing query params
+    if (downloadUrl.contains('cloudinary.com')) {
+      // Insert the fl_attachment flag right after "/upload/"
+      downloadUrl = downloadUrl.replaceFirst('/upload/', '/upload/fl_attachment/');
+    }
     final uri = Uri.parse(downloadUrl);
     if (await canLaunchUrl(uri)) {
       launchUrl(uri, webOnlyWindowName: '_blank');

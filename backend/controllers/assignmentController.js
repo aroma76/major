@@ -28,6 +28,9 @@ const getAssignment = async (req, res) => {
 const createAssignment = async (req, res) => {
   const { title, description, due_date, max_marks, priority } = req.body;
   if (!title || !due_date) return res.status(400).json({ success: false, message: 'title and due_date required' });
+  // [M3] Input length limits
+  if (title.length > 255) return res.status(400).json({ success: false, message: 'title too long (max 255 chars)' });
+  if (description && description.length > 3000) return res.status(400).json({ success: false, message: 'description too long (max 3000 chars)' });
   const result = await pool.query(
     `INSERT INTO assignments (channel_id, created_by, title, description, due_date, max_marks, priority, status)
      VALUES ($1,$2,$3,$4,$5,$6,$7,'todo') RETURNING *`,
@@ -56,12 +59,22 @@ const updateAssignmentStatus = async (req, res) => {
 
 const updateAssignment = async (req, res) => {
   const { title, description, due_date, max_marks } = req.body;
+  // [C3] Verify assignment belongs to this channel to prevent cross-channel edits
+  const check = await pool.query('SELECT channel_id FROM assignments WHERE id=$1', [req.params.assignId]);
+  if (!check.rows.length) return res.status(404).json({ success: false, message: 'Not found' });
+  if (String(check.rows[0].channel_id) !== String(req.params.id))
+    return res.status(403).json({ success: false, message: 'Assignment does not belong to this channel' });
   const result = await pool.query(`UPDATE assignments SET title=$1,description=$2,due_date=$3,max_marks=$4 WHERE id=$5 RETURNING *`, [title, description, due_date, max_marks, req.params.assignId]);
   if (!result.rows.length) return res.status(404).json({ success: false, message: 'Not found' });
   res.json({ success: true, assignment: result.rows[0] });
 };
 
 const deleteAssignment = async (req, res) => {
+  // [C3] Verify assignment belongs to this channel before deleting
+  const check = await pool.query('SELECT channel_id FROM assignments WHERE id=$1', [req.params.assignId]);
+  if (!check.rows.length) return res.status(404).json({ success: false, message: 'Assignment not found' });
+  if (String(check.rows[0].channel_id) !== String(req.params.id))
+    return res.status(403).json({ success: false, message: 'Assignment does not belong to this channel' });
   await pool.query('DELETE FROM assignments WHERE id=$1', [req.params.assignId]);
   res.json({ success: true, message: 'Assignment deleted' });
 };

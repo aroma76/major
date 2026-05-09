@@ -63,37 +63,7 @@ class _TeacherOverviewWidgetState extends ConsumerState<TeacherOverviewWidget>
   late Animation<double> _fadeAnim;
   late Animation<Offset> _slideAnim;
 
-  static const _stats = [
-    _TeacherStat(
-      label: 'Total Students',
-      value: '128',
-      icon: FeatherIcons.users,
-      color: Color(0xFF58A6FF),
-      subtitle: 'Across 4 subjects',
-    ),
-    _TeacherStat(
-      label: 'Pending Reviews',
-      value: '23',
-      icon: FeatherIcons.fileText,
-      color: Color(0xFFD29922),
-      subtitle: 'Submissions to grade',
-    ),
-    _TeacherStat(
-      label: 'Active Projects',
-      value: '11',
-      icon: FeatherIcons.folder,
-      color: Color(0xFFA475F9),
-      subtitle: 'Student projects ongoing',
-    ),
-    _TeacherStat(
-      label: 'Avg. Class Progress',
-      value: '63%',
-      icon: FeatherIcons.trendingUp,
-      color: Color(0xFF3FB950),
-      subtitle: 'This semester',
-    ),
-  ];
-
+  // Stats are now loaded from the API — no static list
 
   static const _actions = [
     _TeacherAction(
@@ -112,7 +82,7 @@ class _TeacherOverviewWidgetState extends ConsumerState<TeacherOverviewWidget>
       icon: FeatherIcons.checkSquare,
       label: 'Grade Work',
       color: Color(0xFFD29922),
-      description: '23 awaiting review',
+      description: 'Review submissions',
     ),
     _TeacherAction(
       icon: FeatherIcons.calendar,
@@ -175,10 +145,53 @@ class _TeacherOverviewWidgetState extends ConsumerState<TeacherOverviewWidget>
               _TeacherHeroBanner(greeting: _getGreeting(), date: _formatDate()),
               const SizedBox(height: 28),
 
-              // ── Stat Cards ───────────────────────────────────────────────
+              // ── Stat Cards (real API) ─────────────────────────────────────
               _SectionHeader(title: 'At a Glance', icon: FeatherIcons.barChart2),
               const SizedBox(height: 14),
-              _StatGrid(stats: _stats),
+              ref.watch(teacherStatsProvider).when(
+                loading: () => const SizedBox(
+                  height: 120,
+                  child: Center(child: CircularProgressIndicator(color: AppColors.accent)),
+                ),
+                error: (_, __) => const SizedBox.shrink(),
+                data: (stats) {
+                  final students = stats['totalStudents'] as int? ?? 0;
+                  final pending  = stats['pendingReviews'] as int? ?? 0;
+                  final projects = stats['activeProjects'] as int? ?? 0;
+                  final subjects = stats['totalSubjects']  as int? ?? 0;
+                  final liveStats = [
+                    _TeacherStat(
+                      label: 'Total Students',
+                      value: '$students',
+                      icon: FeatherIcons.users,
+                      color: const Color(0xFF58A6FF),
+                      subtitle: 'Across $subjects subjects',
+                    ),
+                    _TeacherStat(
+                      label: 'Pending Reviews',
+                      value: '$pending',
+                      icon: FeatherIcons.fileText,
+                      color: const Color(0xFFD29922),
+                      subtitle: 'Submissions to grade',
+                    ),
+                    _TeacherStat(
+                      label: 'Active Projects',
+                      value: '$projects',
+                      icon: FeatherIcons.folder,
+                      color: const Color(0xFFA475F9),
+                      subtitle: 'Your projects',
+                    ),
+                    _TeacherStat(
+                      label: 'My Subjects',
+                      value: '$subjects',
+                      icon: FeatherIcons.bookOpen,
+                      color: const Color(0xFF3FB950),
+                      subtitle: 'Channels assigned',
+                    ),
+                  ];
+                  return _StatGrid(stats: liveStats);
+                },
+              ),
               const SizedBox(height: 28),
 
               // ── Quick Actions ────────────────────────────────────────────
@@ -265,6 +278,11 @@ class _TeacherHeroBanner extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authProvider).value;
     final firstName = (authState?.userName ?? 'Faculty').split(' ').first;
+    final statsAsync = ref.watch(teacherStatsProvider);
+    final statsData   = statsAsync.asData?.value;
+    final students = statsData?['totalStudents'] as int? ?? 0;
+    final subjects = statsData?['totalSubjects']  as int? ?? 0;
+    final pending  = statsData?['pendingReviews'] as int? ?? 0;
 
     return Container(
       width: double.infinity,
@@ -355,13 +373,14 @@ class _TeacherHeroBanner extends ConsumerWidget {
                 spacing: 10,
                 runSpacing: 8,
                 children: [
-                  _BannerChip(icon: FeatherIcons.users, label: '128 Students'),
-                  _BannerChip(icon: FeatherIcons.bookOpen, label: '4 Subjects'),
-                  _BannerChip(
-                    icon: FeatherIcons.alertCircle,
-                    label: '23 Pending Reviews',
-                    isUrgent: true,
-                  ),
+                  _BannerChip(icon: FeatherIcons.users, label: '$students Students'),
+                  _BannerChip(icon: FeatherIcons.bookOpen, label: '$subjects Subjects'),
+                  if (pending > 0)
+                    _BannerChip(
+                      icon: FeatherIcons.alertCircle,
+                      label: '$pending Pending Reviews',
+                      isUrgent: true,
+                    ),
                 ],
               ),
             ],
@@ -577,9 +596,9 @@ class _QuickActionCardState extends State<_QuickActionCard> {
         builder: (_) => const TeacherPostAnnouncementDialog(),
       );
     } else if (a.label == 'Grade Work') {
-      widget.ref.read(navigationProvider.notifier).navigateTo(2);
+      widget.ref.read(navigationProvider.notifier).navigateTo(2); // Projects
     } else if (a.label == 'Schedule') {
-      widget.ref.read(navigationProvider.notifier).navigateTo(4);
+      widget.ref.read(navigationProvider.notifier).navigateTo(3); // Calendar
     }
   }
 

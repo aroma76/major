@@ -3,9 +3,7 @@ const MANIFEST = 'flutter-app-manifest';
 const TEMP = 'flutter-temp-cache';
 const CACHE_NAME = 'flutter-app-cache';
 
-const RESOURCES = {".vercel/project.json": "e5f536613f6df0892416e7dd644e6ec7",
-".vercel/README.txt": "2b13c79d37d6ed82a3255b83b6815034",
-"assets/AssetManifest.bin": "f3983cd6d59e947bef8eec9f54af649e",
+const RESOURCES = {"assets/AssetManifest.bin": "f3983cd6d59e947bef8eec9f54af649e",
 "assets/AssetManifest.bin.json": "9ca252ccd30b77fe31612f125d453630",
 "assets/assets/images/adtu_logo.png": "cd85888661d097f1d32cdf2ff871b177",
 "assets/assets/images/adtu_logo.svg": "d513188cac9620e8b9922ec6f8fc2d02",
@@ -30,14 +28,14 @@ const RESOURCES = {".vercel/project.json": "e5f536613f6df0892416e7dd644e6ec7",
 "canvaskit/skwasm_heavy.wasm": "b0be7910760d205ea4e011458df6ee01",
 "favicon.png": "5dcef449791fa27946b3d35ad8803796",
 "flutter.js": "24bc71911b75b5f8135c949e27a2984e",
-"flutter_bootstrap.js": "3634d6b059a768e138eb52866e533b1d",
+"flutter_bootstrap.js": "ab836d0c2184c9ae0446c226636c6318",
 "icons/Icon-192.png": "ac9a721a12bbc803b44f645561ecb1e1",
 "icons/Icon-512.png": "96e752610906ba2a93c65f8abe1645f1",
 "icons/Icon-maskable-192.png": "c457ef57daa1d16f64b27b786ec2ea3c",
 "icons/Icon-maskable-512.png": "301a7604d45b3e739efc881eb04896ea",
 "index.html": "4981128a6f5866f7f9f48ab281074e21",
 "/": "4981128a6f5866f7f9f48ab281074e21",
-"main.dart.js": "f12ef9bc0833b640e9ac5212cbcf00ea",
+"main.dart.js": "92925ac9554542e5a876ab24e038b739",
 "manifest.json": "cc29873c8d17fe5a3a337d6d0a351c8c",
 "version.json": "92c30f555aac99fb171ab86790fd3dd7"};
 // The application shell files that are downloaded before a service worker can

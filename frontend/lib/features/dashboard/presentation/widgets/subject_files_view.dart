@@ -345,9 +345,11 @@ class _FileCardState extends State<_FileCard> {
 
   Future<void> _downloadFile() async {
     final url = widget.file.fileUrl;
-    final downloadUrl = url.contains('cloudinary.com')
-        ? '${url.split('?').first}?fl_attachment=true'
-        : url;
+    // Insert fl_attachment as a Cloudinary path transformation (not query param)
+    String downloadUrl = url.split('?').first;
+    if (downloadUrl.contains('cloudinary.com')) {
+      downloadUrl = downloadUrl.replaceFirst('/upload/', '/upload/fl_attachment/');
+    }
     final uri = Uri.parse(downloadUrl);
     if (await canLaunchUrl(uri)) launchUrl(uri, webOnlyWindowName: '_blank');
   }

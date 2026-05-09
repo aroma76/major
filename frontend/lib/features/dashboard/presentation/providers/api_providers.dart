@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/channel_model.dart';
 import '../../data/models/assignment_model.dart';
+import '../../../../core/services/api_service.dart';
 
 import '../../data/repositories/channel_repository.dart';
 import '../../data/repositories/assignment_repository.dart';
@@ -84,4 +85,48 @@ final projectsProvider =
 final academicEventsProvider =
     FutureProvider.family<List<Map<String, dynamic>>, int>((ref, year) async {
   return _eventRepo.getEvents(year: year);
+});
+
+// ── Teacher Stats (real API) ────────────────────────────────────────────────
+
+final teacherStatsProvider =
+    FutureProvider<Map<String, dynamic>>((ref) async {
+  final api = ApiService();
+  final res = await api.getTeacherStats();
+  final data = res.data as Map<String, dynamic>;
+  return data['stats'] as Map<String, dynamic>? ?? {};
+});
+
+// ── Teacher Recent Activity (announcements + messages) ───────────────────
+
+final teacherRecentActivityProvider =
+    FutureProvider<Map<String, dynamic>>((ref) async {
+  final api = ApiService();
+  final res = await api.getTeacherRecentActivity();
+  final data = res.data as Map<String, dynamic>;
+  return {
+    'announcements': (data['announcements'] as List<dynamic>? ?? [])
+        .cast<Map<String, dynamic>>(),
+    'recentMessages': (data['recentMessages'] as List<dynamic>? ?? [])
+        .cast<Map<String, dynamic>>(),
+  };
+});
+// ── Unified Dashboard Recent Activity ───────────────────────────────────────
+// Pass isFaculty = true for teachers, false for students.
+// Using family avoids a circular import with auth_provider.dart.
+
+final dashboardRecentActivityProvider =
+    FutureProvider.family<Map<String, dynamic>, bool>((ref, isFaculty) async {
+  ref.keepAlive(); // cache so re-navigating to dashboard doesn't re-fetch
+  final api = ApiService();
+  final res = isFaculty
+      ? await api.getTeacherRecentActivity()
+      : await api.getStudentRecentActivity();
+  final data = res.data as Map<String, dynamic>;
+  return {
+    'announcements': (data['announcements'] as List<dynamic>? ?? [])
+        .cast<Map<String, dynamic>>(),
+    'recentMessages': (data['recentMessages'] as List<dynamic>? ?? [])
+        .cast<Map<String, dynamic>>(),
+  };
 });

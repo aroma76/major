@@ -9,15 +9,20 @@ const generateToken = (id) =>
 // Students register with Roll Number + Email + their own chosen password.
 // Faculty register with Email + chosen password.
 const register = async (req, res) => {
-  const { name, email, password, role = 'student', roll_number } = req.body;
+  // [C1] Role is NEVER accepted from the request body — always default to 'student'.
+  // Admin/faculty promotion must be done by an existing admin via a dedicated route.
+  const { name, email, password, roll_number } = req.body;
+  const role = 'student';
 
   if (!name || !email || !password)
     return res.status(400).json({ success: false, message: 'Name, email and password are required' });
 
-  if (password.length < 6)
-    return res.status(400).json({ success: false, message: 'Password must be at least 6 characters' });
+  // [H1] Enforce stronger password: 8+ chars, at least one letter and one number
+  const strongPassword = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/;
+  if (!strongPassword.test(password))
+    return res.status(400).json({ success: false, message: 'Password must be at least 8 characters and include a letter and a number' });
 
-  if (role === 'student' && !roll_number)
+  if (!roll_number)
     return res.status(400).json({ success: false, message: 'Roll Number is required for students' });
 
   // Check for duplicate email
@@ -60,13 +65,14 @@ const login = async (req, res) => {
     : 'SELECT * FROM users WHERE roll_number = $1';
 
   const result = await pool.query(query, [identifier]);
+  // [L3] Generic message — do not reveal whether the account exists or not
   if (result.rows.length === 0)
-    return res.status(401).json({ success: false, message: 'No account found with that Roll Number / Email' });
+    return res.status(401).json({ success: false, message: 'Invalid credentials' });
 
   const user = result.rows[0];
   const match = await bcrypt.compare(password, user.password);
   if (!match)
-    return res.status(401).json({ success: false, message: 'Incorrect password' });
+    return res.status(401).json({ success: false, message: 'Invalid credentials' });
 
   const { password: _, ...safeUser } = user;
   res.json({ success: true, token: generateToken(user.id), user: safeUser });
@@ -108,8 +114,10 @@ const changePassword = async (req, res) => {
     return res.status(400).json({ success: false, message: 'Please provide both current and new passwords' });
   }
 
-  if (newPassword.length < 6) {
-    return res.status(400).json({ success: false, message: 'New password must be at least 6 characters' });
+  // [H1] Same strong password policy as registration
+  const strongPassword = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/;
+  if (!strongPassword.test(newPassword)) {
+    return res.status(400).json({ success: false, message: 'New password must be at least 8 characters and include a letter and a number' });
   }
 
   // Get user from database

@@ -23,6 +23,7 @@ const actualNotesRoutes  = require('./routes/actualNotesRoutes');
 const projectRoutes           = require('./routes/projectRoutes');
 const academicEventRoutes     = require('./routes/academicEventRoutes');
 const enrollmentRoutes        = require('./routes/enrollmentRoutes');
+const teacherRoutes           = require('./routes/teacherRoutes');
 
 const app = express();
 const server = http.createServer(app);
@@ -34,8 +35,11 @@ const allowedOrigins = [
   'http://localhost:9090', // Flutter Web dev server
   'https://major-three-tau.vercel.app',  // Flutter Web on Vercel
   /\.vercel\.app$/,        // allow all Vercel preview/branch URLs
-  /^http:\/\/localhost:\d+$/,  // allow ALL localhost ports (Flutter picks random ports)
-  /^http:\/\/127\.0\.0\.1:\d+$/, // allow 127.0.0.1 explicitly
+  // [M1] Only allow ALL localhost ports in non-production to reduce attack surface
+  ...(process.env.NODE_ENV !== 'production' ? [
+    /^http:\/\/localhost:\d+$/,       // Flutter picks random ports in dev
+    /^http:\/\/127\.0\.0\.1:\d+$/,   // 127.0.0.1 in dev
+  ] : []),
 ].filter(Boolean);
 
 const corsOptions = {
@@ -61,7 +65,18 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // ── Security ──────────────────────────────────────────────────────────────────
-app.use(helmet({ contentSecurityPolicy: false })); // secure HTTP headers
+// [M2] Security headers — CSP enabled with sensible defaults
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc:  ["'self'"],
+      styleSrc:   ["'self'", "'unsafe-inline'"],
+      imgSrc:     ["'self'", 'data:', 'https://res.cloudinary.com'],
+      connectSrc: ["'self'", process.env.CLIENT_URL, 'https://major-three-tau.vercel.app'].filter(Boolean),
+    },
+  },
+}));
 
 // ── Health check (MUST be before rate limiter so cron pings are never throttled)
 app.get('/api/health', (req, res) =>
@@ -91,6 +106,7 @@ app.use('/api/notifications',              notificationRoutes);
 app.use('/api/projects',                   projectRoutes);
 app.use('/api/academic-events',            academicEventRoutes);
 app.use('/api/enrollments',               enrollmentRoutes);
+app.use('/api/teacher',                   teacherRoutes);
 
 app.use((req, res) => res.status(404).json({ success: false, message: `Route ${req.originalUrl} not found` }));
 app.use(errorHandler);

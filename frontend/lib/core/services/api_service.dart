@@ -120,4 +120,12 @@ class ApiService {
   Future<Response> updateProjectTaskStatus(int projectId, int taskId, String status) =>
       dio.patch('/projects/$projectId/tasks/$taskId/status',
           data: {'status': status});
+
+  // ── Teacher-specific (stats + recent activity) ────────────────────────────
+  Future<Response> getTeacherStats() => dio.get('/teacher/stats');
+
+  Future<Response> getTeacherRecentActivity() => dio.get('/teacher/recent-activity');
+
+  // ── Student-specific (recent activity) ────────────────────────────────
+  Future<Response> getStudentRecentActivity() => dio.get('/teacher/student-activity');
 }

@@ -1,109 +1,115 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_feather_icons/flutter_feather_icons.dart';
-import '../../../../core/theme/app_colors.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../providers/task_provider.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../features/auth/auth_provider.dart';
+import '../providers/api_providers.dart';
 
 class AnnouncementsPanel extends ConsumerWidget {
   const AnnouncementsPanel({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final isFaculty = ref.watch(authProvider).value?.isFaculty ?? false;
+    final activityAsync = ref.watch(dashboardRecentActivityProvider(isFaculty));
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // ── Header ──────────────────────────────────────────────────────────
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
               'Announcements',
-              style: TextStyle(
+              style: GoogleFonts.outfit(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
                 color: AppColors.getHeadingColor(context),
               ),
             ),
-            IconButton(
-              icon: Icon(FeatherIcons.edit, size: 18, color: AppColors.getBodyColor(context)),
-              onPressed: () {},
-            ),
+            Icon(FeatherIcons.bell,
+                size: 18, color: AppColors.getBodyColor(context)),
           ],
         ),
         const SizedBox(height: 16),
-        _buildAnnouncementItem(
-          context,
-          title: 'Final Exam Schedule',
-          sender: 'Dr. Sarah Mitchell',
-          time: '2 hours ago',
-          color: Colors.blue,
-        ),
-        const SizedBox(height: 12),
-        _buildAnnouncementItem(
-          context,
-          title: 'New Lab Material Posted',
-          sender: 'Prof. James Wilson',
-          time: '5 hours ago',
-          color: Colors.purple,
-        ),
-        const SizedBox(height: 32),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'Recent Chat',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: AppColors.getHeadingColor(context),
-              ),
-            ),
-             Icon(FeatherIcons.users, size: 18, color: AppColors.getBodyColor(context)),
-          ],
-        ),
-        const SizedBox(height: 16),
-        _buildChatItem(
-          context,
-          ref,
-          name: 'Class Group Chat',
-          message: 'Hey, has anyone finished Lab 4?',
-          time: '12:45 PM',
-          isUnread: true,
-        ),
-        const SizedBox(height: 12),
-        _buildChatItem(
-          context,
-          ref,
-          name: 'Jane Cooper',
-          message: 'Can you share the notes for...',
-          time: '10:30 AM',
-          isUnread: false,
-        ),
-        const SizedBox(height: 12),
-        _buildChatItem(
-          context,
-          ref,
-          name: 'Guy Hawkins',
-          message: 'The deadline is tonight!',
-          time: 'Yesterday',
-          isUnread: false,
+
+        // ── Body ────────────────────────────────────────────────────────────
+        activityAsync.when(
+          loading: () => const Padding(
+            padding: EdgeInsets.symmetric(vertical: 32),
+            child: Center(child: CircularProgressIndicator()),
+          ),
+          error: (e, _) {
+            debugPrint('AnnouncementsPanel error: $e');
+            return _ErrorState(
+              onRetry: () =>
+                  ref.invalidate(dashboardRecentActivityProvider(isFaculty)),
+            );
+          },
+          data: (activity) {
+            final announcements =
+                (activity['announcements'] as List<Map<String, dynamic>>?) ??
+                    [];
+
+            if (announcements.isEmpty) {
+              return _EmptyAnnouncements(isFaculty: isFaculty);
+            }
+
+            return Column(
+              children: announcements
+                  .map((ann) => Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: _AnnouncementItem(data: ann),
+                      ))
+                  .toList(),
+            );
+          },
         ),
       ],
     );
   }
+}
 
-  Widget _buildAnnouncementItem(
-    BuildContext context, {
-    required String title,
-    required String sender,
-    required String time,
-    required Color color,
-  }) {
+// ── Announcement Item ──────────────────────────────────────────────────────────
+class _AnnouncementItem extends StatelessWidget {
+  final Map<String, dynamic> data;
+  const _AnnouncementItem({required this.data});
+
+  static const _colors = [
+    Color(0xFF58A6FF),
+    Color(0xFFA475F9),
+    Color(0xFF3FB950),
+    Color(0xFFD29922),
+    Color(0xFFFF6B6B),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final title = data['title'] as String? ?? '';
+    final content = data['content'] as String? ?? '';
+    final sender = data['created_by_name'] as String? ?? 'Teacher';
+    final subject = data['subject_name'] as String? ?? '';
+    final isImportant = data['is_important'] as bool? ?? false;
+    final rawDate = data['created_at'] as String?;
+    final timeAgo =
+        rawDate != null ? _formatTimeAgo(DateTime.parse(rawDate)) : '';
+    final colorIndex =
+        sender.isNotEmpty ? sender.codeUnitAt(0) % _colors.length : 0;
+    final color = isImportant ? Colors.orange : _colors[colorIndex];
+
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: AppColors.getSurfaceColor(context),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.getBorderColor(context), width: 1),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: isImportant
+              ? Colors.orange.withValues(alpha: 0.4)
+              : AppColors.getBorderColor(context),
+        ),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -111,39 +117,74 @@ class AnnouncementsPanel extends ConsumerWidget {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.1),
+              color: color.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(FeatherIcons.bell, size: 16, color: color),
+            child: Icon(
+              isImportant ? FeatherIcons.alertCircle : FeatherIcons.bell,
+              size: 15,
+              color: color,
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.getHeadingColor(context),
+                if (title.isNotEmpty)
+                  Text(
+                    title,
+                    style: GoogleFonts.outfit(
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.getHeadingColor(context),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  sender,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: AppColors.getBodyColor(context),
+                if (content.isNotEmpty) ...[
+                  const SizedBox(height: 3),
+                  Text(
+                    content,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.outfit(
+                      fontSize: 12,
+                      color: AppColors.getBodyColor(context),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                 time,
-                  style: TextStyle(
-                    fontSize: 10,
-                    color: AppColors.getBodyColor(context),
-                  ),
+                ],
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    Text(
+                      sender,
+                      style: GoogleFonts.outfit(
+                          fontSize: 11,
+                          color: color,
+                          fontWeight: FontWeight.w600),
+                    ),
+                    if (subject.isNotEmpty) ...[
+                      Text(' · ',
+                          style: GoogleFonts.outfit(
+                              fontSize: 11,
+                              color: AppColors.getBodyColor(context))),
+                      Expanded(
+                        child: Text(
+                          subject,
+                          style: GoogleFonts.outfit(
+                              fontSize: 11,
+                              color: AppColors.getBodyColor(context)),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                    const Spacer(),
+                    Text(
+                      timeAgo,
+                      style: GoogleFonts.outfit(
+                          fontSize: 10,
+                          color: AppColors.getBodyColor(context)),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -153,73 +194,103 @@ class AnnouncementsPanel extends ConsumerWidget {
     );
   }
 
-  Widget _buildChatItem(
-    BuildContext context,
-    WidgetRef ref, {
-    required String name,
-    required String message,
-    required String time,
-    required bool isUnread,
-  }) {
-    return InkWell(
-      onTap: () {
-        ref.read(navigationProvider.notifier).navigateTo(5); // Switch to Messages
-      },
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: AppColors.getSurfaceColor(context),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.getBorderColor(context), width: 1),
+  String _formatTimeAgo(DateTime dt) {
+    final diff = DateTime.now().difference(dt.toLocal());
+    if (diff.inMinutes < 1) return 'Just now';
+    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
+    if (diff.inHours < 24) return '${diff.inHours}h ago';
+    if (diff.inDays < 7) return '${diff.inDays}d ago';
+    return DateFormat('MMM d').format(dt.toLocal());
+  }
+}
+
+// ── Empty State ────────────────────────────────────────────────────────────────
+class _EmptyAnnouncements extends StatelessWidget {
+  final bool isFaculty;
+  const _EmptyAnnouncements({required this.isFaculty});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 16),
+      decoration: BoxDecoration(
+        color: AppColors.getSurfaceColor(context),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: AppColors.getBorderColor(context),
+          style: BorderStyle.solid,
         ),
-        child: Row(
-          children: [
-            CircleAvatar(
-              radius: 18,
-              backgroundColor: AppColors.getBorderColor(context),
-              child: Text(name[0], style: TextStyle(fontSize: 12, color: AppColors.getHeadingColor(context))),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            FeatherIcons.bell,
+            size: 36,
+            color: AppColors.getBodyColor(context).withValues(alpha: 0.25),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'No announcements yet',
+            style: GoogleFonts.outfit(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: AppColors.getHeadingColor(context),
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        name,
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.getHeadingColor(context),
-                        ),
-                      ),
-                      Text(
-                        time,
-                        style: TextStyle(
-                          fontSize: 10,
-                          color: AppColors.getBodyColor(context),
-                        ),
-                      ),
-                    ],
-                  ),
-                  Text(
-                    message,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: isUnread ? AppColors.getHeadingColor(context) : AppColors.getBodyColor(context),
-                      fontWeight: isUnread ? FontWeight.w500 : FontWeight.normal,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            isFaculty
+                ? 'Post an announcement to notify your students.'
+                : 'Your teachers haven\'t posted anything yet.',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.outfit(
+              fontSize: 12,
+              color: AppColors.getBodyColor(context),
             ),
-          ],
-        ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Error State ────────────────────────────────────────────────────────────────
+class _ErrorState extends StatelessWidget {
+  final VoidCallback onRetry;
+  const _ErrorState({required this.onRetry});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 16),
+      decoration: BoxDecoration(
+        color: AppColors.getSurfaceColor(context),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.getBorderColor(context)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(FeatherIcons.wifiOff,
+              size: 28,
+              color: AppColors.getBodyColor(context).withValues(alpha: 0.35)),
+          const SizedBox(height: 10),
+          Text(
+            'Could not load announcements',
+            style: GoogleFonts.outfit(
+                fontSize: 13, color: AppColors.getHeadingColor(context)),
+          ),
+          const SizedBox(height: 10),
+          TextButton.icon(
+            icon: const Icon(FeatherIcons.refreshCw, size: 14),
+            label: Text('Retry',
+                style: GoogleFonts.outfit(fontSize: 13)),
+            onPressed: onRetry,
+          ),
+        ],
       ),
     );
   }

@@ -48,6 +48,9 @@ const getProject = async (req, res) => {
 const createProject = async (req, res) => {
   const { title, description, deadline, member_ids } = req.body;
   if (!title) return res.status(400).json({ success: false, message: 'title required' });
+  // [M3] Input length limits
+  if (title.length > 255) return res.status(400).json({ success: false, message: 'title too long (max 255 chars)' });
+  if (description && description.length > 2000) return res.status(400).json({ success: false, message: 'description too long (max 2000 chars)' });
 
   const result = await pool.query(
     `INSERT INTO projects (title, description, deadline, created_by, progress) VALUES ($1, $2, $3, $4, 0) RETURNING *`,
@@ -69,6 +72,11 @@ const updateProgress = async (req, res) => {
   const { progress } = req.body;
   if (progress === undefined || progress < 0 || progress > 100)
     return res.status(400).json({ success: false, message: 'progress must be 0–100' });
+  // [C2] Only the project creator can manually set progress
+  const check = await pool.query('SELECT created_by FROM projects WHERE id = $1', [req.params.id]);
+  if (!check.rows.length) return res.status(404).json({ success: false, message: 'Project not found' });
+  if (check.rows[0].created_by !== req.user.id)
+    return res.status(403).json({ success: false, message: 'Not authorized to update this project' });
   const result = await pool.query(
     `UPDATE projects SET progress = $1 WHERE id = $2 RETURNING *`, [progress, req.params.id]
   );
@@ -77,6 +85,11 @@ const updateProgress = async (req, res) => {
 
 // DELETE /api/projects/:id
 const deleteProject = async (req, res) => {
+  // [C2] Only the creator can delete a project
+  const check = await pool.query('SELECT created_by FROM projects WHERE id = $1', [req.params.id]);
+  if (!check.rows.length) return res.status(404).json({ success: false, message: 'Project not found' });
+  if (check.rows[0].created_by !== req.user.id)
+    return res.status(403).json({ success: false, message: 'Not authorized to delete this project' });
   await pool.query('DELETE FROM projects WHERE id = $1', [req.params.id]);
   res.json({ success: true, message: 'Project deleted' });
 };

@@ -13,7 +13,6 @@ class SidebarWidget extends ConsumerWidget {
   static final List<SidebarItemModel> studentItems = [
     SidebarItemModel(icon: FeatherIcons.grid,          title: 'Dashboard'),
     SidebarItemModel(icon: FeatherIcons.book,          title: 'Subjects'),
-    SidebarItemModel(icon: FeatherIcons.fileText,      title: 'Assignments'),
     SidebarItemModel(icon: FeatherIcons.folder,        title: 'Projects'),
     SidebarItemModel(icon: FeatherIcons.calendar,      title: 'Calendar'),
     SidebarItemModel(icon: FeatherIcons.messageSquare, title: 'Messages'),
@@ -25,7 +24,6 @@ class SidebarWidget extends ConsumerWidget {
   static final List<SidebarItemModel> facultyItems = [
     SidebarItemModel(icon: FeatherIcons.grid, title: 'Dashboard'),
     SidebarItemModel(icon: FeatherIcons.bookOpen, title: 'Manage Subjects'),
-    SidebarItemModel(icon: FeatherIcons.edit3, title: 'Submissions & Grading'),
     SidebarItemModel(icon: FeatherIcons.folder, title: 'Student Projects'),
     SidebarItemModel(icon: FeatherIcons.calendar, title: 'Schedule'),
     SidebarItemModel(icon: FeatherIcons.messageSquare, title: 'Messages'),
@@ -158,7 +156,7 @@ class SidebarWidget extends ConsumerWidget {
             child: InkWell(
               borderRadius: BorderRadius.circular(12),
               onTap: () {
-                ref.read(navigationProvider.notifier).navigateTo(8);
+                ref.read(navigationProvider.notifier).navigateTo(7);
                 if (Navigator.of(context).canPop()) Navigator.of(context).pop();
               },
               child: AnimatedContainer(
@@ -169,7 +167,7 @@ class SidebarWidget extends ConsumerWidget {
                       ? AppColors.accent.withValues(alpha: 0.12)
                       : Colors.transparent,
                   borderRadius: BorderRadius.circular(12),
-                  border: ref.watch(navigationProvider) == 8
+                  border: ref.watch(navigationProvider) == 7
                       ? Border.all(color: AppColors.accent.withValues(alpha: 0.3))
                       : null,
                 ),
@@ -187,7 +185,7 @@ class SidebarWidget extends ConsumerWidget {
                       'Settings',
                       style: TextStyle(
                         fontSize: 15,
-                        fontWeight: ref.watch(navigationProvider) == 8
+                        fontWeight: ref.watch(navigationProvider) == 7
                             ? FontWeight.w600
                             : FontWeight.w500,
                         color: ref.watch(navigationProvider) == 8
@@ -223,7 +221,7 @@ class SidebarWidget extends ConsumerWidget {
                       Expanded(
                         child: InkWell(
                           onTap: () {
-                                              ref.read(navigationProvider.notifier).navigateTo(8);
+                              ref.read(navigationProvider.notifier).navigateTo(7);
                             if (Navigator.of(context).canPop()) Navigator.of(context).pop();
                           },
                           borderRadius: BorderRadius.circular(10),
@@ -262,7 +260,7 @@ class SidebarWidget extends ConsumerWidget {
                         child: InkWell(
                           borderRadius: BorderRadius.circular(8),
                           onTap: () {
-                            ref.read(navigationProvider.notifier).navigateTo(6);
+                            ref.read(navigationProvider.notifier).navigateTo(7);
                             if (Navigator.of(context).canPop()) Navigator.of(context).pop();
                           },
                           child: Padding(
