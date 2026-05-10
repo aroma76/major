@@ -1,7 +1,12 @@
 const pool = require('../config/db');
 
-// GET /api/academic-events
-// Query: ?month=4&year=2026&type=holiday
+/**
+ * GET /api/academic-events
+ * Returns academic calendar events. Optionally filterable by month/year and type.
+ * Uses complex date overlap logic to ensure events spanning across months show up correctly.
+ * 
+ * Query: ?month=4&year=2026&type=holiday
+ */
 const getAcademicEvents = async (req, res) => {
   const { month, year, type } = req.query;
 
@@ -9,6 +14,7 @@ const getAcademicEvents = async (req, res) => {
   let values = [];
   let idx = 1;
 
+  // Find events that overlap with the requested month/year
   if (month && year) {
     where.push(`(
       (EXTRACT(MONTH FROM start_date) = $${idx} AND EXTRACT(YEAR FROM start_date) = $${idx + 1})
@@ -23,6 +29,7 @@ const getAcademicEvents = async (req, res) => {
     idx += 1;
   }
 
+  // Filter by event type
   if (type && type !== 'all') {
     where.push(`event_type = $${idx}`);
     values.push(type);
@@ -43,7 +50,12 @@ const getAcademicEvents = async (req, res) => {
   res.json({ success: true, events: rows });
 };
 
-// POST /api/academic-events  (admin only)
+/**
+ * POST /api/academic-events
+ * Creates a new academic event. Restricted to Admins.
+ * 
+ * Body: { title, description?, event_type?, start_date, end_date, colour?, is_important? }
+ */
 const createAcademicEvent = async (req, res) => {
   const { title, description, event_type, start_date, end_date, colour, is_important } = req.body;
   const created_by = req.user.id;
@@ -58,7 +70,11 @@ const createAcademicEvent = async (req, res) => {
   res.status(201).json({ success: true, event: rows[0] });
 };
 
-// PATCH /api/academic-events/:id  (admin only)
+/**
+ * PATCH /api/academic-events/:id
+ * Updates an existing academic event. Restricted to Admins.
+ * Uses COALESCE to only update provided fields.
+ */
 const updateAcademicEvent = async (req, res) => {
   const { id } = req.params;
   const { title, description, event_type, start_date, end_date, colour, is_important } = req.body;
@@ -80,7 +96,10 @@ const updateAcademicEvent = async (req, res) => {
   res.json({ success: true, event: rows[0] });
 };
 
-// DELETE /api/academic-events/:id  (admin only)
+/**
+ * DELETE /api/academic-events/:id
+ * Deletes an academic event permanently. Restricted to Admins.
+ */
 const deleteAcademicEvent = async (req, res) => {
   const { id } = req.params;
   const { rowCount } = await pool.query('DELETE FROM academic_events WHERE id = $1', [id]);

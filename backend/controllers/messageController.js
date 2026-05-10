@@ -2,8 +2,19 @@ const pool = require('../config/db');
 
 // io injected from server.js so REST file uploads can broadcast in real-time
 let _io;
+
+/**
+ * Injects the Socket.io instance so the REST controller can emit events.
+ */
 const setIO = (io) => { _io = io; };
 
+/**
+ * GET /api/channels/:id/messages
+ * Fetches paginated chat history for a channel.
+ * Pass a 'cursor' (message ID) to fetch older messages before that ID.
+ * Defaults to 50 messages per request.
+ * Results are reversed so the oldest in the batch comes first (for UI rendering).
+ */
 const getMessages = async (req, res) => {
   const { cursor } = req.query;
   const limit = parseInt(req.query.limit) || 50;
@@ -29,6 +40,15 @@ const getMessages = async (req, res) => {
   res.json({ success: true, messages: result.rows.reverse() });
 };
 
+/**
+ * POST /api/channels/:id/messages
+ * Sends a new message to the channel. Can include a text content, a file attachment, or both.
+ * Validates message length and ensures any replied-to message belongs to the same channel.
+ * Broadcasts the newly saved message in real-time to all connected users in the channel.
+ * 
+ * Body: { content?: string, parent_id?: number }
+ * File: Multipart file upload mapping to req.file
+ */
 const sendMessage = async (req, res) => {
   const { content, parent_id } = req.body;
   const file_url  = req.file?.path         || null;
@@ -37,7 +57,7 @@ const sendMessage = async (req, res) => {
   if (!content && !file_url)
     return res.status(400).json({ success: false, message: 'Message content or file required' });
 
-  // [M3] Cap message length
+  // [M3] Cap message length to prevent DB bloat/spam
   if (content && content.length > 5000)
     return res.status(400).json({ success: false, message: 'Message too long (max 5000 characters)' });
 
@@ -62,12 +82,16 @@ const sendMessage = async (req, res) => {
 
   const saved = result.rows[0];
 
-  // Broadcast to all channel members so they see the file in real-time
+  // Broadcast to all channel members so they see the text/file in real-time
   if (_io) _io.to(`channel_${req.params.id}`).emit('message:new', saved);
 
   res.status(201).json({ success: true, message: saved });
 };
 
+/**
+ * PATCH /api/channels/:id/messages/:msgId/pin
+ * Toggles the pinned status of a specific message.
+ */
 const pinMessage = async (req, res) => {
   const result = await pool.query(
     `UPDATE messages SET is_pinned = NOT is_pinned WHERE id=$1 RETURNING *`,
@@ -78,6 +102,11 @@ const pinMessage = async (req, res) => {
   res.json({ success: true, message: result.rows[0] });
 };
 
+/**
+ * DELETE /api/channels/:id/messages/:msgId
+ * Deletes a chat message. Users can only delete their own messages.
+ * Faculty and Admins can delete any message in the channel.
+ */
 const deleteMessage = async (req, res) => {
   const msg = await pool.query('SELECT sender_id FROM messages WHERE id=$1', [req.params.msgId]);
   if (!msg.rows.length)
@@ -88,6 +117,10 @@ const deleteMessage = async (req, res) => {
   res.json({ success: true, message: 'Deleted' });
 };
 
+/**
+ * GET /api/channels/:id/messages/pinned
+ * Returns a list of all currently pinned messages in the channel.
+ */
 const getPinnedMessages = async (req, res) => {
   const result = await pool.query(
     `SELECT m.*, u.name AS sender_name, u.role AS sender_role

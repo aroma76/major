@@ -5,9 +5,13 @@ const pool = require('../config/db');
 const generateToken = (id) =>
   jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN || '7d' });
 
-// ─── Register ──────────────────────────────────────────────────────────────────
-// Students register with Roll Number + Email + their own chosen password.
-// Faculty register with Email + chosen password.
+/**
+ * POST /api/auth/register
+ * Creates a new user account.
+ * Students register with Roll Number + Email + Password.
+ * Faculty register with Email + Password.
+ * Role is strictly defaulted to 'student' to prevent privilege escalation.
+ */
 const register = async (req, res) => {
   // [C1] Role is NEVER accepted from the request body — always default to 'student'.
   // Admin/faculty promotion must be done by an existing admin via a dedicated route.
@@ -51,8 +55,11 @@ const register = async (req, res) => {
   res.status(201).json({ success: true, token: generateToken(user.id), user });
 };
 
-// ─── Login ──────────────────────────────────────────────────────────────────
-// Accepts Roll Number OR email + user's custom password.
+/**
+ * POST /api/auth/login
+ * Authenticates a user and returns a JWT.
+ * Allows login via either Email OR Roll Number.
+ */
 const login = async (req, res) => {
   const { identifier, password } = req.body;
 
@@ -65,6 +72,7 @@ const login = async (req, res) => {
     : 'SELECT * FROM users WHERE roll_number = $1';
 
   const result = await pool.query(query, [identifier]);
+  
   // [L3] Generic message — do not reveal whether the account exists or not
   if (result.rows.length === 0)
     return res.status(401).json({ success: false, message: 'Invalid credentials' });
@@ -78,14 +86,23 @@ const login = async (req, res) => {
   res.json({ success: true, token: generateToken(user.id), user: safeUser });
 };
 
-// ─── Get Me ─────────────────────────────────────────────────────────────────
+/**
+ * GET /api/auth/me
+ * Returns the currently authenticated user's profile based on the JWT token.
+ * Populated by the `protect` middleware.
+ */
 const getMe = async (req, res) => res.json({ success: true, user: req.user });
 
-// ─── Update Profile ──────────────────────────────────────────────────────────
+/**
+ * PUT /api/auth/profile
+ * Updates the user's profile fields.
+ * Automatically recalculates `avatar_initials` if the user's name changes.
+ */
 const updateProfile = async (req, res) => {
   const { name, dob } = req.body;
   const avatar_url = req.file?.path || null;
   const fields = []; const values = []; let idx = 1;
+  
   if (name) {
     fields.push(`name = $${idx++}`);
     values.push(name);
@@ -97,6 +114,7 @@ const updateProfile = async (req, res) => {
   if (dob)        { fields.push(`dob = $${idx++}`);        values.push(dob); }
   if (avatar_url) { fields.push(`avatar_url = $${idx++}`); values.push(avatar_url); }
   if (!fields.length) return res.status(400).json({ success: false, message: 'No fields to update' });
+  
   values.push(req.user.id);
   const result = await pool.query(
     `UPDATE users SET ${fields.join(', ')} WHERE id = $${idx}
@@ -106,7 +124,10 @@ const updateProfile = async (req, res) => {
   res.json({ success: true, user: result.rows[0] });
 };
 
-// ─── Change Password ──────────────────────────────────────────────────────────
+/**
+ * POST /api/auth/change-password
+ * Changes the user's password. Requires current password verification.
+ */
 const changePassword = async (req, res) => {
   const { currentPassword, newPassword } = req.body;
 

@@ -1,7 +1,14 @@
 const pool = require('../config/db');
 
-// GET /api/teacher/stats
-// Returns live stats for the logged-in faculty member
+/**
+ * GET /api/teacher/stats
+ * Returns live overview statistics for the logged-in faculty member's dashboard.
+ * Parallelizes three database queries to calculate:
+ * - Total students enrolled across all their channels
+ * - Total pending assignment submissions needing grading
+ * - Total active personal projects
+ * - Total number of subjects/channels taught
+ */
 const getTeacherStats = async (req, res) => {
   const teacherId = req.user.id;
 
@@ -57,8 +64,11 @@ const getTeacherStats = async (req, res) => {
   });
 };
 
-// GET /api/teacher/recent-activity
-// Returns latest announcements + latest messages across teacher's channels
+/**
+ * GET /api/teacher/recent-activity
+ * Returns the latest feed data for the faculty dashboard.
+ * Fetches the 5 most recent announcements across all channels taught by this teacher.
+ */
 const getTeacherRecentActivity = async (req, res) => {
   const teacherId = req.user.id;
 
@@ -92,8 +102,11 @@ const getTeacherRecentActivity = async (req, res) => {
   });
 };
 
-// GET /api/student/recent-activity
-// Returns latest announcements + recent messages from the student's enrolled channels
+/**
+ * GET /api/student/recent-activity
+ * Returns the latest feed data for the student dashboard.
+ * Fetches the 5 most recent announcements from all channels the student is currently enrolled in.
+ */
 const getStudentRecentActivity = async (req, res) => {
   const studentId = req.user.id;
 
