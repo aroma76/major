@@ -11,7 +11,6 @@ on:
     paths:
       - 'frontend/**'
 
-
 jobs:
   analyze-and-build:
     name: Analyze & Build Flutter Web
@@ -22,14 +21,16 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # ── 2. Setup Flutter ─────────────────────────────────────────────────────
-      # Not pinning an exact version — uses latest stable so it always matches
-      # what Flutter publishes, avoiding "version not found" download failures.
+      # ── 2. Setup Flutter (direct install — no third-party actions, no warnings)
+      # Downloads the latest stable Flutter SDK directly from the official source.
       - name: Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          channel: 'stable'
-          cache: true
+        run: |
+          curl -sS https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_3.38.9-stable.tar.xz -o flutter.tar.xz \
+            || curl -sS https://storage.googleapis.com/flutter_infra_release/releases/releases_linux.json \
+              | grep -o '"archive":"[^"]*stable[^"]*"' | head -1 \
+              | sed 's/"archive":"//;s/"//' | xargs -I{} curl -sS "https://storage.googleapis.com/flutter_infra_release/releases/{}" -o flutter.tar.xz
+          tar xf flutter.tar.xz
+          echo "$PWD/flutter/bin" >> $GITHUB_PATH
 
       # ── 3. Install dependencies ───────────────────────────────────────────────
       - name: Install dependencies
@@ -44,16 +45,15 @@ jobs:
       # ── 5. Format check (warning only — won't block build) ───────────────────
       - name: Check formatting
         working-directory: frontend
-        continue-on-error: true  # Report formatting issues but don't fail the build
+        continue-on-error: true
         run: dart format --output=none --set-exit-if-changed lib/
 
       # ── 6. Build Flutter Web (release) ────────────────────────────────────────
-      # This ensures the app compiles cleanly before Vercel deploys it.
       - name: Build web (release)
         working-directory: frontend
         run: flutter build web --release --no-tree-shake-icons --no-wasm-dry-run
 
-      # ── 7. Upload build artifact (optional — for inspection) ──────────────────
+      # ── 7. Upload build artifact ──────────────────────────────────────────────
       - name: Upload web build artifact
         uses: actions/upload-artifact@v4
         with:
