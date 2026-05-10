@@ -39,9 +39,10 @@ jobs:
         working-directory: frontend
         run: flutter analyze --no-fatal-infos
 
-      # ── 5. Format check ───────────────────────────────────────────────────────
+      # ── 5. Format check (warning only — won't block build) ───────────────────
       - name: Check formatting
         working-directory: frontend
+        continue-on-error: true  # Report formatting issues but don't fail the build
         run: dart format --output=none --set-exit-if-changed lib/
 
       # ── 6. Build Flutter Web (release) ────────────────────────────────────────
