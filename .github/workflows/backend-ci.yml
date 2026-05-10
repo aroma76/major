@@ -11,8 +11,6 @@ on:
     paths:
       - 'backend/**'
 
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true  # Opt into Node.js 24 before it becomes mandatory June 2026
 
 jobs:
   validate:
