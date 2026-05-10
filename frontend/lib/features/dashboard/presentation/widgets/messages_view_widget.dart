@@ -899,10 +899,10 @@ class _MessageBubbleState extends ConsumerState<_MessageBubble> {
                       onPressed: () async {
                         Navigator.pop(sheetCtx);
                         final uri = Uri.parse(url);
-                        if (await canLaunchUrl(uri)) {
+                        try {
                           await launchUrl(uri,
                               mode: LaunchMode.externalApplication);
-                        }
+                        } catch (_) {}
                       },
                       icon: const Icon(FeatherIcons.externalLink, size: 16),
                       label: const Text('Open'),
@@ -938,19 +938,19 @@ class _MessageBubbleState extends ConsumerState<_MessageBubble> {
 
   void _downloadFile(String url) async {
     // For Cloudinary URLs, insert fl_attachment as a path transformation
-    // so the browser downloads the file instead of rendering it inline.
-    // e.g. .../upload/v123/... → .../upload/fl_attachment/v123/...
-    String downloadUrl =
-        url.split('?').first; // strip any existing query params
+    // so the browser downloads instead of rendering inline.
+    // Works for both /image/upload/ and /raw/upload/ paths.
+    String downloadUrl = url.split('?').first; // strip query params
     if (downloadUrl.contains('cloudinary.com')) {
-      // Insert the fl_attachment flag right after "/upload/"
-      downloadUrl =
-          downloadUrl.replaceFirst('/upload/', '/upload/fl_attachment/');
+      // Handle both image and raw delivery types
+      downloadUrl = downloadUrl
+          .replaceFirst('/image/upload/', '/image/upload/fl_attachment/')
+          .replaceFirst('/raw/upload/', '/raw/upload/fl_attachment/');
     }
     final uri = Uri.parse(downloadUrl);
-    if (await canLaunchUrl(uri)) {
-      launchUrl(uri, webOnlyWindowName: '_blank');
-    }
+    try {
+      await launchUrl(uri, webOnlyWindowName: '_blank');
+    } catch (_) {}
   }
 
   @override
