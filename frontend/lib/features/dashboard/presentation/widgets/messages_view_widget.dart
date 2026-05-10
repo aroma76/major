@@ -924,15 +924,15 @@ class _MessageBubbleState extends ConsumerState<_MessageBubble> {
     } else if (isPdf) {
       // ── Desktop PDF: open in new browser tab ──────────────────────────────
       final uri = Uri.parse(url);
-      if (await canLaunchUrl(uri)) {
+      try {
         await launchUrl(uri, webOnlyWindowName: '_blank');
-      }
+      } catch (_) {}
     } else {
       // ── Desktop other files: open in new tab ──────────────────────────────
       final uri = Uri.parse(url);
-      if (await canLaunchUrl(uri)) {
-        launchUrl(uri, webOnlyWindowName: '_blank');
-      }
+      try {
+        await launchUrl(uri, webOnlyWindowName: '_blank');
+      } catch (_) {}
     }
   }
 

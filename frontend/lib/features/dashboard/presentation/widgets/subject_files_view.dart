@@ -339,7 +339,11 @@ class _FileCardState extends State<_FileCard> {
 
   Future<void> _openFile() async {
     final uri = Uri.parse(widget.file.fileUrl);
-    if (await canLaunchUrl(uri)) launchUrl(uri, webOnlyWindowName: '_blank');
+    try {
+      await launchUrl(uri, webOnlyWindowName: '_blank');
+    } catch (_) {
+      // URL could not be launched
+    }
   }
 
   Future<void> _downloadFile() async {
@@ -351,7 +355,11 @@ class _FileCardState extends State<_FileCard> {
           downloadUrl.replaceFirst('/upload/', '/upload/fl_attachment/');
     }
     final uri = Uri.parse(downloadUrl);
-    if (await canLaunchUrl(uri)) launchUrl(uri, webOnlyWindowName: '_blank');
+    try {
+      await launchUrl(uri, webOnlyWindowName: '_blank');
+    } catch (_) {
+      // URL could not be launched
+    }
   }
 
   @override
