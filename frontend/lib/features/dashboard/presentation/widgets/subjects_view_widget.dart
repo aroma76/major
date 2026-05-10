@@ -26,20 +26,25 @@ class SubjectsViewWidget extends ConsumerWidget {
     final isMobile = MediaQuery.of(context).size.width < 600;
 
     return channelsAsync.when(
-      loading: () => const Center(child: CircularProgressIndicator(color: AppColors.accent)),
+      loading: () => const Center(
+          child: CircularProgressIndicator(color: AppColors.accent)),
       error: (e, _) => Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(FeatherIcons.alertCircle, size: 48, color: Colors.red.shade400),
+            Icon(FeatherIcons.alertCircle,
+                size: 48, color: Colors.red.shade400),
             const SizedBox(height: 16),
-            Text('Failed to load subjects', style: TextStyle(color: AppColors.getBodyColor(context))),
+            Text('Failed to load subjects',
+                style: TextStyle(color: AppColors.getBodyColor(context))),
             const SizedBox(height: 12),
             ElevatedButton.icon(
               onPressed: () => ref.invalidate(channelsProvider),
               icon: const Icon(FeatherIcons.refreshCw, size: 16),
               label: const Text('Retry'),
-              style: ElevatedButton.styleFrom(backgroundColor: AppColors.accent, foregroundColor: Colors.white),
+              style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.accent,
+                  foregroundColor: Colors.white),
             ),
           ],
         ),
@@ -83,7 +88,8 @@ class SubjectsViewWidget extends ConsumerWidget {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.getBorderColor(context),
                       foregroundColor: AppColors.getHeadingColor(context),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10)),
                       elevation: 0,
                     ),
                   ),
@@ -104,14 +110,21 @@ class SubjectsViewWidget extends ConsumerWidget {
                           color: AppColors.accent.withValues(alpha: 0.07),
                           shape: BoxShape.circle,
                         ),
-                        child: Icon(FeatherIcons.book, size: 52, color: AppColors.accent.withValues(alpha: 0.4)),
+                        child: Icon(FeatherIcons.book,
+                            size: 52,
+                            color: AppColors.accent.withValues(alpha: 0.4)),
                       ),
                       const SizedBox(height: 24),
                       Text('No subjects enrolled yet',
-                          style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.getHeadingColor(context))),
+                          style: GoogleFonts.outfit(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.getHeadingColor(context))),
                       const SizedBox(height: 8),
                       Text('Contact your administrator to enrol in channels.',
-                          style: GoogleFonts.outfit(fontSize: 14, color: AppColors.getBodyColor(context))),
+                          style: GoogleFonts.outfit(
+                              fontSize: 14,
+                              color: AppColors.getBodyColor(context))),
                     ],
                   ),
                 ),
@@ -137,7 +150,8 @@ class SubjectsViewWidget extends ConsumerWidget {
                     itemBuilder: (context, index) {
                       final ch = channels[index];
                       final color = _palette[index % _palette.length];
-                      return _SubjectCard(channel: ch, color: color, isMobile: isMobile);
+                      return _SubjectCard(
+                          channel: ch, color: color, isMobile: isMobile);
                     },
                   );
                 },
@@ -155,7 +169,8 @@ class _SubjectCard extends ConsumerStatefulWidget {
   final Color color;
   final bool isMobile;
 
-  const _SubjectCard({required this.channel, required this.color, this.isMobile = false});
+  const _SubjectCard(
+      {required this.channel, required this.color, this.isMobile = false});
 
   @override
   ConsumerState<_SubjectCard> createState() => _SubjectCardState();
@@ -189,14 +204,23 @@ class _SubjectCardState extends ConsumerState<_SubjectCard> {
           duration: const Duration(milliseconds: 200),
           padding: EdgeInsets.all(m ? 10 : 16),
           decoration: BoxDecoration(
-            color: _hovered ? color.withValues(alpha: 0.07) : AppColors.getSurfaceColor(context),
+            color: _hovered
+                ? color.withValues(alpha: 0.07)
+                : AppColors.getSurfaceColor(context),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: _hovered ? color.withValues(alpha: 0.5) : AppColors.getBorderColor(context),
+              color: _hovered
+                  ? color.withValues(alpha: 0.5)
+                  : AppColors.getBorderColor(context),
               width: 1.5,
             ),
             boxShadow: _hovered
-                ? [BoxShadow(color: color.withValues(alpha: 0.18), blurRadius: 18, offset: const Offset(0, 6))]
+                ? [
+                    BoxShadow(
+                        color: color.withValues(alpha: 0.18),
+                        blurRadius: 18,
+                        offset: const Offset(0, 6))
+                  ]
                 : [],
           ),
           child: Column(
@@ -212,17 +236,22 @@ class _SubjectCardState extends ConsumerState<_SubjectCard> {
                       color: color.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: Icon(FeatherIcons.book, color: color, size: m ? 14 : 18),
+                    child: Icon(FeatherIcons.book,
+                        color: color, size: m ? 14 : 18),
                   ),
                   Container(
-                    padding: EdgeInsets.symmetric(horizontal: m ? 6 : 8, vertical: 2),
+                    padding: EdgeInsets.symmetric(
+                        horizontal: m ? 6 : 8, vertical: 2),
                     decoration: BoxDecoration(
                       color: color.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
                       'Sem ${ch.semesterNumber}',
-                      style: GoogleFonts.outfit(fontSize: m ? 9 : 10, fontWeight: FontWeight.w600, color: color),
+                      style: GoogleFonts.outfit(
+                          fontSize: m ? 9 : 10,
+                          fontWeight: FontWeight.w600,
+                          color: color),
                     ),
                   ),
                 ],
@@ -246,12 +275,15 @@ class _SubjectCardState extends ConsumerState<_SubjectCard> {
               if (ch.teacherName != null && !m)
                 Row(
                   children: [
-                    Icon(FeatherIcons.user, size: 10, color: AppColors.getBodyColor(context)),
+                    Icon(FeatherIcons.user,
+                        size: 10, color: AppColors.getBodyColor(context)),
                     const SizedBox(width: 3),
                     Expanded(
                       child: Text(
                         ch.teacherName!,
-                        style: GoogleFonts.outfit(fontSize: 11, color: AppColors.getBodyColor(context)),
+                        style: GoogleFonts.outfit(
+                            fontSize: 11,
+                            color: AppColors.getBodyColor(context)),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -268,10 +300,14 @@ class _SubjectCardState extends ConsumerState<_SubjectCard> {
                   const SizedBox(width: 4),
                   Text(
                     'View Hub',
-                    style: GoogleFonts.outfit(fontSize: m ? 10 : 11, color: color, fontWeight: FontWeight.w600),
+                    style: GoogleFonts.outfit(
+                        fontSize: m ? 10 : 11,
+                        color: color,
+                        fontWeight: FontWeight.w600),
                   ),
                   const Spacer(),
-                  Icon(FeatherIcons.arrowRight, size: m ? 10 : 12, color: color),
+                  Icon(FeatherIcons.arrowRight,
+                      size: m ? 10 : 12, color: color),
                 ],
               ),
             ],

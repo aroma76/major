@@ -62,7 +62,8 @@ class SocketService {
   }
 
   void emitTypingStart(int channelId, String userName) {
-    _socket?.emit('typing:start', {'channelId': channelId, 'userName': userName});
+    _socket
+        ?.emit('typing:start', {'channelId': channelId, 'userName': userName});
   }
 
   void emitTypingStop(int channelId) {
@@ -73,7 +74,8 @@ class SocketService {
   /// Clears any prior listener first to prevent stacking duplicates on widget rebuild.
   void onNewMessage(void Function(Map<String, dynamic>) callback) {
     _socket?.off('message:new');
-    _socket?.on('message:new', (data) => callback(Map<String, dynamic>.from(data)));
+    _socket?.on(
+        'message:new', (data) => callback(Map<String, dynamic>.from(data)));
   }
 
   void onTypingStart(void Function(String userName) callback) {
@@ -88,7 +90,8 @@ class SocketService {
 
   void onNewNotification(void Function(Map<String, dynamic>) callback) {
     _socket?.off('notification:new');
-    _socket?.on('notification:new', (data) => callback(Map<String, dynamic>.from(data)));
+    _socket?.on('notification:new',
+        (data) => callback(Map<String, dynamic>.from(data)));
   }
 
   void off(String event) => _socket?.off(event);

@@ -39,9 +39,7 @@ class _NotesQuestionsWidgetState extends ConsumerState<NotesQuestionsWidget>
   void _submitNote() {
     final text = _noteCtrl.text.trim();
     if (text.isEmpty) return;
-    ref
-        .read(dashboardNotesProvider.notifier)
-        .add(text, DashboardNoteType.note);
+    ref.read(dashboardNotesProvider.notifier).add(text, DashboardNoteType.note);
     _noteCtrl.clear();
     setState(() => _addingNote = false);
   }
@@ -82,10 +80,10 @@ class _NotesQuestionsWidgetState extends ConsumerState<NotesQuestionsWidget>
               borderRadius: BorderRadius.circular(10),
             ),
             indicatorSize: TabBarIndicatorSize.tab,
-            labelStyle: GoogleFonts.outfit(
-                fontWeight: FontWeight.w700, fontSize: 12),
-            unselectedLabelStyle: GoogleFonts.outfit(
-                fontWeight: FontWeight.w500, fontSize: 12),
+            labelStyle:
+                GoogleFonts.outfit(fontWeight: FontWeight.w700, fontSize: 12),
+            unselectedLabelStyle:
+                GoogleFonts.outfit(fontWeight: FontWeight.w500, fontSize: 12),
             labelColor: AppColors.accent,
             unselectedLabelColor: AppColors.getBodyColor(context),
             dividerColor: Colors.transparent,
@@ -140,12 +138,10 @@ class _NotesQuestionsWidgetState extends ConsumerState<NotesQuestionsWidget>
                 emptyIcon: FeatherIcons.edit3,
                 emptyLabel: 'No notes yet',
                 emptyHint: 'Jot down quick thoughts or reminders',
-                inputHint:
-                    'Write your note here...',
+                inputHint: 'Write your note here...',
                 accentColor: AppColors.accent,
                 addLabel: 'Add Note',
-                onToggleAdd: () =>
-                    setState(() => _addingNote = !_addingNote),
+                onToggleAdd: () => setState(() => _addingNote = !_addingNote),
                 onSubmit: _submitNote,
                 onDelete: (id) =>
                     ref.read(dashboardNotesProvider.notifier).remove(id),
@@ -168,8 +164,9 @@ class _NotesQuestionsWidgetState extends ConsumerState<NotesQuestionsWidget>
                 onSubmit: _submitQuestion,
                 onDelete: (id) =>
                     ref.read(dashboardNotesProvider.notifier).remove(id),
-                onToggleResolved: (id) =>
-                    ref.read(dashboardNotesProvider.notifier).toggleResolved(id),
+                onToggleResolved: (id) => ref
+                    .read(dashboardNotesProvider.notifier)
+                    .toggleResolved(id),
               ),
             ],
           ),
@@ -228,9 +225,8 @@ class _NoteTabContent extends StatelessWidget {
         // Input area
         AnimatedCrossFade(
           duration: const Duration(milliseconds: 250),
-          crossFadeState: isAdding
-              ? CrossFadeState.showSecond
-              : CrossFadeState.showFirst,
+          crossFadeState:
+              isAdding ? CrossFadeState.showSecond : CrossFadeState.showFirst,
           firstChild: _AddButton(
             label: addLabel,
             color: accentColor,
@@ -248,8 +244,7 @@ class _NoteTabContent extends StatelessWidget {
 
         // List
         if (items.isEmpty)
-          _EmptyState(
-              icon: emptyIcon, label: emptyLabel, hint: emptyHint)
+          _EmptyState(icon: emptyIcon, label: emptyLabel, hint: emptyHint)
         else
           Expanded(
             child: ListView.separated(
@@ -299,8 +294,7 @@ class _AddButtonState extends State<_AddButton> {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 180),
           width: double.infinity,
-          padding:
-              const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
           decoration: BoxDecoration(
             color: _hovered
                 ? widget.color.withValues(alpha: 0.1)
@@ -374,13 +368,11 @@ class _InputArea extends StatelessWidget {
                 const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-              borderSide:
-                  BorderSide(color: AppColors.getBorderColor(context)),
+              borderSide: BorderSide(color: AppColors.getBorderColor(context)),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-              borderSide:
-                  BorderSide(color: AppColors.getBorderColor(context)),
+              borderSide: BorderSide(color: AppColors.getBorderColor(context)),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
@@ -397,15 +389,14 @@ class _InputArea extends StatelessWidget {
               onPressed: onCancel,
               child: Text('Cancel',
                   style: GoogleFonts.outfit(
-                      color: AppColors.getBodyColor(context),
-                      fontSize: 12)),
+                      color: AppColors.getBodyColor(context), fontSize: 12)),
             ),
             const SizedBox(width: 6),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: accentColor,
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 16, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8)),
                 elevation: 0,
@@ -481,9 +472,7 @@ class _NoteCardState extends State<_NoteCard> {
                   height: 18,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: isResolved
-                        ? widget.accentColor
-                        : Colors.transparent,
+                    color: isResolved ? widget.accentColor : Colors.transparent,
                     border: Border.all(
                       color: isResolved
                           ? widget.accentColor
@@ -518,9 +507,8 @@ class _NoteCardState extends State<_NoteCard> {
                       color: isResolved
                           ? AppColors.getBodyColor(context)
                           : AppColors.getHeadingColor(context),
-                      decoration: isResolved
-                          ? TextDecoration.lineThrough
-                          : null,
+                      decoration:
+                          isResolved ? TextDecoration.lineThrough : null,
                       height: 1.4,
                     ),
                   ),

@@ -17,12 +17,15 @@ class ProjectDetailScreen extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(FeatherIcons.arrowLeft, color: AppColors.getHeadingColor(context)),
+          icon: Icon(FeatherIcons.arrowLeft,
+              color: AppColors.getHeadingColor(context)),
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: Text(
           project.title,
-          style: TextStyle(color: AppColors.getHeadingColor(context), fontWeight: FontWeight.bold),
+          style: TextStyle(
+              color: AppColors.getHeadingColor(context),
+              fontWeight: FontWeight.bold),
         ),
       ),
       body: SingleChildScrollView(
@@ -59,17 +62,22 @@ class ProjectDetailScreen extends StatelessWidget {
             children: [
               Text(
                 'Overall Progress',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.getHeadingColor(context)),
+                style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.getHeadingColor(context)),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
                   color: project.color.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
                   '${(project.progress * 100).toInt()}%',
-                  style: TextStyle(color: project.color, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                      color: project.color, fontWeight: FontWeight.bold),
                 ),
               ),
             ],
@@ -87,9 +95,14 @@ class ProjectDetailScreen extends StatelessWidget {
           const SizedBox(height: 24),
           Row(
             children: [
-              _buildStat(context, 'Deadline', DateFormat('MMM d, y').format(project.deadline), FeatherIcons.calendar),
+              _buildStat(
+                  context,
+                  'Deadline',
+                  DateFormat('MMM d, y').format(project.deadline),
+                  FeatherIcons.calendar),
               const SizedBox(width: 32),
-              _buildStat(context, 'Status', 'In Progress', FeatherIcons.activity),
+              _buildStat(
+                  context, 'Status', 'In Progress', FeatherIcons.activity),
             ],
           ),
         ],
@@ -97,20 +110,29 @@ class ProjectDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStat(BuildContext context, String label, String value, IconData icon) {
+  Widget _buildStat(
+      BuildContext context, String label, String value, IconData icon) {
     return Row(
       children: [
         Container(
           padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(color: AppColors.getBodyColor(context).withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
+          decoration: BoxDecoration(
+              color: AppColors.getBodyColor(context).withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(8)),
           child: Icon(icon, size: 16, color: AppColors.getBodyColor(context)),
         ),
         const SizedBox(width: 12),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(label, style: TextStyle(color: AppColors.getBodyColor(context), fontSize: 12)),
-            Text(value, style: TextStyle(color: AppColors.getHeadingColor(context), fontWeight: FontWeight.bold, fontSize: 14)),
+            Text(label,
+                style: TextStyle(
+                    color: AppColors.getBodyColor(context), fontSize: 12)),
+            Text(value,
+                style: TextStyle(
+                    color: AppColors.getHeadingColor(context),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14)),
           ],
         ),
       ],
@@ -123,31 +145,42 @@ class ProjectDetailScreen extends StatelessWidget {
       children: [
         Text(
           'Team Members',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.getHeadingColor(context)),
+          style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: AppColors.getHeadingColor(context)),
         ),
         const SizedBox(height: 16),
         Wrap(
           spacing: 12,
           runSpacing: 12,
-          children: project.teamMembers.map((member) => Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            decoration: BoxDecoration(
-              color: AppColors.getSurfaceColor(context),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.getBorderColor(context)),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                CircleAvatar(
-                  radius: 12,
-                  backgroundImage: NetworkImage('https://i.pravatar.cc/150?u=$member'),
-                ),
-                const SizedBox(width: 10),
-                Text(member, style: TextStyle(color: AppColors.getHeadingColor(context), fontWeight: FontWeight.w500)),
-              ],
-            ),
-          )).toList(),
+          children: project.teamMembers
+              .map((member) => Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: AppColors.getSurfaceColor(context),
+                      borderRadius: BorderRadius.circular(12),
+                      border:
+                          Border.all(color: AppColors.getBorderColor(context)),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        CircleAvatar(
+                          radius: 12,
+                          backgroundImage: NetworkImage(
+                              'https://i.pravatar.cc/150?u=$member'),
+                        ),
+                        const SizedBox(width: 10),
+                        Text(member,
+                            style: TextStyle(
+                                color: AppColors.getHeadingColor(context),
+                                fontWeight: FontWeight.w500)),
+                      ],
+                    ),
+                  ))
+              .toList(),
         ),
       ],
     );
@@ -159,7 +192,10 @@ class ProjectDetailScreen extends StatelessWidget {
       children: [
         Text(
           'Milestones',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.getHeadingColor(context)),
+          style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: AppColors.getHeadingColor(context)),
         ),
         const SizedBox(height: 16),
         _buildMilestoneItem(context, 'Project Planning', true),
@@ -170,7 +206,8 @@ class ProjectDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildMilestoneItem(BuildContext context, String title, bool isCompleted) {
+  Widget _buildMilestoneItem(
+      BuildContext context, String title, bool isCompleted) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
@@ -184,7 +221,9 @@ class ProjectDetailScreen extends StatelessWidget {
           Text(
             title,
             style: TextStyle(
-              color: isCompleted ? AppColors.getHeadingColor(context) : AppColors.getBodyColor(context),
+              color: isCompleted
+                  ? AppColors.getHeadingColor(context)
+                  : AppColors.getBodyColor(context),
               fontWeight: isCompleted ? FontWeight.bold : FontWeight.normal,
               decoration: isCompleted ? TextDecoration.lineThrough : null,
             ),
@@ -203,7 +242,10 @@ class ProjectDetailScreen extends StatelessWidget {
           children: [
             Text(
               'File Uploads',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.getHeadingColor(context)),
+              style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.getHeadingColor(context)),
             ),
             TextButton.icon(
               onPressed: () {},
@@ -219,11 +261,16 @@ class ProjectDetailScreen extends StatelessWidget {
           decoration: BoxDecoration(
             color: AppColors.getSurfaceColor(context),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppColors.getBorderColor(context), style: BorderStyle.none), // Custom dashed border would be nice
+            border: Border.all(
+                color: AppColors.getBorderColor(context),
+                style: BorderStyle.none), // Custom dashed border would be nice
           ),
           child: Column(
             children: [
-              Icon(FeatherIcons.uploadCloud, size: 40, color: AppColors.getBodyColor(context).withValues(alpha: 0.5)),
+              Icon(FeatherIcons.uploadCloud,
+                  size: 40,
+                  color:
+                      AppColors.getBodyColor(context).withValues(alpha: 0.5)),
               const SizedBox(height: 16),
               Text(
                 'Drag and drop files here',
@@ -232,7 +279,10 @@ class ProjectDetailScreen extends StatelessWidget {
               const SizedBox(height: 8),
               Text(
                 'Support PDF, ZIP, PNG (Max 50MB)',
-                style: TextStyle(color: AppColors.getBodyColor(context).withValues(alpha: 0.5), fontSize: 12),
+                style: TextStyle(
+                    color:
+                        AppColors.getBodyColor(context).withValues(alpha: 0.5),
+                    fontSize: 12),
               ),
             ],
           ),

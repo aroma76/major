@@ -66,8 +66,10 @@ class ProjectsViewWidget extends ConsumerWidget {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.accent,
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
                 ),
               ),
             ],
@@ -87,17 +89,20 @@ class ProjectsViewWidget extends ConsumerWidget {
                 padding: const EdgeInsets.symmetric(vertical: 60),
                 child: Column(
                   children: [
-                    Icon(FeatherIcons.alertCircle, size: 48, color: Colors.red.shade400),
+                    Icon(FeatherIcons.alertCircle,
+                        size: 48, color: Colors.red.shade400),
                     const SizedBox(height: 16),
                     Text('Failed to load projects',
-                        style: GoogleFonts.outfit(color: AppColors.getBodyColor(context))),
+                        style: GoogleFonts.outfit(
+                            color: AppColors.getBodyColor(context))),
                     const SizedBox(height: 12),
                     ElevatedButton.icon(
                       onPressed: () => ref.invalidate(projectsProvider),
                       icon: const Icon(FeatherIcons.refreshCw, size: 16),
                       label: const Text('Retry'),
                       style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.accent, foregroundColor: Colors.white),
+                          backgroundColor: AppColors.accent,
+                          foregroundColor: Colors.white),
                     ),
                   ],
                 ),
@@ -116,7 +121,9 @@ class ProjectsViewWidget extends ConsumerWidget {
                             color: AppColors.accent.withValues(alpha: 0.07),
                             shape: BoxShape.circle,
                           ),
-                          child: Icon(FeatherIcons.folder, size: 52, color: AppColors.accent.withValues(alpha: 0.4)),
+                          child: Icon(FeatherIcons.folder,
+                              size: 52,
+                              color: AppColors.accent.withValues(alpha: 0.4)),
                         ),
                         const SizedBox(height: 24),
                         Text('No projects yet',
@@ -125,9 +132,11 @@ class ProjectsViewWidget extends ConsumerWidget {
                                 fontWeight: FontWeight.bold,
                                 color: AppColors.getHeadingColor(context))),
                         const SizedBox(height: 8),
-                        Text('Click "New Project" to create your first collaboration project.',
+                        Text(
+                            'Click "New Project" to create your first collaboration project.',
                             style: GoogleFonts.outfit(
-                                fontSize: 14, color: AppColors.getBodyColor(context))),
+                                fontSize: 14,
+                                color: AppColors.getBodyColor(context))),
                       ],
                     ),
                   ),
@@ -174,7 +183,8 @@ class _ProjectCardState extends State<_ProjectCard> {
     final description = p['description'] as String? ?? '';
     final progress = ((p['progress'] as num?) ?? 0) / 100.0;
     final deadlineRaw = p['deadline'] as String?;
-    final deadline = deadlineRaw != null ? DateTime.tryParse(deadlineRaw) : null;
+    final deadline =
+        deadlineRaw != null ? DateTime.tryParse(deadlineRaw) : null;
     final members = (p['members'] as List<dynamic>?)
             ?.map((m) => (m['name'] ?? m['roll_number'] ?? '?').toString())
             .toList() ??
@@ -197,21 +207,31 @@ class _ProjectCardState extends State<_ProjectCard> {
       onExit: (_) => setState(() => _hovered = false),
       child: GestureDetector(
         onTap: () => Navigator.of(context).push(
-          MaterialPageRoute(builder: (_) => ProjectDetailScreen(project: projectModel)),
+          MaterialPageRoute(
+              builder: (_) => ProjectDetailScreen(project: projectModel)),
         ),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           margin: const EdgeInsets.only(bottom: 20),
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: _hovered ? color.withValues(alpha: 0.05) : AppColors.getSurfaceColor(context),
+            color: _hovered
+                ? color.withValues(alpha: 0.05)
+                : AppColors.getSurfaceColor(context),
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: _hovered ? color.withValues(alpha: 0.45) : AppColors.getBorderColor(context),
+              color: _hovered
+                  ? color.withValues(alpha: 0.45)
+                  : AppColors.getBorderColor(context),
               width: 1.5,
             ),
             boxShadow: _hovered
-                ? [BoxShadow(color: color.withValues(alpha: 0.14), blurRadius: 20, offset: const Offset(0, 6))]
+                ? [
+                    BoxShadow(
+                        color: color.withValues(alpha: 0.14),
+                        blurRadius: 20,
+                        offset: const Offset(0, 6))
+                  ]
                 : [],
           ),
           child: Column(
@@ -228,7 +248,8 @@ class _ProjectCardState extends State<_ProjectCard> {
                       color: color.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(14),
                     ),
-                    child: Icon(Icons.folder_copy_outlined, color: color, size: 24),
+                    child: Icon(Icons.folder_copy_outlined,
+                        color: color, size: 24),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
@@ -245,7 +266,8 @@ class _ProjectCardState extends State<_ProjectCard> {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: GoogleFonts.outfit(
-                                  fontSize: 13, color: AppColors.getBodyColor(context))),
+                                  fontSize: 13,
+                                  color: AppColors.getBodyColor(context))),
                       ],
                     ),
                   ),
@@ -255,7 +277,8 @@ class _ProjectCardState extends State<_ProjectCard> {
                       children: [
                         Text('Deadline',
                             style: GoogleFonts.outfit(
-                                fontSize: 11, color: AppColors.getBodyColor(context))),
+                                fontSize: 11,
+                                color: AppColors.getBodyColor(context))),
                         Text(DateFormat('MMM d, y').format(deadline),
                             style: GoogleFonts.outfit(
                                 fontSize: 13,
@@ -275,7 +298,8 @@ class _ProjectCardState extends State<_ProjectCard> {
                 children: [
                   Text('Progress',
                       style: GoogleFonts.outfit(
-                          color: AppColors.getBodyColor(context), fontSize: 13)),
+                          color: AppColors.getBodyColor(context),
+                          fontSize: 13)),
                   Text('${(progress * 100).toInt()}%',
                       style: GoogleFonts.outfit(
                           color: AppColors.getHeadingColor(context),
@@ -288,7 +312,8 @@ class _ProjectCardState extends State<_ProjectCard> {
                 borderRadius: BorderRadius.circular(8),
                 child: LinearProgressIndicator(
                   value: progress,
-                  backgroundColor: AppColors.getBorderColor(context).withValues(alpha: 0.4),
+                  backgroundColor:
+                      AppColors.getBorderColor(context).withValues(alpha: 0.4),
                   valueColor: AlwaysStoppedAnimation<Color>(color),
                   minHeight: 7,
                 ),
@@ -312,9 +337,13 @@ class _ProjectCardState extends State<_ProjectCard> {
                               radius: 12,
                               backgroundColor: color.withValues(alpha: 0.15),
                               child: Text(
-                                members[i].isNotEmpty ? members[i][0].toUpperCase() : '?',
+                                members[i].isNotEmpty
+                                    ? members[i][0].toUpperCase()
+                                    : '?',
                                 style: GoogleFonts.outfit(
-                                    fontSize: 11, fontWeight: FontWeight.bold, color: color),
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                    color: color),
                               ),
                             ),
                           ),
@@ -324,29 +353,37 @@ class _ProjectCardState extends State<_ProjectCard> {
                           padding: const EdgeInsets.only(left: 8),
                           child: Text('+${members.length - 4} more',
                               style: GoogleFonts.outfit(
-                                  fontSize: 11, color: AppColors.getBodyColor(context))),
+                                  fontSize: 11,
+                                  color: AppColors.getBodyColor(context))),
                         ),
                       if (members.isNotEmpty)
                         Padding(
                           padding: const EdgeInsets.only(left: 10),
-                          child: Text('${members.length} member${members.length != 1 ? 's' : ''}',
+                          child: Text(
+                              '${members.length} member${members.length != 1 ? 's' : ''}',
                               style: GoogleFonts.outfit(
-                                  fontSize: 11, color: AppColors.getBodyColor(context))),
+                                  fontSize: 11,
+                                  color: AppColors.getBodyColor(context))),
                         ),
                     ],
                   ),
 
                   OutlinedButton(
                     onPressed: () => Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => ProjectDetailScreen(project: projectModel)),
+                      MaterialPageRoute(
+                          builder: (_) =>
+                              ProjectDetailScreen(project: projectModel)),
                     ),
                     style: OutlinedButton.styleFrom(
                       side: BorderSide(color: color.withValues(alpha: 0.5)),
                       foregroundColor: color,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10)),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 8),
                     ),
-                    child: Text('View Details', style: GoogleFonts.outfit(fontWeight: FontWeight.w600)),
+                    child: Text('View Details',
+                        style: GoogleFonts.outfit(fontWeight: FontWeight.w600)),
                   ),
                 ],
               ),

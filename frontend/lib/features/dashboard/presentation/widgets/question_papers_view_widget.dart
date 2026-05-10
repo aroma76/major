@@ -15,7 +15,8 @@ class QuestionPapersViewWidget extends StatelessWidget {
       headerIcon: FeatherIcons.fileMinus,
       accentColor: Color(0xFF238636),
       emptyTitle: 'No question papers saved yet',
-      emptyHint: 'Save files shared in chat as question papers\nto find them here, grouped by subject.',
+      emptyHint:
+          'Save files shared in chat as question papers\nto find them here, grouped by subject.',
       emptyIcon: FeatherIcons.fileMinus,
     );
   }

@@ -201,8 +201,7 @@ class _AnnouncementItem extends StatelessWidget {
                     Text(
                       timeAgo,
                       style: GoogleFonts.outfit(
-                          fontSize: 10,
-                          color: AppColors.getBodyColor(context)),
+                          fontSize: 10, color: AppColors.getBodyColor(context)),
                     ),
                   ],
                 ),
@@ -306,8 +305,7 @@ class _ErrorState extends StatelessWidget {
           const SizedBox(height: 10),
           TextButton.icon(
             icon: const Icon(FeatherIcons.refreshCw, size: 14),
-            label: Text('Retry',
-                style: GoogleFonts.outfit(fontSize: 13)),
+            label: Text('Retry', style: GoogleFonts.outfit(fontSize: 13)),
             onPressed: onRetry,
           ),
         ],

@@ -59,21 +59,25 @@ class NotificationPanel extends ConsumerWidget {
                 ),
                 // Mark all read
                 notificationsAsync.whenOrNull(
-                  data: (list) => list.isNotEmpty
-                      ? TextButton(
-                          onPressed: () async {
-                            await ApiService().dio.patch('/notifications/read-all');
-                            ref.invalidate(notificationsApiProvider);
-                          },
-                          style: TextButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(horizontal: 8),
-                          ),
-                          child: Text('Mark all read',
-                              style: GoogleFonts.outfit(
-                                  fontSize: 11, color: AppColors.accent)),
-                        )
-                      : null,
-                ) ?? const SizedBox.shrink(),
+                      data: (list) => list.isNotEmpty
+                          ? TextButton(
+                              onPressed: () async {
+                                await ApiService()
+                                    .dio
+                                    .patch('/notifications/read-all');
+                                ref.invalidate(notificationsApiProvider);
+                              },
+                              style: TextButton.styleFrom(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 8),
+                              ),
+                              child: Text('Mark all read',
+                                  style: GoogleFonts.outfit(
+                                      fontSize: 11, color: AppColors.accent)),
+                            )
+                          : null,
+                    ) ??
+                    const SizedBox.shrink(),
               ],
             ),
           ),
@@ -84,21 +88,26 @@ class NotificationPanel extends ConsumerWidget {
             child: notificationsAsync.when(
               loading: () => const Padding(
                 padding: EdgeInsets.symmetric(vertical: 48),
-                child: Center(child: CircularProgressIndicator(color: AppColors.accent, strokeWidth: 2)),
+                child: Center(
+                    child: CircularProgressIndicator(
+                        color: AppColors.accent, strokeWidth: 2)),
               ),
               error: (e, _) => Padding(
                 padding: const EdgeInsets.all(32),
                 child: Center(
                   child: Column(
                     children: [
-                      Icon(FeatherIcons.alertCircle, size: 36, color: Colors.red.shade400),
+                      Icon(FeatherIcons.alertCircle,
+                          size: 36, color: Colors.red.shade400),
                       const SizedBox(height: 12),
                       Text('Could not load notifications',
                           style: GoogleFonts.outfit(
-                              color: AppColors.getBodyColor(context), fontSize: 13)),
+                              color: AppColors.getBodyColor(context),
+                              fontSize: 13)),
                       const SizedBox(height: 10),
                       ElevatedButton.icon(
-                        onPressed: () => ref.invalidate(notificationsApiProvider),
+                        onPressed: () =>
+                            ref.invalidate(notificationsApiProvider),
                         icon: const Icon(FeatherIcons.refreshCw, size: 14),
                         label: const Text('Retry'),
                         style: ElevatedButton.styleFrom(
@@ -113,13 +122,15 @@ class NotificationPanel extends ConsumerWidget {
               data: (notifications) {
                 if (notifications.isEmpty) {
                   return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 48, horizontal: 32),
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 48, horizontal: 32),
                     child: Center(
                       child: Column(
                         children: [
                           Icon(FeatherIcons.bellOff,
                               size: 44,
-                              color: AppColors.getBodyColor(context).withValues(alpha: 0.4)),
+                              color: AppColors.getBodyColor(context)
+                                  .withValues(alpha: 0.4)),
                           const SizedBox(height: 14),
                           Text('All caught up!',
                               style: GoogleFonts.outfit(
@@ -141,8 +152,8 @@ class NotificationPanel extends ConsumerWidget {
                   shrinkWrap: true,
                   padding: EdgeInsets.zero,
                   itemCount: notifications.length,
-                  separatorBuilder: (_, __) =>
-                      Divider(height: 1, color: AppColors.getBorderColor(context)),
+                  separatorBuilder: (_, __) => Divider(
+                      height: 1, color: AppColors.getBorderColor(context)),
                   itemBuilder: (context, index) {
                     final n = notifications[index];
                     final isRead = n['is_read'] as bool? ?? false;
@@ -168,7 +179,8 @@ class NotificationPanel extends ConsumerWidget {
                             padding: const EdgeInsets.all(7),
                             decoration: BoxDecoration(
                               color: isRead
-                                  ? AppColors.getBorderColor(context).withValues(alpha: 0.2)
+                                  ? AppColors.getBorderColor(context)
+                                      .withValues(alpha: 0.2)
                                   : AppColors.accent.withValues(alpha: 0.12),
                               shape: BoxShape.circle,
                             ),
@@ -197,7 +209,8 @@ class NotificationPanel extends ConsumerWidget {
                                           fontWeight: isRead
                                               ? FontWeight.w500
                                               : FontWeight.bold,
-                                          color: AppColors.getHeadingColor(context),
+                                          color: AppColors.getHeadingColor(
+                                              context),
                                         ),
                                       ),
                                     ),
@@ -228,7 +241,8 @@ class NotificationPanel extends ConsumerWidget {
                                   DateFormat('MMM d, h:mm a').format(timestamp),
                                   style: GoogleFonts.outfit(
                                     fontSize: 10,
-                                    color: AppColors.getBodyColor(context).withValues(alpha: 0.6),
+                                    color: AppColors.getBodyColor(context)
+                                        .withValues(alpha: 0.6),
                                   ),
                                 ),
                               ],
@@ -243,11 +257,13 @@ class NotificationPanel extends ConsumerWidget {
                                   IconButton(
                                     icon: Icon(FeatherIcons.check,
                                         size: 14,
-                                        color: AppColors.getBodyColor(context).withValues(alpha: 0.6)),
+                                        color: AppColors.getBodyColor(context)
+                                            .withValues(alpha: 0.6)),
                                     tooltip: 'Mark as read',
                                     splashRadius: 16,
                                     onPressed: () async {
-                                      await ApiService().markNotificationRead(id);
+                                      await ApiService()
+                                          .markNotificationRead(id);
                                       ref.invalidate(notificationsApiProvider);
                                     },
                                   ),

@@ -17,14 +17,14 @@ class TeacherPostAnnouncementDialog extends ConsumerStatefulWidget {
 
 class _TeacherPostAnnouncementDialogState
     extends ConsumerState<TeacherPostAnnouncementDialog> {
-  final _formKey     = GlobalKey<FormState>();
-  final _titleCtrl   = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+  final _titleCtrl = TextEditingController();
   final _contentCtrl = TextEditingController();
 
   ChannelModel? _selectedChannel;
-  bool          _isImportant = false;
-  bool          _loading     = false;
-  String?       _error;
+  bool _isImportant = false;
+  bool _loading = false;
+  String? _error;
 
   @override
   void dispose() {
@@ -39,14 +39,17 @@ class _TeacherPostAnnouncementDialogState
       setState(() => _error = 'Please select a subject');
       return;
     }
-    setState(() { _loading = true; _error = null; });
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
     try {
       final api = ApiService();
       await api.dio.post(
         '/channels/${_selectedChannel!.id}/announcements',
         data: {
-          'title'       : _titleCtrl.text.trim(),
-          'content'     : _contentCtrl.text.trim(),
+          'title': _titleCtrl.text.trim(),
+          'content': _contentCtrl.text.trim(),
           'is_important': _isImportant,
         },
       );
@@ -120,8 +123,11 @@ class _TeacherPostAnnouncementDialogState
                     items: [
                       const DropdownMenuItem(
                           value: null, child: Text('Select a subject')),
-                      ...channels.map((ch) =>
-                          DropdownMenuItem(value: ch, child: Text(ch.subjectName.isNotEmpty ? ch.subjectName : ch.channelName))),
+                      ...channels.map((ch) => DropdownMenuItem(
+                          value: ch,
+                          child: Text(ch.subjectName.isNotEmpty
+                              ? ch.subjectName
+                              : ch.channelName))),
                     ],
                     onChanged: (v) => setState(() => _selectedChannel = v),
                   ),
@@ -135,8 +141,9 @@ class _TeacherPostAnnouncementDialogState
                   controller: _titleCtrl,
                   hint: 'e.g. Mid-Semester Exam Schedule',
                   context: context,
-                  validator: (v) =>
-                      (v == null || v.trim().isEmpty) ? 'Title is required' : null,
+                  validator: (v) => (v == null || v.trim().isEmpty)
+                      ? 'Title is required'
+                      : null,
                 ),
                 const SizedBox(height: 14),
 
@@ -148,8 +155,9 @@ class _TeacherPostAnnouncementDialogState
                   hint: 'Write your announcement here...',
                   context: context,
                   maxLines: 4,
-                  validator: (v) =>
-                      (v == null || v.trim().isEmpty) ? 'Content is required' : null,
+                  validator: (v) => (v == null || v.trim().isEmpty)
+                      ? 'Content is required'
+                      : null,
                 ),
                 const SizedBox(height: 16),
 
@@ -217,11 +225,12 @@ class _TeacherPostAnnouncementDialogState
                     decoration: BoxDecoration(
                       color: Colors.red.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.red.withValues(alpha: 0.4)),
+                      border:
+                          Border.all(color: Colors.red.withValues(alpha: 0.4)),
                     ),
                     child: Text(_error!,
-                        style: const TextStyle(
-                            color: Colors.red, fontSize: 13)),
+                        style:
+                            const TextStyle(color: Colors.red, fontSize: 13)),
                   ),
                   const SizedBox(height: 12),
                 ],
@@ -260,8 +269,7 @@ class _TeacherPostAnnouncementDialogState
                                 width: 18,
                                 height: 18,
                                 child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: Colors.white),
+                                    strokeWidth: 2, color: Colors.white),
                               )
                             : Text(
                                 'Post Announcement',
@@ -315,8 +323,8 @@ class _TeacherPostAnnouncementDialogState
               borderSide: BorderSide(color: AppColors.getBorderColor(context))),
           focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(
-                  color: Color(0xFFA855F7), width: 1.5)),
+              borderSide:
+                  const BorderSide(color: Color(0xFFA855F7), width: 1.5)),
         ),
       );
 

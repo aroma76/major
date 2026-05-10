@@ -43,7 +43,8 @@ class ApiMessageModel {
       fileUrl: json['file_url'] as String?,
       fileName: json['file_name'] as String?,
       isPinned: json['is_pinned'] as bool? ?? false,
-      createdAt: DateTime.tryParse(json['created_at'] as String? ?? '') ?? DateTime.now(),
+      createdAt: DateTime.tryParse(json['created_at'] as String? ?? '') ??
+          DateTime.now(),
       parentId: json['parent_id'] as int?,
       parentContent: json['parent_content'] as String?,
       parentSenderName: json['parent_sender_name'] as String?,
@@ -51,19 +52,19 @@ class ApiMessageModel {
   }
 
   Map<String, dynamic> toJson() => {
-    'id': id,
-    'channel_id': channelId,
-    'sender_id': senderId,
-    'sender_name': senderName,
-    'sender_role': senderRole,
-    'sender_avatar': senderAvatar,
-    'content': content,
-    'file_url': fileUrl,
-    'file_name': fileName,
-    'is_pinned': isPinned,
-    'created_at': createdAt.toIso8601String(),
-    'parent_id': parentId,
-    'parent_content': parentContent,
-    'parent_sender_name': parentSenderName,
-  };
+        'id': id,
+        'channel_id': channelId,
+        'sender_id': senderId,
+        'sender_name': senderName,
+        'sender_role': senderRole,
+        'sender_avatar': senderAvatar,
+        'content': content,
+        'file_url': fileUrl,
+        'file_name': fileName,
+        'is_pinned': isPinned,
+        'created_at': createdAt.toIso8601String(),
+        'parent_id': parentId,
+        'parent_content': parentContent,
+        'parent_sender_name': parentSenderName,
+      };
 }

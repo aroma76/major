@@ -27,14 +27,14 @@ class MessagesViewWidget extends ConsumerStatefulWidget {
 }
 
 class _MessagesViewWidgetState extends ConsumerState<MessagesViewWidget> {
-  final TextEditingController _inputCtrl    = TextEditingController();
-  final ScrollController       _scrollCtrl  = ScrollController();
+  final TextEditingController _inputCtrl = TextEditingController();
+  final ScrollController _scrollCtrl = ScrollController();
 
-  List<PlatformFile> _pendingFiles = [];   // multi-file queue
-  bool             _isSending  = false;
-  String?          _typingUser;
+  List<PlatformFile> _pendingFiles = []; // multi-file queue
+  bool _isSending = false;
+  String? _typingUser;
   ApiMessageModel? _replyingTo;
-  bool             _isDragging = false;
+  bool _isDragging = false;
 
   // ── Lifecycle ─────────────────────────────────────────────────────────────
   @override
@@ -47,13 +47,13 @@ class _MessagesViewWidgetState extends ConsumerState<MessagesViewWidget> {
     final socket = SocketService();
     socket.onNewMessage((data) {
       if (!mounted) return;
-      final chanId   = (data['channel_id'] as num?)?.toInt();
+      final chanId = (data['channel_id'] as num?)?.toInt();
       final selected = ref.read(selectedChannelProvider)?.id;
       if (chanId == null) return;
 
       // If this message was sent by the current user, skip appending it
       // because an optimistic copy was already added in _send().
-      final myId     = AuthService().currentUser?['id']?.toString();
+      final myId = AuthService().currentUser?['id']?.toString();
       final senderId = (data['sender_id'] as num?)?.toInt().toString();
       if (senderId != null && senderId == myId) return;
 
@@ -114,6 +114,7 @@ class _MessagesViewWidgetState extends ConsumerState<MessagesViewWidget> {
   void _setReply(ApiMessageModel msg) {
     setState(() => _replyingTo = msg);
   }
+
   void _clearReply() {
     setState(() => _replyingTo = null);
   }
@@ -157,7 +158,8 @@ class _MessagesViewWidgetState extends ConsumerState<MessagesViewWidget> {
     }
   }
 
-  Future<void> _uploadFiles(int channelId, String caption, int? parentId) async {
+  Future<void> _uploadFiles(
+      int channelId, String caption, int? parentId) async {
     if (_pendingFiles.isEmpty) return;
     setState(() => _isSending = true);
     final files = List<PlatformFile>.from(_pendingFiles);
@@ -168,7 +170,7 @@ class _MessagesViewWidgetState extends ConsumerState<MessagesViewWidget> {
       for (final file in files) {
         final bytes = file.bytes;
         if (bytes == null || bytes.isEmpty) continue;
-        final ext  = file.extension?.toLowerCase() ?? '';
+        final ext = file.extension?.toLowerCase() ?? '';
         final mime = _mimeFromExt(ext);
         final parts = mime.split('/');
         final formData = FormData.fromMap({
@@ -176,7 +178,8 @@ class _MessagesViewWidgetState extends ConsumerState<MessagesViewWidget> {
           'file': MultipartFile.fromBytes(
             bytes,
             filename: file.name,
-            contentType: MediaType(parts[0], parts.length > 1 ? parts[1] : 'octet-stream'),
+            contentType: MediaType(
+                parts[0], parts.length > 1 ? parts[1] : 'octet-stream'),
           ),
           if (parentId != null) 'parent_id': parentId,
         });
@@ -193,10 +196,14 @@ class _MessagesViewWidgetState extends ConsumerState<MessagesViewWidget> {
     } catch (e) {
       if (mounted) {
         final msg = e is DioException
-            ? (e.response?.data?['message'] as String? ?? e.message ?? 'Upload failed')
+            ? (e.response?.data?['message'] as String? ??
+                e.message ??
+                'Upload failed')
             : e.toString();
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Upload failed: $msg'), backgroundColor: Colors.red),
+          SnackBar(
+              content: Text('Upload failed: $msg'),
+              backgroundColor: Colors.red),
         );
       }
     } finally {
@@ -209,40 +216,43 @@ class _MessagesViewWidgetState extends ConsumerState<MessagesViewWidget> {
     const map = {
       // Images
       'jpg': 'image/jpeg', 'jpeg': 'image/jpeg', 'png': 'image/png',
-      'gif': 'image/gif',  'webp': 'image/webp', 'bmp': 'image/bmp',
+      'gif': 'image/gif', 'webp': 'image/webp', 'bmp': 'image/bmp',
       'svg': 'image/svg+xml',
       // Documents
       'pdf': 'application/pdf',
       'doc': 'application/msword',
-      'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'docx':
+          'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
       'xls': 'application/vnd.ms-excel',
-      'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'xlsx':
+          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
       'ppt': 'application/vnd.ms-powerpoint',
-      'pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+      'pptx':
+          'application/vnd.openxmlformats-officedocument.presentationml.presentation',
       // Text & code
       'txt': 'text/plain',
-      'md':  'text/markdown',
-      'py':  'text/x-python',
-      'js':  'text/javascript',
-      'ts':  'text/typescript',
-      'dart':'text/plain',
-      'java':'text/plain',
-      'c':   'text/plain',
+      'md': 'text/markdown',
+      'py': 'text/x-python',
+      'js': 'text/javascript',
+      'ts': 'text/typescript',
+      'dart': 'text/plain',
+      'java': 'text/plain',
+      'c': 'text/plain',
       'cpp': 'text/plain',
-      'cs':  'text/plain',
-      'go':  'text/plain',
-      'rb':  'text/plain',
-      'sh':  'text/plain',
+      'cs': 'text/plain',
+      'go': 'text/plain',
+      'rb': 'text/plain',
+      'sh': 'text/plain',
       // Data
-      'json':'application/json',
+      'json': 'application/json',
       'xml': 'application/xml',
       'csv': 'text/csv',
-      'yaml':'text/yaml',
+      'yaml': 'text/yaml',
       'yml': 'text/yaml',
       // Archives
       'zip': 'application/zip',
       'rar': 'application/x-rar-compressed',
-      '7z':  'application/x-7z-compressed',
+      '7z': 'application/x-7z-compressed',
     };
     return map[ext] ?? 'application/octet-stream';
   }
@@ -251,7 +261,7 @@ class _MessagesViewWidgetState extends ConsumerState<MessagesViewWidget> {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.any,
       withData: true,
-      allowMultiple: true,   // WhatsApp-style: pick many at once
+      allowMultiple: true, // WhatsApp-style: pick many at once
     );
     if (result != null && result.files.isNotEmpty) {
       setState(() => _pendingFiles = [..._pendingFiles, ...result.files]);
@@ -264,8 +274,8 @@ class _MessagesViewWidgetState extends ConsumerState<MessagesViewWidget> {
   // ── Build ─────────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
-    final channelsAsync    = ref.watch(channelsProvider);
-    final selectedChannel  = ref.watch(selectedChannelProvider);
+    final channelsAsync = ref.watch(channelsProvider);
+    final selectedChannel = ref.watch(selectedChannelProvider);
     final isMobile = MediaQuery.of(context).size.width < 700;
 
     // ── Mobile: single-panel — channel list OR chat ──────────────────────────
@@ -274,20 +284,20 @@ class _MessagesViewWidgetState extends ConsumerState<MessagesViewWidget> {
         return _buildDropTarget(
           selectedChannel,
           _ChatArea(
-            channel     : selectedChannel,
-            inputCtrl   : _inputCtrl,
-            scrollCtrl  : _scrollCtrl,
+            channel: selectedChannel,
+            inputCtrl: _inputCtrl,
+            scrollCtrl: _scrollCtrl,
             pendingFiles: _pendingFiles,
-            isSending   : _isSending,
-            isDragging  : _isDragging,
-            typingUser  : _typingUser,
-            replyingTo  : _replyingTo,
-            onSend      : _send,
-            onPickFile  : _pickFile,
-            onClearFile : _clearFile,
+            isSending: _isSending,
+            isDragging: _isDragging,
+            typingUser: _typingUser,
+            replyingTo: _replyingTo,
+            onSend: _send,
+            onPickFile: _pickFile,
+            onClearFile: _clearFile,
             onClearAllFiles: _clearAllFiles,
-            onTyping    : _emitTyping,
-            onReply     : _setReply,
+            onTyping: _emitTyping,
+            onReply: _setReply,
             onClearReply: _clearReply,
             showBackButton: true,
             onBack: () {
@@ -307,7 +317,9 @@ class _MessagesViewWidgetState extends ConsumerState<MessagesViewWidget> {
             child: Row(
               children: [
                 Text('Messages',
-                    style: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.bold,
+                    style: GoogleFonts.outfit(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
                         color: AppColors.getHeadingColor(context))),
                 const Spacer(),
                 Icon(FeatherIcons.hash, color: AppColors.accent, size: 18),
@@ -318,15 +330,17 @@ class _MessagesViewWidgetState extends ConsumerState<MessagesViewWidget> {
           Expanded(
             child: channelsAsync.when(
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, _) => const Center(child: Text('Error loading channels')),
+              error: (e, _) =>
+                  const Center(child: Text('Error loading channels')),
               data: (channels) {
-                if (channels.isEmpty) return const Center(child: Text('No channels.'));
+                if (channels.isEmpty)
+                  return const Center(child: Text('No channels.'));
                 return ListView.builder(
                   itemCount: channels.length,
                   itemBuilder: (_, i) => _ChannelTile(
-                    channel   : channels[i],
+                    channel: channels[i],
                     isSelected: false,
-                    onTap     : () => _selectChannel(channels[i]),
+                    onTap: () => _selectChannel(channels[i]),
                   ),
                 );
               },
@@ -344,7 +358,10 @@ class _MessagesViewWidgetState extends ConsumerState<MessagesViewWidget> {
           children: [
             Container(
               width: panelWidth,
-              decoration: BoxDecoration(border: Border(right: BorderSide(color: AppColors.getBorderColor(context)))),
+              decoration: BoxDecoration(
+                  border: Border(
+                      right: BorderSide(
+                          color: AppColors.getBorderColor(context)))),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -352,24 +369,32 @@ class _MessagesViewWidgetState extends ConsumerState<MessagesViewWidget> {
                     padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
                     child: Row(
                       children: [
-                        Text('Messages', style: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.getHeadingColor(context))),
+                        Text('Messages',
+                            style: GoogleFonts.outfit(
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.getHeadingColor(context))),
                         const Spacer(),
-                        Icon(FeatherIcons.hash, color: AppColors.accent, size: 18),
+                        Icon(FeatherIcons.hash,
+                            color: AppColors.accent, size: 18),
                       ],
                     ),
                   ),
                   Expanded(
                     child: channelsAsync.when(
-                      loading: () => const Center(child: CircularProgressIndicator()),
-                      error: (e, _) => const Center(child: Text('Error loading channels')),
+                      loading: () =>
+                          const Center(child: CircularProgressIndicator()),
+                      error: (e, _) =>
+                          const Center(child: Text('Error loading channels')),
                       data: (channels) {
-                        if (channels.isEmpty) return const Center(child: Text('No channels.'));
+                        if (channels.isEmpty)
+                          return const Center(child: Text('No channels.'));
                         return ListView.builder(
                           itemCount: channels.length,
                           itemBuilder: (_, i) => _ChannelTile(
-                            channel   : channels[i],
+                            channel: channels[i],
                             isSelected: selectedChannel?.id == channels[i].id,
-                            onTap     : () => _selectChannel(channels[i]),
+                            onTap: () => _selectChannel(channels[i]),
                           ),
                         );
                       },
@@ -384,20 +409,20 @@ class _MessagesViewWidgetState extends ConsumerState<MessagesViewWidget> {
                   : _buildDropTarget(
                       selectedChannel,
                       _ChatArea(
-                        channel     : selectedChannel,
-                        inputCtrl   : _inputCtrl,
-                        scrollCtrl  : _scrollCtrl,
+                        channel: selectedChannel,
+                        inputCtrl: _inputCtrl,
+                        scrollCtrl: _scrollCtrl,
                         pendingFiles: _pendingFiles,
-                        isSending   : _isSending,
-                        isDragging  : _isDragging,
-                        typingUser  : _typingUser,
-                        replyingTo  : _replyingTo,
-                        onSend      : _send,
-                        onPickFile  : _pickFile,
-                        onClearFile : _clearFile,
+                        isSending: _isSending,
+                        isDragging: _isDragging,
+                        typingUser: _typingUser,
+                        replyingTo: _replyingTo,
+                        onSend: _send,
+                        onPickFile: _pickFile,
+                        onClearFile: _clearFile,
                         onClearAllFiles: _clearAllFiles,
-                        onTyping    : _emitTyping,
-                        onReply     : _setReply,
+                        onTyping: _emitTyping,
+                        onReply: _setReply,
                         onClearReply: _clearReply,
                       ),
                     ),
@@ -408,18 +433,17 @@ class _MessagesViewWidgetState extends ConsumerState<MessagesViewWidget> {
     );
   }
 
-
   /// Wraps [child] in a [DropTarget] that accepts OS-level file drags.
   Widget _buildDropTarget(ChannelModel channel, Widget child) {
     return DropTarget(
       onDragEntered: (_) => setState(() => _isDragging = true),
-      onDragExited:  (_) => setState(() => _isDragging = false),
+      onDragExited: (_) => setState(() => _isDragging = false),
       onDragDone: (details) async {
         setState(() => _isDragging = false);
         final dropped = <PlatformFile>[];
         for (final f in details.files) {
           final bytes = await f.readAsBytes();
-          final name  = f.name;
+          final name = f.name;
           dropped.add(PlatformFile(
             name: name,
             size: bytes.length,
@@ -427,7 +451,8 @@ class _MessagesViewWidgetState extends ConsumerState<MessagesViewWidget> {
             readStream: null,
           ));
         }
-        if (dropped.isNotEmpty) setState(() => _pendingFiles = [..._pendingFiles, ...dropped]);
+        if (dropped.isNotEmpty)
+          setState(() => _pendingFiles = [..._pendingFiles, ...dropped]);
       },
       child: Stack(
         children: [
@@ -443,11 +468,14 @@ class _MessagesViewWidgetState extends ConsumerState<MessagesViewWidget> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(FeatherIcons.uploadCloud, size: 48, color: AppColors.accent),
+                      Icon(FeatherIcons.uploadCloud,
+                          size: 48, color: AppColors.accent),
                       const SizedBox(height: 12),
                       Text('Drop files to send',
-                          style: GoogleFonts.outfit(fontSize: 18,
-                              fontWeight: FontWeight.bold, color: AppColors.accent)),
+                          style: GoogleFonts.outfit(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.accent)),
                     ],
                   ),
                 ),
@@ -465,7 +493,8 @@ class _ChannelTile extends StatelessWidget {
   final bool isSelected;
   final VoidCallback onTap;
 
-  const _ChannelTile({required this.channel, required this.isSelected, required this.onTap});
+  const _ChannelTile(
+      {required this.channel, required this.isSelected, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -474,21 +503,44 @@ class _ChannelTile extends StatelessWidget {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-        color: isSelected ? AppColors.accent.withValues(alpha: 0.09) : Colors.transparent,
+        color: isSelected
+            ? AppColors.accent.withValues(alpha: 0.09)
+            : Colors.transparent,
         child: Row(
           children: [
             Container(
-              width: 40, height: 40, alignment: Alignment.center,
-              decoration: BoxDecoration(color: isSelected ? AppColors.accent : AppColors.accent.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
-              child: Icon(FeatherIcons.hash, size: 18, color: isSelected ? Colors.white : AppColors.accent),
+              width: 40,
+              height: 40,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                  color: isSelected
+                      ? AppColors.accent
+                      : AppColors.accent.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(10)),
+              child: Icon(FeatherIcons.hash,
+                  size: 18,
+                  color: isSelected ? Colors.white : AppColors.accent),
             ),
             const SizedBox(width: 14),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(channel.subjectName, style: GoogleFonts.outfit(fontWeight: isSelected ? FontWeight.bold : FontWeight.w600, fontSize: 14, color: isSelected ? AppColors.accent : AppColors.getHeadingColor(context)), maxLines: 1, overflow: TextOverflow.ellipsis),
-                  if (channel.teacherName != null) Text(channel.teacherName!, style: GoogleFonts.outfit(fontSize: 11, color: AppColors.getBodyColor(context))),
+                  Text(channel.subjectName,
+                      style: GoogleFonts.outfit(
+                          fontWeight:
+                              isSelected ? FontWeight.bold : FontWeight.w600,
+                          fontSize: 14,
+                          color: isSelected
+                              ? AppColors.accent
+                              : AppColors.getHeadingColor(context)),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis),
+                  if (channel.teacherName != null)
+                    Text(channel.teacherName!,
+                        style: GoogleFonts.outfit(
+                            fontSize: 11,
+                            color: AppColors.getBodyColor(context))),
                 ],
               ),
             ),
@@ -506,9 +558,17 @@ class _EmptyState extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Container(padding: const EdgeInsets.all(28), decoration: BoxDecoration(color: AppColors.accent.withValues(alpha: 0.07), shape: BoxShape.circle), child: Icon(FeatherIcons.messageSquare, size: 56, color: AppColors.accent.withValues(alpha: 0.3))),
+          Container(
+              padding: const EdgeInsets.all(28),
+              decoration: BoxDecoration(
+                  color: AppColors.accent.withValues(alpha: 0.07),
+                  shape: BoxShape.circle),
+              child: Icon(FeatherIcons.messageSquare,
+                  size: 56, color: AppColors.accent.withValues(alpha: 0.3))),
           const SizedBox(height: 20),
-          Text('Select a channel to start chatting', style: GoogleFonts.outfit(fontSize: 15, color: AppColors.getBodyColor(context))),
+          Text('Select a channel to start chatting',
+              style: GoogleFonts.outfit(
+                  fontSize: 15, color: AppColors.getBodyColor(context))),
         ],
       ),
     );
@@ -537,13 +597,23 @@ class _ChatArea extends ConsumerWidget {
   final VoidCallback? onBack;
 
   const _ChatArea({
-    required this.channel, required this.inputCtrl, required this.scrollCtrl,
-    required this.pendingFiles, required this.isSending, required this.isDragging,
-    required this.typingUser, required this.replyingTo,
-    required this.onSend, required this.onPickFile,
-    required this.onClearFile, required this.onClearAllFiles,
-    required this.onTyping, required this.onReply, required this.onClearReply,
-    this.showBackButton = false, this.onBack,
+    required this.channel,
+    required this.inputCtrl,
+    required this.scrollCtrl,
+    required this.pendingFiles,
+    required this.isSending,
+    required this.isDragging,
+    required this.typingUser,
+    required this.replyingTo,
+    required this.onSend,
+    required this.onPickFile,
+    required this.onClearFile,
+    required this.onClearAllFiles,
+    required this.onTyping,
+    required this.onReply,
+    required this.onClearReply,
+    this.showBackButton = false,
+    this.onBack,
   });
 
   @override
@@ -556,7 +626,10 @@ class _ChatArea extends ConsumerWidget {
         // ── Header ────────────────────────────────────────────────────────
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-          decoration: BoxDecoration(border: Border(bottom: BorderSide(color: AppColors.getBorderColor(context)))),
+          decoration: BoxDecoration(
+              border: Border(
+                  bottom:
+                      BorderSide(color: AppColors.getBorderColor(context)))),
           child: Row(
             children: [
               if (showBackButton) ...[
@@ -565,19 +638,35 @@ class _ChatArea extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(8),
                   child: Padding(
                     padding: const EdgeInsets.all(6),
-                    child: Icon(FeatherIcons.arrowLeft, color: AppColors.accent, size: 20),
+                    child: Icon(FeatherIcons.arrowLeft,
+                        color: AppColors.accent, size: 20),
                   ),
                 ),
                 const SizedBox(width: 4),
               ],
-              Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: AppColors.accent.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)), child: Icon(FeatherIcons.hash, color: AppColors.accent, size: 16)),
+              Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                      color: AppColors.accent.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8)),
+                  child: Icon(FeatherIcons.hash,
+                      color: AppColors.accent, size: 16)),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(channel.subjectName, style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 15, color: AppColors.getHeadingColor(context)), overflow: TextOverflow.ellipsis),
-                    if (channel.teacherName != null) Text('Teacher: ${channel.teacherName}', style: GoogleFonts.outfit(fontSize: 11, color: AppColors.getBodyColor(context))),
+                    Text(channel.subjectName,
+                        style: GoogleFonts.outfit(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
+                            color: AppColors.getHeadingColor(context)),
+                        overflow: TextOverflow.ellipsis),
+                    if (channel.teacherName != null)
+                      Text('Teacher: ${channel.teacherName}',
+                          style: GoogleFonts.outfit(
+                              fontSize: 11,
+                              color: AppColors.getBodyColor(context))),
                   ],
                 ),
               ),
@@ -593,24 +682,33 @@ class _ChatArea extends ConsumerWidget {
                   ? Center(child: Text('Failed to load messages'))
                   : () {
                       final messages = messagesState.messages;
-                      if (messages.isEmpty) return Center(child: Text('No messages yet', style: GoogleFonts.outfit(color: AppColors.getBodyColor(context))));
+                      if (messages.isEmpty)
+                        return Center(
+                            child: Text('No messages yet',
+                                style: GoogleFonts.outfit(
+                                    color: AppColors.getBodyColor(context))));
                       return NotificationListener<ScrollNotification>(
                         onNotification: (ScrollNotification scrollInfo) {
                           if (scrollInfo.metrics.pixels <= 200) {
-                             ref.read(messagesNotifierProvider(channel.id).notifier).loadMore();
+                            ref
+                                .read(messagesNotifierProvider(channel.id)
+                                    .notifier)
+                                .loadMore();
                           }
                           return false;
                         },
                         child: ListView.builder(
                           controller: scrollCtrl,
-                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 24, vertical: 20),
                           itemCount: messages.length,
                           itemBuilder: (_, i) {
                             final msg = messages[i];
                             final isMe = msg.senderId.toString() == myId;
                             return InkWell(
                               onLongPress: () => onReply(msg),
-                              hoverColor: AppColors.getBorderColor(context).withValues(alpha: 0.1),
+                              hoverColor: AppColors.getBorderColor(context)
+                                  .withValues(alpha: 0.1),
                               child: _MessageBubble(
                                 msg: msg,
                                 isMe: isMe,
@@ -627,16 +725,27 @@ class _ChatArea extends ConsumerWidget {
         if (typingUser != null)
           Padding(
             padding: const EdgeInsets.only(left: 28, bottom: 4),
-            child: Align(alignment: Alignment.centerLeft, child: Text('$typingUser is typing...', style: GoogleFonts.outfit(fontSize: 11, fontStyle: FontStyle.italic, color: AppColors.getBodyColor(context)))),
+            child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text('$typingUser is typing...',
+                    style: GoogleFonts.outfit(
+                        fontSize: 11,
+                        fontStyle: FontStyle.italic,
+                        color: AppColors.getBodyColor(context)))),
           ),
 
         // ── Input Bar ─────────────────────────────────────────────────────
         _InputBar(
-          inputCtrl: inputCtrl, pendingFiles: pendingFiles,
-          isSending: isSending, replyingTo: replyingTo,
-          onSend: onSend, onPickFile: onPickFile,
-          onClearFile: onClearFile, onClearAllFiles: onClearAllFiles,
-          onTyping: onTyping, onClearReply: onClearReply,
+          inputCtrl: inputCtrl,
+          pendingFiles: pendingFiles,
+          isSending: isSending,
+          replyingTo: replyingTo,
+          onSend: onSend,
+          onPickFile: onPickFile,
+          onClearFile: onClearFile,
+          onClearAllFiles: onClearAllFiles,
+          onTyping: onTyping,
+          onClearReply: onClearReply,
         ),
       ],
     );
@@ -688,24 +797,42 @@ class _MessageBubbleState extends ConsumerState<_MessageBubble> {
 
   static IconData _fileIcon(String? name) {
     final ext = name?.split('.').last.toLowerCase() ?? '';
-    const images = ['jpg','jpeg','png','gif','webp','bmp','svg'];
-    const code   = ['py','js','ts','dart','java','c','cpp','cs','go','rb','sh','json','xml','yaml','yml','ipynb'];
-    const sheets = ['xls','xlsx','csv'];
-    const slides = ['ppt','pptx'];
-    const docs   = ['doc','docx'];
-    const arch   = ['zip','rar','7z'];
-    if (images.contains(ext))  return FeatherIcons.image;
-    if (ext == 'pdf')          return FeatherIcons.fileText;
-    if (docs.contains(ext))    return FeatherIcons.file;
-    if (sheets.contains(ext))  return FeatherIcons.grid;
-    if (slides.contains(ext))  return FeatherIcons.monitor;
-    if (code.contains(ext))    return FeatherIcons.code;
-    if (['txt','md'].contains(ext)) return FeatherIcons.alignLeft;
-    if (arch.contains(ext))    return FeatherIcons.archive;
+    const images = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg'];
+    const code = [
+      'py',
+      'js',
+      'ts',
+      'dart',
+      'java',
+      'c',
+      'cpp',
+      'cs',
+      'go',
+      'rb',
+      'sh',
+      'json',
+      'xml',
+      'yaml',
+      'yml',
+      'ipynb'
+    ];
+    const sheets = ['xls', 'xlsx', 'csv'];
+    const slides = ['ppt', 'pptx'];
+    const docs = ['doc', 'docx'];
+    const arch = ['zip', 'rar', '7z'];
+    if (images.contains(ext)) return FeatherIcons.image;
+    if (ext == 'pdf') return FeatherIcons.fileText;
+    if (docs.contains(ext)) return FeatherIcons.file;
+    if (sheets.contains(ext)) return FeatherIcons.grid;
+    if (slides.contains(ext)) return FeatherIcons.monitor;
+    if (code.contains(ext)) return FeatherIcons.code;
+    if (['txt', 'md'].contains(ext)) return FeatherIcons.alignLeft;
+    if (arch.contains(ext)) return FeatherIcons.archive;
     return FeatherIcons.paperclip;
   }
 
-  void _showFileViewer(BuildContext context, String url, String? fileName) async {
+  void _showFileViewer(
+      BuildContext context, String url, String? fileName) async {
     final ext = fileName?.split('.').last.toLowerCase() ?? '';
     final isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp'].contains(ext);
     final isPdf = ext == 'pdf';
@@ -732,7 +859,8 @@ class _MessageBubbleState extends ConsumerState<_MessageBubble> {
                   errorBuilder: (_, __, ___) => Container(
                     color: AppColors.getSurfaceColor(context),
                     padding: const EdgeInsets.all(20),
-                    child: Text('Failed to load image', style: GoogleFonts.outfit(color: Colors.red)),
+                    child: Text('Failed to load image',
+                        style: GoogleFonts.outfit(color: Colors.red)),
                   ),
                 ),
               ),
@@ -740,7 +868,8 @@ class _MessageBubbleState extends ConsumerState<_MessageBubble> {
                 top: 0,
                 right: 0,
                 child: IconButton(
-                  icon: const Icon(FeatherIcons.xCircle, color: Colors.white, size: 36),
+                  icon: const Icon(FeatherIcons.xCircle,
+                      color: Colors.white, size: 36),
                   onPressed: () => Navigator.of(context).pop(),
                 ),
               ),
@@ -759,7 +888,9 @@ class _MessageBubbleState extends ConsumerState<_MessageBubble> {
         builder: (sheetCtx) => Container(
           padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
           decoration: BoxDecoration(
-            color: isDark ? AppColors.secondaryBackground : AppColors.lightSecondaryBackground,
+            color: isDark
+                ? AppColors.secondaryBackground
+                : AppColors.lightSecondaryBackground,
             borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
           ),
           child: Column(
@@ -767,7 +898,8 @@ class _MessageBubbleState extends ConsumerState<_MessageBubble> {
             children: [
               // drag handle
               Container(
-                width: 36, height: 4,
+                width: 36,
+                height: 4,
                 margin: const EdgeInsets.only(bottom: 20),
                 decoration: BoxDecoration(
                   color: AppColors.getBorderColor(context),
@@ -783,7 +915,8 @@ class _MessageBubbleState extends ConsumerState<_MessageBubble> {
               Text(
                 fileName ?? 'Attachment',
                 style: GoogleFonts.outfit(
-                  fontSize: 15, fontWeight: FontWeight.bold,
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
                   color: AppColors.getHeadingColor(context),
                 ),
                 textAlign: TextAlign.center,
@@ -801,7 +934,8 @@ class _MessageBubbleState extends ConsumerState<_MessageBubble> {
                       label: const Text('Download'),
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
                       ),
                     ),
                   ),
@@ -812,7 +946,8 @@ class _MessageBubbleState extends ConsumerState<_MessageBubble> {
                         Navigator.pop(sheetCtx);
                         final uri = Uri.parse(url);
                         if (await canLaunchUrl(uri)) {
-                          await launchUrl(uri, mode: LaunchMode.externalApplication);
+                          await launchUrl(uri,
+                              mode: LaunchMode.externalApplication);
                         }
                       },
                       icon: const Icon(FeatherIcons.externalLink, size: 16),
@@ -821,7 +956,8 @@ class _MessageBubbleState extends ConsumerState<_MessageBubble> {
                         backgroundColor: AppColors.accent,
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
                       ),
                     ),
                   ),
@@ -850,10 +986,12 @@ class _MessageBubbleState extends ConsumerState<_MessageBubble> {
     // For Cloudinary URLs, insert fl_attachment as a path transformation
     // so the browser downloads the file instead of rendering it inline.
     // e.g. .../upload/v123/... → .../upload/fl_attachment/v123/...
-    String downloadUrl = url.split('?').first; // strip any existing query params
+    String downloadUrl =
+        url.split('?').first; // strip any existing query params
     if (downloadUrl.contains('cloudinary.com')) {
       // Insert the fl_attachment flag right after "/upload/"
-      downloadUrl = downloadUrl.replaceFirst('/upload/', '/upload/fl_attachment/');
+      downloadUrl =
+          downloadUrl.replaceFirst('/upload/', '/upload/fl_attachment/');
     }
     final uri = Uri.parse(downloadUrl);
     if (await canLaunchUrl(uri)) {
@@ -865,7 +1003,9 @@ class _MessageBubbleState extends ConsumerState<_MessageBubble> {
   Widget build(BuildContext context) {
     final msg = widget.msg;
     final isMe = widget.isMe;
-    final bubbleColor = isMe ? AppColors.accent : AppColors.getBorderColor(context).withValues(alpha: 0.15);
+    final bubbleColor = isMe
+        ? AppColors.accent
+        : AppColors.getBorderColor(context).withValues(alpha: 0.15);
     final textColor = isMe ? Colors.white : AppColors.getHeadingColor(context);
     final radius = BorderRadius.only(
       topLeft: const Radius.circular(16),
@@ -886,7 +1026,8 @@ class _MessageBubbleState extends ConsumerState<_MessageBubble> {
               : MediaQuery.of(context).size.width * 0.55,
         ),
         child: Column(
-          crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+          crossAxisAlignment:
+              isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
           children: [
             if (!isMe)
               Padding(
@@ -894,10 +1035,25 @@ class _MessageBubbleState extends ConsumerState<_MessageBubble> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(msg.senderName, style: GoogleFonts.outfit(fontSize: 11, fontWeight: FontWeight.bold, color: isFaculty ? Colors.orange : AppColors.accent)),
+                    Text(msg.senderName,
+                        style: GoogleFonts.outfit(
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                            color:
+                                isFaculty ? Colors.orange : AppColors.accent)),
                     if (isFaculty) ...[
                       const SizedBox(width: 5),
-                      Container(padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1), decoration: BoxDecoration(color: Colors.orange.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(4)), child: const Text('Teacher', style: TextStyle(fontSize: 9, color: Colors.orange, fontWeight: FontWeight.bold))),
+                      Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 5, vertical: 1),
+                          decoration: BoxDecoration(
+                              color: Colors.orange.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(4)),
+                          child: const Text('Teacher',
+                              style: TextStyle(
+                                  fontSize: 9,
+                                  color: Colors.orange,
+                                  fontWeight: FontWeight.bold))),
                     ],
                   ],
                 ),
@@ -907,17 +1063,29 @@ class _MessageBubbleState extends ConsumerState<_MessageBubble> {
             if (msg.parentContent != null || msg.parentSenderName != null)
               Container(
                 margin: const EdgeInsets.only(bottom: 4),
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 decoration: BoxDecoration(
-                  color: AppColors.getBorderColor(context).withValues(alpha: 0.2),
-                  border: Border(left: BorderSide(color: AppColors.accent, width: 3)),
+                  color:
+                      AppColors.getBorderColor(context).withValues(alpha: 0.2),
+                  border: Border(
+                      left: BorderSide(color: AppColors.accent, width: 3)),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(msg.parentSenderName ?? 'Someone', style: GoogleFonts.outfit(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.accent)),
-                    Text(msg.parentContent ?? 'Attachment', maxLines: 1, overflow: TextOverflow.ellipsis, style: GoogleFonts.outfit(fontSize: 11, color: AppColors.getBodyColor(context))),
+                    Text(msg.parentSenderName ?? 'Someone',
+                        style: GoogleFonts.outfit(
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.accent)),
+                    Text(msg.parentContent ?? 'Attachment',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.outfit(
+                            fontSize: 11,
+                            color: AppColors.getBodyColor(context))),
                   ],
                 ),
               ),
@@ -926,32 +1094,48 @@ class _MessageBubbleState extends ConsumerState<_MessageBubble> {
             GestureDetector(
               onLongPress: _togglePicker,
               child: Column(
-                crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                crossAxisAlignment:
+                    isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
                 children: [
                   // File or Text Content
                   if (msg.fileUrl != null && msg.fileUrl!.isNotEmpty)
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                      decoration: BoxDecoration(color: bubbleColor, borderRadius: radius),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 10),
+                      decoration: BoxDecoration(
+                          color: bubbleColor, borderRadius: radius),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           // ── Tap area: view file ──
                           GestureDetector(
-                            onTap: () => _showFileViewer(context, msg.fileUrl!, msg.fileName),
+                            onTap: () => _showFileViewer(
+                                context, msg.fileUrl!, msg.fileName),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(_fileIcon(msg.fileName), color: textColor, size: 22),
+                                Icon(_fileIcon(msg.fileName),
+                                    color: textColor, size: 22),
                                 const SizedBox(width: 10),
                                 ConstrainedBox(
-                                  constraints: const BoxConstraints(maxWidth: 140),
+                                  constraints:
+                                      const BoxConstraints(maxWidth: 140),
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
-                                      Text(msg.fileName ?? 'attachment', style: GoogleFonts.outfit(color: textColor, fontSize: 13, fontWeight: FontWeight.w600), overflow: TextOverflow.ellipsis),
+                                      Text(msg.fileName ?? 'attachment',
+                                          style: GoogleFonts.outfit(
+                                              color: textColor,
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w600),
+                                          overflow: TextOverflow.ellipsis),
                                       const SizedBox(height: 2),
-                                      Text('Tap to view', style: GoogleFonts.outfit(color: textColor.withValues(alpha: 0.7), fontSize: 10)),
+                                      Text('Tap to view',
+                                          style: GoogleFonts.outfit(
+                                              color: textColor.withValues(
+                                                  alpha: 0.7),
+                                              fontSize: 10)),
                                     ],
                                   ),
                                 ),
@@ -971,7 +1155,8 @@ class _MessageBubbleState extends ConsumerState<_MessageBubble> {
                                   color: textColor.withValues(alpha: 0.15),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
-                                child: Icon(FeatherIcons.download, color: textColor, size: 14),
+                                child: Icon(FeatherIcons.download,
+                                    color: textColor, size: 14),
                               ),
                             ),
                           ),
@@ -1002,22 +1187,31 @@ class _MessageBubbleState extends ConsumerState<_MessageBubble> {
                     )
                   else
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                      decoration: BoxDecoration(color: bubbleColor, borderRadius: radius),
-                      child: Text(msg.content ?? '', style: GoogleFonts.outfit(color: textColor, fontSize: 14)),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 12),
+                      decoration: BoxDecoration(
+                          color: bubbleColor, borderRadius: radius),
+                      child: Text(msg.content ?? '',
+                          style: GoogleFonts.outfit(
+                              color: textColor, fontSize: 14)),
                     ),
 
                   // Emoji Picker popup
                   if (_showPicker)
                     Container(
                       margin: const EdgeInsets.only(top: 4),
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 4),
                       decoration: BoxDecoration(
                         color: AppColors.getSurfaceColor(context),
                         borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: AppColors.getBorderColor(context)),
+                        border: Border.all(
+                            color: AppColors.getBorderColor(context)),
                         boxShadow: [
-                          BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 12, offset: const Offset(0, 4)),
+                          BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.1),
+                              blurRadius: 12,
+                              offset: const Offset(0, 4)),
                         ],
                       ),
                       child: Row(
@@ -1031,10 +1225,13 @@ class _MessageBubbleState extends ConsumerState<_MessageBubble> {
                               margin: const EdgeInsets.symmetric(horizontal: 2),
                               padding: const EdgeInsets.all(6),
                               decoration: BoxDecoration(
-                                color: isSelected ? AppColors.accent.withValues(alpha: 0.15) : Colors.transparent,
+                                color: isSelected
+                                    ? AppColors.accent.withValues(alpha: 0.15)
+                                    : Colors.transparent,
                                 borderRadius: BorderRadius.circular(12),
                               ),
-                              child: Text(e, style: const TextStyle(fontSize: 18)),
+                              child:
+                                  Text(e, style: const TextStyle(fontSize: 18)),
                             ),
                           );
                         }).toList(),
@@ -1052,7 +1249,8 @@ class _MessageBubbleState extends ConsumerState<_MessageBubble> {
                           return GestureDetector(
                             onTap: () => _react(entry.key),
                             child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 3),
                               decoration: BoxDecoration(
                                 color: isSelected
                                     ? AppColors.accent.withValues(alpha: 0.15)
@@ -1067,10 +1265,16 @@ class _MessageBubbleState extends ConsumerState<_MessageBubble> {
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Text(entry.key, style: const TextStyle(fontSize: 12)),
+                                  Text(entry.key,
+                                      style: const TextStyle(fontSize: 12)),
                                   const SizedBox(width: 4),
                                   Text('${entry.value}',
-                                      style: TextStyle(fontSize: 11, color: isSelected ? AppColors.accent : AppColors.getBodyColor(context), fontWeight: FontWeight.w600)),
+                                      style: TextStyle(
+                                          fontSize: 11,
+                                          color: isSelected
+                                              ? AppColors.accent
+                                              : AppColors.getBodyColor(context),
+                                          fontWeight: FontWeight.w600)),
                                 ],
                               ),
                             ),
@@ -1086,9 +1290,13 @@ class _MessageBubbleState extends ConsumerState<_MessageBubble> {
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                if (isMe) Icon(Icons.done_all, size: 12, color: AppColors.accent.withValues(alpha: 0.8)),
+                if (isMe)
+                  Icon(Icons.done_all,
+                      size: 12, color: AppColors.accent.withValues(alpha: 0.8)),
                 if (isMe) const SizedBox(width: 3),
-                Text(time, style: GoogleFonts.outfit(fontSize: 10, color: AppColors.getBodyColor(context))),
+                Text(time,
+                    style: GoogleFonts.outfit(
+                        fontSize: 10, color: AppColors.getBodyColor(context))),
               ],
             ),
           ],
@@ -1097,7 +1305,6 @@ class _MessageBubbleState extends ConsumerState<_MessageBubble> {
     );
   }
 }
-
 
 // ─────────────────────────────────────────────────────────────────────────────
 class _InputBar extends StatelessWidget {
@@ -1113,25 +1320,48 @@ class _InputBar extends StatelessWidget {
   final VoidCallback onClearReply;
 
   const _InputBar({
-    required this.inputCtrl, required this.pendingFiles, required this.isSending,
-    required this.replyingTo, required this.onSend, required this.onPickFile,
-    required this.onClearFile, required this.onClearAllFiles,
-    required this.onTyping, required this.onClearReply,
+    required this.inputCtrl,
+    required this.pendingFiles,
+    required this.isSending,
+    required this.replyingTo,
+    required this.onSend,
+    required this.onPickFile,
+    required this.onClearFile,
+    required this.onClearAllFiles,
+    required this.onTyping,
+    required this.onClearReply,
   });
 
   static IconData _fileChipIcon(String name) {
     final ext = name.contains('.') ? name.split('.').last.toLowerCase() : '';
-    const images = ['jpg','jpeg','png','gif','webp','bmp','svg'];
-    const docs   = ['pdf','doc','docx','ppt','pptx','xls','xlsx'];
-    const code   = ['py','js','ts','dart','java','c','cpp','cs','go','rb','sh','json','xml','yaml','yml','ipynb'];
-    const text   = ['txt','md','csv'];
-    const arch   = ['zip','rar','7z'];
+    const images = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg'];
+    const docs = ['pdf', 'doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx'];
+    const code = [
+      'py',
+      'js',
+      'ts',
+      'dart',
+      'java',
+      'c',
+      'cpp',
+      'cs',
+      'go',
+      'rb',
+      'sh',
+      'json',
+      'xml',
+      'yaml',
+      'yml',
+      'ipynb'
+    ];
+    const text = ['txt', 'md', 'csv'];
+    const arch = ['zip', 'rar', '7z'];
     if (images.contains(ext)) return FeatherIcons.image;
-    if (ext == 'pdf')         return FeatherIcons.fileText;
-    if (docs.contains(ext))   return FeatherIcons.file;
-    if (code.contains(ext))   return FeatherIcons.code;
-    if (text.contains(ext))   return FeatherIcons.alignLeft;
-    if (arch.contains(ext))   return FeatherIcons.archive;
+    if (ext == 'pdf') return FeatherIcons.fileText;
+    if (docs.contains(ext)) return FeatherIcons.file;
+    if (code.contains(ext)) return FeatherIcons.code;
+    if (text.contains(ext)) return FeatherIcons.alignLeft;
+    if (arch.contains(ext)) return FeatherIcons.archive;
     return FeatherIcons.paperclip;
   }
 
@@ -1139,7 +1369,8 @@ class _InputBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final isMobile = MediaQuery.of(context).size.width < 700;
     return Container(
-      padding: EdgeInsets.fromLTRB(isMobile ? 12 : 20, 0, isMobile ? 12 : 20, isMobile ? 12 : 20),
+      padding: EdgeInsets.fromLTRB(
+          isMobile ? 12 : 20, 0, isMobile ? 12 : 20, isMobile ? 12 : 20),
       child: Column(
         children: [
           // ── Replying-to chip ─────────────────────────────────────────
@@ -1150,26 +1381,36 @@ class _InputBar extends StatelessWidget {
               decoration: BoxDecoration(
                 color: AppColors.getBorderColor(context).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(10),
-                border: Border(left: BorderSide(color: AppColors.accent, width: 4)),
+                border:
+                    Border(left: BorderSide(color: AppColors.accent, width: 4)),
               ),
               child: Row(
                 children: [
-                  Icon(FeatherIcons.cornerUpLeft, color: AppColors.accent, size: 14),
+                  Icon(FeatherIcons.cornerUpLeft,
+                      color: AppColors.accent, size: 14),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text('Replying to ${replyingTo!.senderName}',
-                            style: GoogleFonts.outfit(color: AppColors.accent, fontSize: 11, fontWeight: FontWeight.bold)),
+                            style: GoogleFonts.outfit(
+                                color: AppColors.accent,
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold)),
                         Text(replyingTo!.content ?? 'Attachment',
-                            style: GoogleFonts.outfit(color: AppColors.getBodyColor(context), fontSize: 12),
-                            overflow: TextOverflow.ellipsis, maxLines: 1),
+                            style: GoogleFonts.outfit(
+                                color: AppColors.getBodyColor(context),
+                                fontSize: 12),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1),
                       ],
                     ),
                   ),
-                  GestureDetector(onTap: onClearReply,
-                      child: Icon(Icons.close, size: 16, color: AppColors.getBodyColor(context))),
+                  GestureDetector(
+                      onTap: onClearReply,
+                      child: Icon(Icons.close,
+                          size: 16, color: AppColors.getBodyColor(context))),
                 ],
               ),
             ),
@@ -1182,7 +1423,8 @@ class _InputBar extends StatelessWidget {
               decoration: BoxDecoration(
                 color: AppColors.accent.withValues(alpha: 0.06),
                 borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: AppColors.accent.withValues(alpha: 0.2)),
+                border:
+                    Border.all(color: AppColors.accent.withValues(alpha: 0.2)),
               ),
               child: Row(
                 children: [
@@ -1196,29 +1438,37 @@ class _InputBar extends StatelessWidget {
                         itemBuilder: (context, i) {
                           final f = pendingFiles[i];
                           return Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 4),
                             decoration: BoxDecoration(
                               color: AppColors.getSurfaceColor(context),
                               borderRadius: BorderRadius.circular(20),
-                              border: Border.all(color: AppColors.accent.withValues(alpha: 0.3)),
+                              border: Border.all(
+                                  color:
+                                      AppColors.accent.withValues(alpha: 0.3)),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(_fileChipIcon(f.name), size: 13, color: AppColors.accent),
+                                Icon(_fileChipIcon(f.name),
+                                    size: 13, color: AppColors.accent),
                                 const SizedBox(width: 5),
                                 ConstrainedBox(
-                                  constraints: const BoxConstraints(maxWidth: 100),
+                                  constraints:
+                                      const BoxConstraints(maxWidth: 100),
                                   child: Text(f.name,
-                                      style: GoogleFonts.outfit(fontSize: 11,
-                                          color: AppColors.getHeadingColor(context),
+                                      style: GoogleFonts.outfit(
+                                          fontSize: 11,
+                                          color: AppColors.getHeadingColor(
+                                              context),
                                           fontWeight: FontWeight.w500),
                                       overflow: TextOverflow.ellipsis),
                                 ),
                                 const SizedBox(width: 4),
                                 GestureDetector(
                                   onTap: () => onClearFile(i),
-                                  child: Icon(Icons.close, size: 12,
+                                  child: Icon(Icons.close,
+                                      size: 12,
                                       color: AppColors.getBodyColor(context)),
                                 ),
                               ],
@@ -1235,7 +1485,8 @@ class _InputBar extends StatelessWidget {
                       padding: const EdgeInsets.only(left: 8),
                       child: Text('Clear all',
                           style: GoogleFonts.outfit(
-                              fontSize: 11, color: AppColors.getBodyColor(context))),
+                              fontSize: 11,
+                              color: AppColors.getBodyColor(context))),
                     ),
                   ),
                 ],
@@ -1277,16 +1528,24 @@ class _InputBar extends StatelessWidget {
                       hintStyle: GoogleFonts.outfit(
                           color: AppColors.getBodyColor(context), fontSize: 14),
                       border: InputBorder.none,
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+                      contentPadding:
+                          const EdgeInsets.symmetric(horizontal: 12),
                     ),
                     style: GoogleFonts.outfit(
-                        color: AppColors.getHeadingColor(context), fontSize: 14),
+                        color: AppColors.getHeadingColor(context),
+                        fontSize: 14),
                   ),
                 ),
                 isSending
-                    ? const SizedBox(width: 36, height: 36,
-                        child: Center(child: SizedBox(width: 18, height: 18,
-                            child: CircularProgressIndicator(strokeWidth: 2))))
+                    ? const SizedBox(
+                        width: 36,
+                        height: 36,
+                        child: Center(
+                            child: SizedBox(
+                                width: 18,
+                                height: 18,
+                                child:
+                                    CircularProgressIndicator(strokeWidth: 2))))
                     : GestureDetector(
                         onTap: onSend,
                         child: Container(
@@ -1294,7 +1553,8 @@ class _InputBar extends StatelessWidget {
                           decoration: BoxDecoration(
                               gradient: AppColors.accentGradient,
                               borderRadius: BorderRadius.circular(12)),
-                          child: const Icon(FeatherIcons.send, color: Colors.white, size: 18),
+                          child: const Icon(FeatherIcons.send,
+                              color: Colors.white, size: 18),
                         ),
                       ),
               ],
@@ -1341,7 +1601,8 @@ class _SaveFileBtn extends ConsumerWidget {
             notifier.remove('${msg.id}_${fileType.name}');
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text('Removed from ${fileType == SavedFileType.note ? 'Notes' : 'Question Papers'}'),
+                content: Text(
+                    'Removed from ${fileType == SavedFileType.note ? 'Notes' : 'Question Papers'}'),
                 backgroundColor: Colors.red.shade700,
                 duration: const Duration(seconds: 2),
               ),
@@ -1360,7 +1621,8 @@ class _SaveFileBtn extends ConsumerWidget {
             );
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text('Saved to ${fileType == SavedFileType.note ? 'Notes' : 'Question Papers'} — ${channel.subjectName}'),
+                content: Text(
+                    'Saved to ${fileType == SavedFileType.note ? 'Notes' : 'Question Papers'} — ${channel.subjectName}'),
                 backgroundColor: activeColor,
                 duration: const Duration(seconds: 2),
               ),

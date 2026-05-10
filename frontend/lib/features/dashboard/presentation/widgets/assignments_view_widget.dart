@@ -19,8 +19,10 @@ class AssignmentsViewWidget extends ConsumerWidget {
 
     // Apply filters
     final filteredTasks = tasks.where((task) {
-      final matchesSubject = selectedSubject == null || task.subject == selectedSubject;
-      final matchesPriority = selectedPriority == null || task.priority == selectedPriority;
+      final matchesSubject =
+          selectedSubject == null || task.subject == selectedSubject;
+      final matchesPriority =
+          selectedPriority == null || task.priority == selectedPriority;
       return matchesSubject && matchesPriority;
     }).toList();
 
@@ -94,8 +96,7 @@ class AssignmentsViewWidget extends ConsumerWidget {
 
         Expanded(
           child: Padding(
-            padding:
-                EdgeInsets.symmetric(horizontal: isMobile ? 12 : 24),
+            padding: EdgeInsets.symmetric(horizontal: isMobile ? 12 : 24),
             child: AnimatedSwitcher(
               duration: const Duration(milliseconds: 300),
               child: viewType == AssignmentViewType.kanban
@@ -108,7 +109,8 @@ class AssignmentsViewWidget extends ConsumerWidget {
     );
   }
 
-  Widget _buildViewToggler(BuildContext context, WidgetRef ref, AssignmentViewType currentView) {
+  Widget _buildViewToggler(
+      BuildContext context, WidgetRef ref, AssignmentViewType currentView) {
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
@@ -139,24 +141,34 @@ class AssignmentsViewWidget extends ConsumerWidget {
     );
   }
 
-  Widget _buildToggleItem(BuildContext context, WidgetRef ref, AssignmentViewType type, String label, IconData icon, bool isSelected) {
+  Widget _buildToggleItem(BuildContext context, WidgetRef ref,
+      AssignmentViewType type, String label, IconData icon, bool isSelected) {
     return InkWell(
-      onTap: () => ref.read(assignmentViewTypeProvider.notifier).setViewType(type),
+      onTap: () =>
+          ref.read(assignmentViewTypeProvider.notifier).setViewType(type),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.accent.withValues(alpha: 0.1) : Colors.transparent,
+          color: isSelected
+              ? AppColors.accent.withValues(alpha: 0.1)
+              : Colors.transparent,
           borderRadius: BorderRadius.circular(8),
         ),
         child: Row(
           children: [
-            Icon(icon, size: 18, color: isSelected ? AppColors.accent : AppColors.getBodyColor(context)),
+            Icon(icon,
+                size: 18,
+                color: isSelected
+                    ? AppColors.accent
+                    : AppColors.getBodyColor(context)),
             const SizedBox(width: 8),
             Text(
               label,
               style: TextStyle(
-                color: isSelected ? AppColors.accent : AppColors.getBodyColor(context),
+                color: isSelected
+                    ? AppColors.accent
+                    : AppColors.getBodyColor(context),
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
               ),
             ),
@@ -187,8 +199,8 @@ class AssignmentsViewWidget extends ConsumerWidget {
       value: priority,
       items: [
         const DropdownMenuItem(value: null, child: Text('All Priorities')),
-        ...TaskPriority.values.map(
-            (p) => DropdownMenuItem(value: p, child: Text(p.name.toUpperCase()))),
+        ...TaskPriority.values.map((p) =>
+            DropdownMenuItem(value: p, child: Text(p.name.toUpperCase()))),
       ],
       onChanged: (val) =>
           ref.read(selectedPriorityFilterProvider.notifier).set(val),
@@ -249,8 +261,10 @@ class AssignmentsViewWidget extends ConsumerWidget {
           items: items,
           onChanged: (val) => onChanged(val as T),
           dropdownColor: AppColors.getSurfaceColor(context),
-          style: TextStyle(color: AppColors.getHeadingColor(context), fontSize: 13),
-          icon: Icon(Icons.keyboard_arrow_down, size: 16, color: AppColors.getBodyColor(context)),
+          style: TextStyle(
+              color: AppColors.getHeadingColor(context), fontSize: 13),
+          icon: Icon(Icons.keyboard_arrow_down,
+              size: 16, color: AppColors.getBodyColor(context)),
           borderRadius: BorderRadius.circular(12),
         ),
       ),
@@ -371,14 +385,16 @@ class AssignmentsViewWidget extends ConsumerWidget {
                                 children: [
                                   Text(task.subject,
                                       style: TextStyle(
-                                          color: AppColors.getBodyColor(context),
+                                          color:
+                                              AppColors.getBodyColor(context),
                                           fontSize: 13)),
                                   const SizedBox(width: 8),
                                   Container(
                                       width: 4,
                                       height: 4,
                                       decoration: BoxDecoration(
-                                          color: AppColors.getBodyColor(context),
+                                          color:
+                                              AppColors.getBodyColor(context),
                                           shape: BoxShape.circle)),
                                   const SizedBox(width: 8),
                                   Icon(Icons.calendar_today,
@@ -386,9 +402,11 @@ class AssignmentsViewWidget extends ConsumerWidget {
                                       color: AppColors.getBodyColor(context)),
                                   const SizedBox(width: 4),
                                   Text(
-                                      DateFormat('MMM d, y').format(task.dueDate),
+                                      DateFormat('MMM d, y')
+                                          .format(task.dueDate),
                                       style: TextStyle(
-                                          color: AppColors.getBodyColor(context),
+                                          color:
+                                              AppColors.getBodyColor(context),
                                           fontSize: 12)),
                                 ],
                               ),
@@ -427,7 +445,8 @@ class AssignmentsViewWidget extends ConsumerWidget {
     }
     return Container(
       padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(color: color.withValues(alpha: 0.1), shape: BoxShape.circle),
+      decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.1), shape: BoxShape.circle),
       child: Icon(icon, color: color, size: 20),
     );
   }
@@ -435,16 +454,25 @@ class AssignmentsViewWidget extends ConsumerWidget {
   Widget _buildPriorityTag(TaskPriority priority) {
     Color color;
     switch (priority) {
-      case TaskPriority.high: color = AppColors.priorityHigh; break;
-      case TaskPriority.medium: color = AppColors.priorityMedium; break;
-      case TaskPriority.low: color = AppColors.priorityLow; break;
+      case TaskPriority.high:
+        color = AppColors.priorityHigh;
+        break;
+      case TaskPriority.medium:
+        color = AppColors.priorityMedium;
+        break;
+      case TaskPriority.low:
+        color = AppColors.priorityLow;
+        break;
     }
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(6)),
+      decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(6)),
       child: Text(
         priority.name.toUpperCase(),
-        style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.bold),
+        style:
+            TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.bold),
       ),
     );
   }

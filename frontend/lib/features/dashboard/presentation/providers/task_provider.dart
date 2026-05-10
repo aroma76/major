@@ -7,7 +7,8 @@ final taskProvider = NotifierProvider<TaskNotifier, List<TaskModel>>(() {
   return TaskNotifier();
 });
 
-final searchQueryProvider = NotifierProvider<SearchQueryNotifier, String>(() => SearchQueryNotifier());
+final searchQueryProvider =
+    NotifierProvider<SearchQueryNotifier, String>(() => SearchQueryNotifier());
 
 class SearchQueryNotifier extends Notifier<String> {
   @override
@@ -28,7 +29,8 @@ final filteredTasksProvider = Provider<List<TaskModel>>((ref) {
   }).toList();
 });
 
-final navigationProvider = NotifierProvider<NavigationNotifier, int>(() => NavigationNotifier());
+final navigationProvider =
+    NotifierProvider<NavigationNotifier, int>(() => NavigationNotifier());
 
 class NavigationNotifier extends Notifier<int> {
   @override
@@ -38,14 +40,22 @@ class NavigationNotifier extends Notifier<int> {
 
 enum AssignmentViewType { list, kanban }
 
-final assignmentViewTypeProvider = NotifierProvider<AssignmentViewTypeNotifier, AssignmentViewType>(() => AssignmentViewTypeNotifier());
-final selectedSubjectFilterProvider = NotifierProvider<SubjectFilterNotifier, String?>(() => SubjectFilterNotifier());
-final selectedPriorityFilterProvider = NotifierProvider<PriorityFilterNotifier, TaskPriority?>(() => PriorityFilterNotifier());
+final assignmentViewTypeProvider =
+    NotifierProvider<AssignmentViewTypeNotifier, AssignmentViewType>(
+        () => AssignmentViewTypeNotifier());
+final selectedSubjectFilterProvider =
+    NotifierProvider<SubjectFilterNotifier, String?>(
+        () => SubjectFilterNotifier());
+final selectedPriorityFilterProvider =
+    NotifierProvider<PriorityFilterNotifier, TaskPriority?>(
+        () => PriorityFilterNotifier());
 
 class AssignmentViewTypeNotifier extends Notifier<AssignmentViewType> {
   @override
   AssignmentViewType build() => AssignmentViewType.list;
-  void toggle() => state = state == AssignmentViewType.list ? AssignmentViewType.kanban : AssignmentViewType.list;
+  void toggle() => state = state == AssignmentViewType.list
+      ? AssignmentViewType.kanban
+      : AssignmentViewType.list;
   void setViewType(AssignmentViewType type) => state = type;
 }
 
@@ -86,8 +96,8 @@ class TaskNotifier extends Notifier<List<TaskModel>> {
   }
 }
 
-
-final projectProvider = NotifierProvider<ProjectNotifier, List<ProjectModel>>(() {
+final projectProvider =
+    NotifierProvider<ProjectNotifier, List<ProjectModel>>(() {
   return ProjectNotifier();
 });
 
@@ -192,4 +202,3 @@ class DashboardNotesNotifier extends Notifier<List<DashboardNote>> {
 
   void remove(String id) => state = state.where((n) => n.id != id).toList();
 }
-

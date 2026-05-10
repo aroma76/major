@@ -57,8 +57,9 @@ class _SubjectFilesViewState extends ConsumerState<SubjectFilesView>
 
   @override
   Widget build(BuildContext context) {
-    final grouped =
-        ref.watch(savedFilesProvider.notifier).groupedBySubject(widget.fileType);
+    final grouped = ref
+        .watch(savedFilesProvider.notifier)
+        .groupedBySubject(widget.fileType);
     // Re-build when provider state changes
     ref.watch(savedFilesProvider);
 
@@ -239,8 +240,7 @@ class _SubjectGroupState extends State<_SubjectGroup> {
             onTap: () => setState(() => _expanded = !_expanded),
             borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
             child: Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
               child: Row(
                 children: [
                   Container(
@@ -263,8 +263,8 @@ class _SubjectGroupState extends State<_SubjectGroup> {
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 8, vertical: 2),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                     decoration: BoxDecoration(
                       color: widget.accentColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
@@ -301,8 +301,7 @@ class _SubjectGroupState extends State<_SubjectGroup> {
                 : CrossFadeState.showSecond,
             firstChild: Column(
               children: [
-                Divider(
-                    height: 1, color: AppColors.getBorderColor(context)),
+                Divider(height: 1, color: AppColors.getBorderColor(context)),
                 ...widget.files.map((file) => _FileCard(
                       file: file,
                       accentColor: widget.accentColor,
@@ -348,7 +347,8 @@ class _FileCardState extends State<_FileCard> {
     // Insert fl_attachment as a Cloudinary path transformation (not query param)
     String downloadUrl = url.split('?').first;
     if (downloadUrl.contains('cloudinary.com')) {
-      downloadUrl = downloadUrl.replaceFirst('/upload/', '/upload/fl_attachment/');
+      downloadUrl =
+          downloadUrl.replaceFirst('/upload/', '/upload/fl_attachment/');
     }
     final uri = Uri.parse(downloadUrl);
     if (await canLaunchUrl(uri)) launchUrl(uri, webOnlyWindowName: '_blank');
@@ -368,8 +368,7 @@ class _FileCardState extends State<_FileCard> {
             ? widget.accentColor.withValues(alpha: 0.04)
             : Colors.transparent,
         child: Padding(
-          padding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: isMobile
               ? _MobileLayout(
                   file: file,
@@ -432,7 +431,8 @@ class _DesktopLayout extends StatelessWidget {
             color: accentColor.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(10),
           ),
-          child: Icon(_iconForFile(file.fileName), color: accentColor, size: 20),
+          child:
+              Icon(_iconForFile(file.fileName), color: accentColor, size: 20),
         ),
         const SizedBox(width: 14),
 
@@ -454,25 +454,21 @@ class _DesktopLayout extends StatelessWidget {
               Row(
                 children: [
                   Icon(FeatherIcons.user,
-                      size: 10,
-                      color: AppColors.getBodyColor(context)),
+                      size: 10, color: AppColors.getBodyColor(context)),
                   const SizedBox(width: 4),
                   Text(
                     file.sharedBy,
                     style: GoogleFonts.outfit(
-                        fontSize: 11,
-                        color: AppColors.getBodyColor(context)),
+                        fontSize: 11, color: AppColors.getBodyColor(context)),
                   ),
                   const SizedBox(width: 10),
                   Icon(FeatherIcons.clock,
-                      size: 10,
-                      color: AppColors.getBodyColor(context)),
+                      size: 10, color: AppColors.getBodyColor(context)),
                   const SizedBox(width: 4),
                   Text(
                     DateFormat('MMM d, y').format(file.savedAt),
                     style: GoogleFonts.outfit(
-                        fontSize: 11,
-                        color: AppColors.getBodyColor(context)),
+                        fontSize: 11, color: AppColors.getBodyColor(context)),
                   ),
                 ],
               ),
@@ -566,8 +562,7 @@ class _MobileLayout extends StatelessWidget {
               Text(
                 '${file.sharedBy} · ${DateFormat('MMM d').format(file.savedAt)}',
                 style: GoogleFonts.outfit(
-                    fontSize: 10,
-                    color: AppColors.getBodyColor(context)),
+                    fontSize: 10, color: AppColors.getBodyColor(context)),
               ),
             ],
           ),
@@ -674,19 +669,16 @@ class _EmptyState extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Container(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             decoration: BoxDecoration(
               color: accentColor.withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                  color: accentColor.withValues(alpha: 0.2)),
+              border: Border.all(color: accentColor.withValues(alpha: 0.2)),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(FeatherIcons.messageSquare,
-                    size: 14, color: accentColor),
+                Icon(FeatherIcons.messageSquare, size: 14, color: accentColor),
                 const SizedBox(width: 8),
                 Text(
                   'Go to Messages → tap 💾 on any file',

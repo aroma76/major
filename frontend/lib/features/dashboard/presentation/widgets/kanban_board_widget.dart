@@ -20,10 +20,11 @@ class KanbanBoardWidget extends ConsumerWidget {
         int crossAxisCount = (constraints.maxWidth / (minWidth + 20)).floor();
         if (crossAxisCount < 1) crossAxisCount = 1;
         if (crossAxisCount > 3) crossAxisCount = 3;
-        
-        final double itemWidth = crossAxisCount == 1 
-            ? constraints.maxWidth 
-            : (constraints.maxWidth - (20 * (crossAxisCount - 1))) / crossAxisCount;
+
+        final double itemWidth = crossAxisCount == 1
+            ? constraints.maxWidth
+            : (constraints.maxWidth - (20 * (crossAxisCount - 1))) /
+                crossAxisCount;
 
         return Wrap(
           spacing: 20,
@@ -99,11 +100,13 @@ class KanbanBoardWidget extends ConsumerWidget {
                 ),
                 const SizedBox(width: 12),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
                     color: AppColors.getSurfaceColor(context),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.getBorderColor(context), width: 1),
+                    border: Border.all(
+                        color: AppColors.getBorderColor(context), width: 1),
                   ),
                   child: Text(
                     '${columnTasks.length}',
@@ -117,7 +120,6 @@ class KanbanBoardWidget extends ConsumerWidget {
               ],
             ),
           ),
-          
           DragTarget<TaskModel>(
             onAcceptWithDetails: (details) {
               final task = details.data;
@@ -126,9 +128,9 @@ class KanbanBoardWidget extends ConsumerWidget {
             builder: (context, candidateData, rejectedData) {
               return Container(
                 decoration: BoxDecoration(
-                  color: candidateData.isNotEmpty 
-                    ? AppColors.accent.withValues(alpha: 0.05) 
-                    : Colors.transparent,
+                  color: candidateData.isNotEmpty
+                      ? AppColors.accent.withValues(alpha: 0.05)
+                      : Colors.transparent,
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: ListView.builder(
@@ -167,10 +169,10 @@ class KanbanBoardWidget extends ConsumerWidget {
         ),
         child: InkWell(
           onTap: () {
-             showDialog(
-               context: context,
-               builder: (context) => TaskDetailsDialog(task: task),
-             );
+            showDialog(
+              context: context,
+              builder: (context) => TaskDetailsDialog(task: task),
+            );
           },
           borderRadius: BorderRadius.circular(16),
           child: _buildCardContent(context, task),
@@ -179,12 +181,19 @@ class KanbanBoardWidget extends ConsumerWidget {
     );
   }
 
-  Widget _buildCardContent(BuildContext context, TaskModel task, {bool isDragging = false}) {
+  Widget _buildCardContent(BuildContext context, TaskModel task,
+      {bool isDragging = false}) {
     Color priorityColor;
     switch (task.priority) {
-      case TaskPriority.high: priorityColor = AppColors.priorityHigh; break;
-      case TaskPriority.medium: priorityColor = AppColors.priorityMedium; break;
-      case TaskPriority.low: priorityColor = AppColors.priorityLow; break;
+      case TaskPriority.high:
+        priorityColor = AppColors.priorityHigh;
+        break;
+      case TaskPriority.medium:
+        priorityColor = AppColors.priorityMedium;
+        break;
+      case TaskPriority.low:
+        priorityColor = AppColors.priorityLow;
+        break;
     }
 
     return Container(
@@ -193,16 +202,19 @@ class KanbanBoardWidget extends ConsumerWidget {
         color: AppColors.getSurfaceColor(context),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isDragging ? AppColors.accent : AppColors.getBorderColor(context),
+          color:
+              isDragging ? AppColors.accent : AppColors.getBorderColor(context),
           width: 1,
         ),
-        boxShadow: isDragging ? [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.2),
-            blurRadius: 20,
-            spreadRadius: 5,
-          ),
-        ] : null,
+        boxShadow: isDragging
+            ? [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.2),
+                  blurRadius: 20,
+                  spreadRadius: 5,
+                ),
+              ]
+            : null,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -211,7 +223,8 @@ class KanbanBoardWidget extends ConsumerWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
                   color: priorityColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
@@ -225,7 +238,8 @@ class KanbanBoardWidget extends ConsumerWidget {
                   ),
                 ),
               ),
-              Icon(Icons.more_horiz, color: AppColors.getBodyColor(context), size: 18),
+              Icon(Icons.more_horiz,
+                  color: AppColors.getBodyColor(context), size: 18),
             ],
           ),
           const SizedBox(height: 12),
@@ -253,7 +267,8 @@ class KanbanBoardWidget extends ConsumerWidget {
             children: [
               Row(
                 children: [
-                  Icon(Icons.calendar_month, size: 14, color: AppColors.getBodyColor(context)),
+                  Icon(Icons.calendar_month,
+                      size: 14, color: AppColors.getBodyColor(context)),
                   const SizedBox(width: 4),
                   Text(
                     DateFormat('MMM d').format(task.dueDate),
@@ -266,20 +281,27 @@ class KanbanBoardWidget extends ConsumerWidget {
               ),
               Row(
                 children: [
-                   const CircleAvatar(radius: 10, backgroundImage: NetworkImage('https://i.pravatar.cc/150?img=11')),
-                   const SizedBox(width: 4),
-                   Container(
+                  const CircleAvatar(
+                      radius: 10,
+                      backgroundImage:
+                          NetworkImage('https://i.pravatar.cc/150?img=11')),
+                  const SizedBox(width: 4),
+                  Container(
                     padding: const EdgeInsets.all(4),
                     decoration: BoxDecoration(
                       color: AppColors.getBorderColor(context),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Row(
-                       children: [
-                          Icon(Icons.link, size: 14, color: AppColors.getBodyColor(context)),
-                          const SizedBox(width: 4),
-                          Text('2', style: TextStyle(fontSize: 10, color: AppColors.getBodyColor(context))),
-                       ],
+                      children: [
+                        Icon(Icons.link,
+                            size: 14, color: AppColors.getBodyColor(context)),
+                        const SizedBox(width: 4),
+                        Text('2',
+                            style: TextStyle(
+                                fontSize: 10,
+                                color: AppColors.getBodyColor(context))),
+                      ],
                     ),
                   ),
                 ],

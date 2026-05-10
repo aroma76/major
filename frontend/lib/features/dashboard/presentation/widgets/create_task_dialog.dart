@@ -38,8 +38,7 @@ class _CreateTaskDialogState extends ConsumerState<CreateTaskDialog>
     super.initState();
     _animCtrl = AnimationController(
         vsync: this, duration: const Duration(milliseconds: 350));
-    _fadeAnim =
-        CurvedAnimation(parent: _animCtrl, curve: Curves.easeOut);
+    _fadeAnim = CurvedAnimation(parent: _animCtrl, curve: Curves.easeOut);
     _animCtrl.forward();
   }
 
@@ -99,7 +98,8 @@ class _CreateTaskDialogState extends ConsumerState<CreateTaskDialog>
 
     final subject = _useCustomSubject
         ? _customSubjectController.text.trim()
-        : (_selectedSubject ?? (channelNames.isNotEmpty ? channelNames.first : 'General'));
+        : (_selectedSubject ??
+            (channelNames.isNotEmpty ? channelNames.first : 'General'));
 
     final deadline = DateTime(
       _dueDate.year,
@@ -135,8 +135,7 @@ class _CreateTaskDialogState extends ConsumerState<CreateTaskDialog>
 
     final List<String> channelNames = channelsAsync.maybeWhen(
       data: (channels) => channels
-          .map((c) =>
-              c.subjectName.isNotEmpty ? c.subjectName : c.channelName)
+          .map((c) => c.subjectName.isNotEmpty ? c.subjectName : c.channelName)
           .toList(),
       orElse: () => [],
     );
@@ -144,8 +143,9 @@ class _CreateTaskDialogState extends ConsumerState<CreateTaskDialog>
     return FadeTransition(
       opacity: _fadeAnim,
       child: Dialog(
-        backgroundColor:
-            isDark ? AppColors.secondaryBackground : AppColors.lightSecondaryBackground,
+        backgroundColor: isDark
+            ? AppColors.secondaryBackground
+            : AppColors.lightSecondaryBackground,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 560, maxHeight: 700),
@@ -219,8 +219,9 @@ class _CreateTaskDialogState extends ConsumerState<CreateTaskDialog>
                         _StyledField(
                           controller: _titleController,
                           hintText: 'e.g. Complete Assignment 3',
-                          validator: (v) =>
-                              v == null || v.trim().isEmpty ? 'Title is required' : null,
+                          validator: (v) => v == null || v.trim().isEmpty
+                              ? 'Title is required'
+                              : null,
                         ),
                         const SizedBox(height: 20),
 
@@ -259,8 +260,7 @@ class _CreateTaskDialogState extends ConsumerState<CreateTaskDialog>
                                   child: Row(
                                     children: [
                                       Icon(FeatherIcons.plus,
-                                          size: 14,
-                                          color: AppColors.accent),
+                                          size: 14, color: AppColors.accent),
                                       const SizedBox(width: 6),
                                       Text('Create my own subject',
                                           style: TextStyle(
@@ -311,8 +311,7 @@ class _CreateTaskDialogState extends ConsumerState<CreateTaskDialog>
 
                         // Description
                         _SectionLabel(
-                            label: 'Description',
-                            icon: FeatherIcons.alignLeft),
+                            label: 'Description', icon: FeatherIcons.alignLeft),
                         const SizedBox(height: 8),
                         _StyledField(
                           controller: _descriptionController,
@@ -406,9 +405,7 @@ class _CreateTaskDialogState extends ConsumerState<CreateTaskDialog>
                         const SizedBox(height: 20),
 
                         // Notes
-                        _SectionLabel(
-                            label: 'Notes',
-                            icon: FeatherIcons.edit3),
+                        _SectionLabel(label: 'Notes', icon: FeatherIcons.edit3),
                         const SizedBox(height: 4),
                         Text(
                           'Add any personal notes or reminders for this task',
@@ -527,8 +524,7 @@ class _CreateTaskDialogState extends ConsumerState<CreateTaskDialog>
       fillColor: isDark
           ? Colors.white.withValues(alpha: 0.04)
           : Colors.black.withValues(alpha: 0.03),
-      contentPadding:
-          const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
         borderSide: BorderSide(color: AppColors.getBorderColor(context)),
@@ -539,8 +535,7 @@ class _CreateTaskDialogState extends ConsumerState<CreateTaskDialog>
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide:
-            BorderSide(color: AppColors.accent, width: 1.5),
+        borderSide: BorderSide(color: AppColors.accent, width: 1.5),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
@@ -652,8 +647,7 @@ class _DeadlineButton extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
       child: Container(
-        padding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
           color: isDark
               ? Colors.white.withValues(alpha: 0.04)

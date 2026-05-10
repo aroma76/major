@@ -13,7 +13,8 @@ class ApiService {
   void init() {
     dio = Dio(BaseOptions(
       baseUrl: AppConfig.apiUrl,
-      connectTimeout: const Duration(seconds: 30), // covers Render cold start (~20-30s)
+      connectTimeout:
+          const Duration(seconds: 30), // covers Render cold start (~20-30s)
       receiveTimeout: const Duration(seconds: 30),
       headers: {'Content-Type': 'application/json'},
     ));
@@ -35,8 +36,8 @@ class ApiService {
   }
 
   // ── Auth ──────────────────────────────────────────────────────────────────
-  Future<Response> login(String rollNumber, String dob) =>
-      dio.post('/auth/login', data: {'identifier': rollNumber, 'password': dob});
+  Future<Response> login(String rollNumber, String dob) => dio
+      .post('/auth/login', data: {'identifier': rollNumber, 'password': dob});
 
   Future<Response> signup(Map<String, dynamic> data) =>
       dio.post('/auth/register', data: data);
@@ -57,17 +58,16 @@ class ApiService {
 
   Future<Response> sendMessage(int channelId, FormData formData) =>
       dio.post('/channels/$channelId/messages',
-          data: formData,
-          options: Options(contentType: 'multipart/form-data'));
+          data: formData, options: Options(contentType: 'multipart/form-data'));
 
   // ── Assignments ───────────────────────────────────────────────────────────
   Future<Response> getAssignments(int channelId) =>
       dio.get('/channels/$channelId/assignments');
 
-  Future<Response> submitAssignment(int channelId, int assignmentId, FormData formData) =>
+  Future<Response> submitAssignment(
+          int channelId, int assignmentId, FormData formData) =>
       dio.post('/channels/$channelId/assignments/$assignmentId/submit',
-          data: formData,
-          options: Options(contentType: 'multipart/form-data'));
+          data: formData, options: Options(contentType: 'multipart/form-data'));
 
   // ── Announcements ─────────────────────────────────────────────────────────
   Future<Response> getAnnouncements(int channelId) =>
@@ -87,13 +87,14 @@ class ApiService {
   Future<Response> getAcademicEvents({int? month, int? year, String? type}) {
     final params = <String, dynamic>{};
     if (month != null) params['month'] = month;
-    if (year  != null) params['year']  = year;
-    if (type  != null && type != 'all') params['type'] = type;
+    if (year != null) params['year'] = year;
+    if (type != null && type != 'all') params['type'] = type;
     return dio.get('/academic-events', queryParameters: params);
   }
 
   // ── Assignment Kanban Status ───────────────────────────────────────────────
-  Future<Response> updateAssignmentStatus(int channelId, int assignmentId, String status) =>
+  Future<Response> updateAssignmentStatus(
+          int channelId, int assignmentId, String status) =>
       dio.patch('/channels/$channelId/assignments/$assignmentId/status',
           data: {'status': status});
 
@@ -110,18 +111,22 @@ class ApiService {
 
   Future<Response> deleteProject(int id) => dio.delete('/projects/$id');
 
-  Future<Response> createProjectTask(int projectId, Map<String, dynamic> data) =>
+  Future<Response> createProjectTask(
+          int projectId, Map<String, dynamic> data) =>
       dio.post('/projects/$projectId/tasks', data: data);
 
-  Future<Response> updateProjectTaskStatus(int projectId, int taskId, String status) =>
+  Future<Response> updateProjectTaskStatus(
+          int projectId, int taskId, String status) =>
       dio.patch('/projects/$projectId/tasks/$taskId/status',
           data: {'status': status});
 
   // ── Teacher-specific (stats + recent activity) ────────────────────────────
   Future<Response> getTeacherStats() => dio.get('/teacher/stats');
 
-  Future<Response> getTeacherRecentActivity() => dio.get('/teacher/recent-activity');
+  Future<Response> getTeacherRecentActivity() =>
+      dio.get('/teacher/recent-activity');
 
   // ── Student-specific (recent activity) ────────────────────────────────
-  Future<Response> getStudentRecentActivity() => dio.get('/teacher/student-activity');
+  Future<Response> getStudentRecentActivity() =>
+      dio.get('/teacher/student-activity');
 }

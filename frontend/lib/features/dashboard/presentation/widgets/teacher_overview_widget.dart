@@ -27,9 +27,6 @@ class _TeacherStat {
   });
 }
 
-
-
-
 // ── Quick action model ────────────────────────────────────────────────────────
 class _TeacherAction {
   final IconData icon;
@@ -122,10 +119,28 @@ class _TeacherOverviewWidgetState extends ConsumerState<TeacherOverviewWidget>
 
   String _formatDate() {
     const months = [
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December',
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
     ];
-    const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    const days = [
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday',
+      'Sunday'
+    ];
     final now = DateTime.now();
     return '${days[now.weekday - 1]}, ${months[now.month - 1]} ${now.day}, ${now.year}';
   }
@@ -147,113 +162,123 @@ class _TeacherOverviewWidgetState extends ConsumerState<TeacherOverviewWidget>
               SizedBox(height: isMobile ? 20 : 28),
 
               // ── Stat Cards (real API) ─────────────────────────────────────
-              _SectionHeader(title: 'At a Glance', icon: FeatherIcons.barChart2),
+              _SectionHeader(
+                  title: 'At a Glance', icon: FeatherIcons.barChart2),
               const SizedBox(height: 14),
               ref.watch(teacherStatsProvider).when(
-                loading: () => const SizedBox(
-                  height: 120,
-                  child: Center(child: CircularProgressIndicator(color: AppColors.accent)),
-                ),
-                error: (_, __) => const SizedBox.shrink(),
-                data: (stats) {
-                  final students = stats['totalStudents'] as int? ?? 0;
-                  final pending  = stats['pendingReviews'] as int? ?? 0;
-                  final projects = stats['activeProjects'] as int? ?? 0;
-                  final subjects = stats['totalSubjects']  as int? ?? 0;
-                  final liveStats = [
-                    _TeacherStat(
-                      label: 'Total Students',
-                      value: '$students',
-                      icon: FeatherIcons.users,
-                      color: const Color(0xFF58A6FF),
-                      subtitle: 'Across $subjects subjects',
+                    loading: () => const SizedBox(
+                      height: 120,
+                      child: Center(
+                          child: CircularProgressIndicator(
+                              color: AppColors.accent)),
                     ),
-                    _TeacherStat(
-                      label: 'Pending Reviews',
-                      value: '$pending',
-                      icon: FeatherIcons.fileText,
-                      color: const Color(0xFFD29922),
-                      subtitle: 'Submissions to grade',
-                    ),
-                    _TeacherStat(
-                      label: 'Active Projects',
-                      value: '$projects',
-                      icon: FeatherIcons.folder,
-                      color: const Color(0xFFA475F9),
-                      subtitle: 'Your projects',
-                    ),
-                    _TeacherStat(
-                      label: 'My Subjects',
-                      value: '$subjects',
-                      icon: FeatherIcons.bookOpen,
-                      color: const Color(0xFF3FB950),
-                      subtitle: 'Channels assigned',
-                    ),
-                  ];
-                  return _StatGrid(stats: liveStats);
-                },
-              ),
+                    error: (_, __) => const SizedBox.shrink(),
+                    data: (stats) {
+                      final students = stats['totalStudents'] as int? ?? 0;
+                      final pending = stats['pendingReviews'] as int? ?? 0;
+                      final projects = stats['activeProjects'] as int? ?? 0;
+                      final subjects = stats['totalSubjects'] as int? ?? 0;
+                      final liveStats = [
+                        _TeacherStat(
+                          label: 'Total Students',
+                          value: '$students',
+                          icon: FeatherIcons.users,
+                          color: const Color(0xFF58A6FF),
+                          subtitle: 'Across $subjects subjects',
+                        ),
+                        _TeacherStat(
+                          label: 'Pending Reviews',
+                          value: '$pending',
+                          icon: FeatherIcons.fileText,
+                          color: const Color(0xFFD29922),
+                          subtitle: 'Submissions to grade',
+                        ),
+                        _TeacherStat(
+                          label: 'Active Projects',
+                          value: '$projects',
+                          icon: FeatherIcons.folder,
+                          color: const Color(0xFFA475F9),
+                          subtitle: 'Your projects',
+                        ),
+                        _TeacherStat(
+                          label: 'My Subjects',
+                          value: '$subjects',
+                          icon: FeatherIcons.bookOpen,
+                          color: const Color(0xFF3FB950),
+                          subtitle: 'Channels assigned',
+                        ),
+                      ];
+                      return _StatGrid(stats: liveStats);
+                    },
+                  ),
               SizedBox(height: isMobile ? 20 : 28),
 
               // ── Quick Actions ────────────────────────────────────────────
               _SectionHeader(title: 'Quick Actions', icon: FeatherIcons.zap),
               const SizedBox(height: 14),
-              _QuickActionsGrid(actions: _actions, ref: ref, isMobile: isMobile),
+              _QuickActionsGrid(
+                  actions: _actions, ref: ref, isMobile: isMobile),
               SizedBox(height: isMobile ? 20 : 28),
 
               // ── Managed Subjects (real API data) ─────────────────────────
               ref.watch(channelsProvider).when(
-                loading: () => const Center(child: Padding(
-                  padding: EdgeInsets.all(32),
-                  child: CircularProgressIndicator(color: AppColors.accent),
-                )),
-                error: (e, _) => const SizedBox.shrink(),
-                data: (channels) => channels.isEmpty
-                    ? const SizedBox.shrink()
-                    : Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
+                    loading: () => const Center(
+                        child: Padding(
+                      padding: EdgeInsets.all(32),
+                      child: CircularProgressIndicator(color: AppColors.accent),
+                    )),
+                    error: (e, _) => const SizedBox.shrink(),
+                    data: (channels) => channels.isEmpty
+                        ? const SizedBox.shrink()
+                        : Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Expanded(
-                                child: _SectionHeader(
-                                  title: 'Your Subjects',
-                                  icon: FeatherIcons.bookOpen,
-                                ),
+                              Row(
+                                children: [
+                                  const Expanded(
+                                    child: _SectionHeader(
+                                      title: 'Your Subjects',
+                                      icon: FeatherIcons.bookOpen,
+                                    ),
+                                  ),
+                                  _OutlineButton(
+                                    label: 'View All',
+                                    icon: FeatherIcons.chevronRight,
+                                    onTap: () => ref
+                                        .read(navigationProvider.notifier)
+                                        .navigateTo(1),
+                                  ),
+                                ],
                               ),
-                              _OutlineButton(
-                                label: 'View All',
-                                icon: FeatherIcons.chevronRight,
-                                onTap: () => ref.read(navigationProvider.notifier).navigateTo(1),
-                              ),
+                              const SizedBox(height: 14),
+                              ...channels.asMap().entries.map((entry) {
+                                final ch = entry.value;
+                                final colors = [
+                                  const Color(0xFF58A6FF),
+                                  const Color(0xFFD29922),
+                                  const Color(0xFF3FB950),
+                                  const Color(0xFFA475F9),
+                                  const Color(0xFFFF6B6B),
+                                ];
+                                final color = colors[entry.key % colors.length];
+                                return _SubjectManagementCard(
+                                  name: ch.subjectName.isNotEmpty
+                                      ? ch.subjectName
+                                      : ch.channelName,
+                                  studentCount: 0,
+                                  pendingSubmissions: 0,
+                                  avgProgress: 0.5,
+                                  color: color,
+                                );
+                              }),
                             ],
                           ),
-                          const SizedBox(height: 14),
-                          ...channels.asMap().entries.map((entry) {
-                            final ch = entry.value;
-                            final colors = [
-                              const Color(0xFF58A6FF),
-                              const Color(0xFFD29922),
-                              const Color(0xFF3FB950),
-                              const Color(0xFFA475F9),
-                              const Color(0xFFFF6B6B),
-                            ];
-                            final color = colors[entry.key % colors.length];
-                            return _SubjectManagementCard(
-                              name: ch.subjectName.isNotEmpty ? ch.subjectName : ch.channelName,
-                              studentCount: 0,
-                              pendingSubmissions: 0,
-                              avgProgress: 0.5,
-                              color: color,
-                            );
-                          }),
-                        ],
-                      ),
-              ),
+                  ),
               SizedBox(height: isMobile ? 20 : 28),
 
               // ── Recent Announcements ─────────────────────────────────────
-              _SectionHeader(title: 'Recent Announcements', icon: FeatherIcons.bell),
+              _SectionHeader(
+                  title: 'Recent Announcements', icon: FeatherIcons.bell),
               const SizedBox(height: 14),
               const AnnouncementsPanel(),
               const SizedBox(height: 16),
@@ -280,10 +305,10 @@ class _TeacherHeroBanner extends ConsumerWidget {
     final authState = ref.watch(authProvider).value;
     final firstName = (authState?.userName ?? 'Faculty').split(' ').first;
     final statsAsync = ref.watch(teacherStatsProvider);
-    final statsData   = statsAsync.asData?.value;
+    final statsData = statsAsync.asData?.value;
     final students = statsData?['totalStudents'] as int? ?? 0;
-    final subjects = statsData?['totalSubjects']  as int? ?? 0;
-    final pending  = statsData?['pendingReviews'] as int? ?? 0;
+    final subjects = statsData?['totalSubjects'] as int? ?? 0;
+    final pending = statsData?['pendingReviews'] as int? ?? 0;
     final isMobile = MediaQuery.of(context).size.width < 600;
 
     return Container(
@@ -343,7 +368,8 @@ class _TeacherHeroBanner extends ConsumerWidget {
                       color: Colors.white.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: const Icon(FeatherIcons.award, color: Colors.white, size: 20),
+                    child: const Icon(FeatherIcons.award,
+                        color: Colors.white, size: 20),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -375,8 +401,10 @@ class _TeacherHeroBanner extends ConsumerWidget {
                 spacing: 10,
                 runSpacing: 8,
                 children: [
-                  _BannerChip(icon: FeatherIcons.users, label: '$students Students'),
-                  _BannerChip(icon: FeatherIcons.bookOpen, label: '$subjects Subjects'),
+                  _BannerChip(
+                      icon: FeatherIcons.users, label: '$students Students'),
+                  _BannerChip(
+                      icon: FeatherIcons.bookOpen, label: '$subjects Subjects'),
                   if (pending > 0)
                     _BannerChip(
                       icon: FeatherIcons.alertCircle,
@@ -398,7 +426,8 @@ class _BannerChip extends StatelessWidget {
   final String label;
   final bool isUrgent;
 
-  const _BannerChip({required this.icon, required this.label, this.isUrgent = false});
+  const _BannerChip(
+      {required this.icon, required this.label, this.isUrgent = false});
 
   @override
   Widget build(BuildContext context) {
@@ -409,7 +438,9 @@ class _BannerChip extends StatelessWidget {
             ? Colors.red.withValues(alpha: 0.25)
             : Colors.white.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(50),
-        border: isUrgent ? Border.all(color: Colors.red.withValues(alpha: 0.5)) : null,
+        border: isUrgent
+            ? Border.all(color: Colors.red.withValues(alpha: 0.5))
+            : null,
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -555,7 +586,8 @@ class _QuickActionsGrid extends StatelessWidget {
   final WidgetRef ref;
   final bool isMobile;
 
-  const _QuickActionsGrid({required this.actions, required this.ref, this.isMobile = false});
+  const _QuickActionsGrid(
+      {required this.actions, required this.ref, this.isMobile = false});
 
   @override
   Widget build(BuildContext ctx) {
@@ -573,7 +605,8 @@ class _QuickActionsGrid extends StatelessWidget {
                   ),
                 ),
                 Expanded(
-                  child: _QuickActionCard(action: actions[row * 2 + 1], ref: ref),
+                  child:
+                      _QuickActionCard(action: actions[row * 2 + 1], ref: ref),
                 ),
               ],
             ),
@@ -783,7 +816,8 @@ class _SubjectManagementCardState extends State<_SubjectManagementCard>
                     const SizedBox(height: 4),
                     Row(
                       children: [
-                        Icon(FeatherIcons.users, size: 12, color: AppColors.getBodyColor(context)),
+                        Icon(FeatherIcons.users,
+                            size: 12, color: AppColors.getBodyColor(context)),
                         const SizedBox(width: 4),
                         Text(
                           '${widget.studentCount} students enrolled',
@@ -826,8 +860,8 @@ class _SubjectManagementCardState extends State<_SubjectManagementCard>
                     borderRadius: BorderRadius.circular(4),
                     child: LinearProgressIndicator(
                       value: _barAnim.value,
-                      backgroundColor:
-                          AppColors.getBorderColor(context).withValues(alpha: 0.3),
+                      backgroundColor: AppColors.getBorderColor(context)
+                          .withValues(alpha: 0.3),
                       valueColor: AlwaysStoppedAnimation<Color>(widget.color),
                       minHeight: 6,
                     ),

@@ -15,7 +15,8 @@ class NotesViewWidget extends StatelessWidget {
       headerIcon: FeatherIcons.bookOpen,
       accentColor: Color(0xFF58A6FF),
       emptyTitle: 'No notes saved yet',
-      emptyHint: 'Save files shared in chat as notes\nto find them here, grouped by subject.',
+      emptyHint:
+          'Save files shared in chat as notes\nto find them here, grouped by subject.',
       emptyIcon: FeatherIcons.bookOpen,
     );
   }

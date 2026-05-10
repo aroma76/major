@@ -19,7 +19,8 @@ class AssignmentRepository {
   /// Aggregates assignments across all [channelIds] in parallel.
   Future<List<AssignmentModel>> getAllAssignments(List<int> channelIds) async {
     final results = await Future.wait(
-      channelIds.map((id) => getAssignments(id).catchError((_) => <AssignmentModel>[])),
+      channelIds.map(
+          (id) => getAssignments(id).catchError((_) => <AssignmentModel>[])),
     );
     return results.expand((list) => list).toList();
   }

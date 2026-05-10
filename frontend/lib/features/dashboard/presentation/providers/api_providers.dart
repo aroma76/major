@@ -13,12 +13,12 @@ import '../../data/repositories/academic_event_repository.dart';
 
 // ── Repository singletons (accessible across providers) ───────────────────────
 
-final _channelRepo      = ChannelRepository();
-final _assignmentRepo   = AssignmentRepository();
+final _channelRepo = ChannelRepository();
+final _assignmentRepo = AssignmentRepository();
 final _announcementRepo = AnnouncementRepository();
 final _notificationRepo = NotificationRepository();
-final _projectRepo      = ProjectRepository();
-final _eventRepo        = AcademicEventRepository();
+final _projectRepo = ProjectRepository();
+final _eventRepo = AcademicEventRepository();
 
 // ── Channels (Subjects) ───────────────────────────────────────────────────────
 
@@ -90,15 +90,13 @@ final academicEventsProvider =
 
 // ── Teacher Stats (real API) ────────────────────────────────────────────────
 
-final teacherStatsProvider =
-    FutureProvider<Map<String, dynamic>>((ref) async {
+final teacherStatsProvider = FutureProvider<Map<String, dynamic>>((ref) async {
   ref.keepAlive(); // Expensive query — cache for the session
   final api = ApiService();
   final res = await api.getTeacherStats();
   final data = res.data as Map<String, dynamic>;
   return data['stats'] as Map<String, dynamic>? ?? {};
 });
-
 
 // ── Unified Dashboard Recent Activity ───────────────────────────────────────
 // Pass isFaculty = true for teachers, false for students.

@@ -69,8 +69,10 @@ class _TopBarWidgetState extends ConsumerState<TopBarWidget> {
   Widget build(BuildContext context) {
     final notifAsync = ref.watch(notificationsApiProvider);
     final unreadCount = notifAsync.whenOrNull(
-      data: (list) => list.where((n) => !(n['is_read'] as bool? ?? false)).length,
-    ) ?? 0;
+          data: (list) =>
+              list.where((n) => !(n['is_read'] as bool? ?? false)).length,
+        ) ??
+        0;
     final themeMode = ref.watch(themeModeProvider);
     final selectedIndex = ref.watch(navigationProvider);
 
@@ -81,13 +83,24 @@ class _TopBarWidgetState extends ConsumerState<TopBarWidget> {
     final isFaculty = ref.watch(authProvider).value?.isFaculty ?? false;
 
     final studentTitles = [
-      'Dashboard', 'Subjects', 'Assignments',
-      'Projects', 'Calendar', 'Messages',
-      'Notes', 'Question Papers', 'Settings',
+      'Dashboard',
+      'Subjects',
+      'Assignments',
+      'Projects',
+      'Calendar',
+      'Messages',
+      'Notes',
+      'Question Papers',
+      'Settings',
     ];
     final facultyTitles = [
-      'Dashboard', 'Manage Subjects', 'Submissions & Grading',
-      'Student Projects', 'Schedule', 'Messages', 'Settings',
+      'Dashboard',
+      'Manage Subjects',
+      'Submissions & Grading',
+      'Student Projects',
+      'Schedule',
+      'Messages',
+      'Settings',
     ];
     final sectionTitles = isFaculty ? facultyTitles : studentTitles;
     final currentTitle = selectedIndex < sectionTitles.length
@@ -106,7 +119,8 @@ class _TopBarWidgetState extends ConsumerState<TopBarWidget> {
           decoration: BoxDecoration(
             color: AppColors.getBackgroundColor(context),
             border: Border(
-              bottom: BorderSide(color: AppColors.getBorderColor(context), width: 1),
+              bottom: BorderSide(
+                  color: AppColors.getBorderColor(context), width: 1),
             ),
           ),
           child: Row(
@@ -140,7 +154,8 @@ class _TopBarWidgetState extends ConsumerState<TopBarWidget> {
                     decoration: BoxDecoration(
                       color: AppColors.getSurfaceColor(context),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: AppColors.getBorderColor(context), width: 1),
+                      border: Border.all(
+                          color: AppColors.getBorderColor(context), width: 1),
                     ),
                     child: Row(
                       children: [
@@ -223,8 +238,7 @@ class _TopBarWidgetState extends ConsumerState<TopBarWidget> {
                     icon: themeMode == ThemeMode.dark
                         ? FeatherIcons.moon
                         : FeatherIcons.sun,
-                    onTap: () =>
-                        ref.read(themeModeProvider.notifier).toggle(),
+                    onTap: () => ref.read(themeModeProvider.notifier).toggle(),
                   ),
                   const SizedBox(width: 6),
 
@@ -253,8 +267,8 @@ class _TopBarWidgetState extends ConsumerState<TopBarWidget> {
             decoration: BoxDecoration(
               color: AppColors.getSurfaceColor(context),
               border: Border(
-                bottom:
-                    BorderSide(color: AppColors.getBorderColor(context), width: 1),
+                bottom: BorderSide(
+                    color: AppColors.getBorderColor(context), width: 1),
               ),
             ),
             child: Row(
@@ -323,7 +337,8 @@ class _IconBtn extends StatelessWidget {
         decoration: BoxDecoration(
           color: AppColors.getSurfaceColor(context),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.getBorderColor(context), width: 1),
+          border:
+              Border.all(color: AppColors.getBorderColor(context), width: 1),
         ),
         child: icon != null
             ? Icon(icon, size: 19, color: AppColors.getHeadingColor(context))
@@ -412,10 +427,12 @@ class _MobileSearchSheetState extends ConsumerState<_MobileSearchSheet> {
       padding: EdgeInsets.fromLTRB(
           16, 16, 16, MediaQuery.of(context).viewInsets.bottom + 16),
       decoration: BoxDecoration(
-        color:
-            isDark ? AppColors.secondaryBackground : AppColors.lightSecondaryBackground,
+        color: isDark
+            ? AppColors.secondaryBackground
+            : AppColors.lightSecondaryBackground,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        border: Border(top: BorderSide(color: AppColors.getBorderColor(context))),
+        border:
+            Border(top: BorderSide(color: AppColors.getBorderColor(context))),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -432,8 +449,7 @@ class _MobileSearchSheetState extends ConsumerState<_MobileSearchSheet> {
           TextField(
             controller: _ctrl,
             autofocus: true,
-            onChanged: (v) =>
-                ref.read(searchQueryProvider.notifier).set(v),
+            onChanged: (v) => ref.read(searchQueryProvider.notifier).set(v),
             style: TextStyle(
                 color: AppColors.getHeadingColor(context), fontSize: 15),
             decoration: InputDecoration(
@@ -456,11 +472,10 @@ class _MobileSearchSheetState extends ConsumerState<_MobileSearchSheet> {
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(14),
-                borderSide:
-                    BorderSide(color: AppColors.accent, width: 1.5),
+                borderSide: BorderSide(color: AppColors.accent, width: 1.5),
               ),
-              contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16, vertical: 14),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             ),
           ),
           const SizedBox(height: 8),
@@ -471,8 +486,7 @@ class _MobileSearchSheetState extends ConsumerState<_MobileSearchSheet> {
               Navigator.pop(context);
             },
             child: Text('Cancel',
-                style:
-                    TextStyle(color: AppColors.getBodyColor(context))),
+                style: TextStyle(color: AppColors.getBodyColor(context))),
           ),
         ],
       ),

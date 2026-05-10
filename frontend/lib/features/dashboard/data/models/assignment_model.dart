@@ -24,8 +24,7 @@ class AssignmentModel {
   });
 
   bool get isSubmitted => submissionStatus != null;
-  bool get isOverdue =>
-      !isSubmitted && dueDate.isBefore(DateTime.now());
+  bool get isOverdue => !isSubmitted && dueDate.isBefore(DateTime.now());
 
   factory AssignmentModel.fromJson(Map<String, dynamic> json) {
     return AssignmentModel(
@@ -33,7 +32,8 @@ class AssignmentModel {
       channelId: json['channel_id'] as int,
       title: json['title'] as String? ?? '',
       description: json['description'] as String?,
-      dueDate: DateTime.tryParse(json['due_date'] as String? ?? '') ?? DateTime.now(),
+      dueDate: DateTime.tryParse(json['due_date'] as String? ?? '') ??
+          DateTime.now(),
       maxMarks: json['max_marks'] as int? ?? 100,
       createdByName: json['created_by_name'] as String?,
       submissionStatus: json['submission_status'] as String?,

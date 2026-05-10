@@ -23,7 +23,8 @@ class MainDashboardScreen extends ConsumerStatefulWidget {
   const MainDashboardScreen({super.key});
 
   @override
-  ConsumerState<MainDashboardScreen> createState() => _MainDashboardScreenState();
+  ConsumerState<MainDashboardScreen> createState() =>
+      _MainDashboardScreenState();
 }
 
 class _MainDashboardScreenState extends ConsumerState<MainDashboardScreen> {
@@ -37,18 +38,20 @@ class _MainDashboardScreenState extends ConsumerState<MainDashboardScreen> {
 
     // ── Student bottom nav items (indices match IndexedStack order) ──────────────
     final studentBottomItems = [
-      _MobileNavItem(icon: FeatherIcons.grid,          label: 'Home',     index: 0),
-      _MobileNavItem(icon: FeatherIcons.book,          label: 'Subjects', index: 1),
-      _MobileNavItem(icon: FeatherIcons.folder,        label: 'Projects', index: 2),
-      _MobileNavItem(icon: FeatherIcons.messageSquare, label: 'Messages', index: 4),
-      _MobileNavItem(icon: FeatherIcons.menu,          label: 'More',     index: -1),
+      _MobileNavItem(icon: FeatherIcons.grid, label: 'Home', index: 0),
+      _MobileNavItem(icon: FeatherIcons.book, label: 'Subjects', index: 1),
+      _MobileNavItem(icon: FeatherIcons.folder, label: 'Projects', index: 2),
+      _MobileNavItem(
+          icon: FeatherIcons.messageSquare, label: 'Messages', index: 4),
+      _MobileNavItem(icon: FeatherIcons.menu, label: 'More', index: -1),
     ];
     final facultyBottomItems = [
-      _MobileNavItem(icon: FeatherIcons.grid,          label: 'Home',     index: 0),
-      _MobileNavItem(icon: FeatherIcons.bookOpen,      label: 'Subjects', index: 1),
-      _MobileNavItem(icon: FeatherIcons.folder,        label: 'Projects', index: 2),
-      _MobileNavItem(icon: FeatherIcons.messageSquare, label: 'Messages', index: 4),
-      _MobileNavItem(icon: FeatherIcons.menu,          label: 'More',     index: -1),
+      _MobileNavItem(icon: FeatherIcons.grid, label: 'Home', index: 0),
+      _MobileNavItem(icon: FeatherIcons.bookOpen, label: 'Subjects', index: 1),
+      _MobileNavItem(icon: FeatherIcons.folder, label: 'Projects', index: 2),
+      _MobileNavItem(
+          icon: FeatherIcons.messageSquare, label: 'Messages', index: 4),
+      _MobileNavItem(icon: FeatherIcons.menu, label: 'More', index: -1),
     ];
 
     final bottomItems = isFaculty ? facultyBottomItems : studentBottomItems;
@@ -165,7 +168,8 @@ class _MainDashboardScreenState extends ConsumerState<MainDashboardScreen> {
                     ? AppColors.secondaryBackground
                     : AppColors.lightSecondaryBackground,
                 border: Border(
-                  left: BorderSide(color: AppColors.getBorderColor(context), width: 1),
+                  left: BorderSide(
+                      color: AppColors.getBorderColor(context), width: 1),
                 ),
               ),
               child: const SingleChildScrollView(
@@ -178,7 +182,6 @@ class _MainDashboardScreenState extends ConsumerState<MainDashboardScreen> {
     );
   }
 }
-
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -208,7 +211,9 @@ class _MobileBottomNavBar extends ConsumerWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? AppColors.secondaryBackground : AppColors.lightSecondaryBackground,
+        color: isDark
+            ? AppColors.secondaryBackground
+            : AppColors.lightSecondaryBackground,
         border: Border(
           top: BorderSide(color: AppColors.getBorderColor(context), width: 1),
         ),
@@ -226,7 +231,8 @@ class _MobileBottomNavBar extends ConsumerWidget {
           padding: EdgeInsets.fromLTRB(8, 8, 8, bottomPad > 0 ? 4 : 8),
           child: Row(
             children: items.map((item) {
-              final isSelected = item.index != -1 && selectedIndex == item.index;
+              final isSelected =
+                  item.index != -1 && selectedIndex == item.index;
               return Expanded(
                 child: _BottomNavTile(
                   item: item,
@@ -328,8 +334,7 @@ class _BottomNavTileState extends State<_BottomNavTile>
                 widget.item.label,
                 style: TextStyle(
                   fontSize: 10,
-                  fontWeight:
-                      isSelected ? FontWeight.w700 : FontWeight.w500,
+                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                   color: isSelected
                       ? AppColors.accent
                       : AppColors.getBodyColor(context),

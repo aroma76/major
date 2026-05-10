@@ -18,8 +18,9 @@ class TaskDetailsDialog extends ConsumerWidget {
     final priorityColor = _priorityColor(task.priority);
 
     return Dialog(
-      backgroundColor:
-          isDark ? AppColors.secondaryBackground : AppColors.lightSecondaryBackground,
+      backgroundColor: isDark
+          ? AppColors.secondaryBackground
+          : AppColors.lightSecondaryBackground,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 520, maxHeight: 680),
@@ -41,8 +42,7 @@ class TaskDetailsDialog extends ConsumerWidget {
                 borderRadius:
                     const BorderRadius.vertical(top: Radius.circular(24)),
                 border: Border(
-                  bottom:
-                      BorderSide(color: AppColors.getBorderColor(context)),
+                  bottom: BorderSide(color: AppColors.getBorderColor(context)),
                 ),
               ),
               child: Row(
@@ -54,8 +54,8 @@ class TaskDetailsDialog extends ConsumerWidget {
                       color: priorityColor.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child:
-                        Icon(FeatherIcons.checkSquare, color: priorityColor, size: 18),
+                    child: Icon(FeatherIcons.checkSquare,
+                        color: priorityColor, size: 18),
                   ),
                   const SizedBox(width: 14),
                   Expanded(
@@ -151,7 +151,8 @@ class TaskDetailsDialog extends ConsumerWidget {
                     ],
 
                     // Questions
-                    if (task.questions != null && task.questions!.isNotEmpty) ...[
+                    if (task.questions != null &&
+                        task.questions!.isNotEmpty) ...[
                       _DetailSection(
                         icon: FeatherIcons.helpCircle,
                         title: 'Questions to Ask',
@@ -170,8 +171,7 @@ class TaskDetailsDialog extends ConsumerWidget {
               padding: const EdgeInsets.fromLTRB(24, 14, 24, 18),
               decoration: BoxDecoration(
                 border: Border(
-                    top:
-                        BorderSide(color: AppColors.getBorderColor(context))),
+                    top: BorderSide(color: AppColors.getBorderColor(context))),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -205,8 +205,7 @@ class TaskDetailsDialog extends ConsumerWidget {
                     onPressed: () => Navigator.pop(context),
                     child: Text('Close',
                         style: GoogleFonts.outfit(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold)),
+                            color: Colors.white, fontWeight: FontWeight.bold)),
                   ),
                 ],
               ),

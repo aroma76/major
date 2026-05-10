@@ -39,8 +39,8 @@ class MyApp extends ConsumerWidget {
           surface: AppColors.surface,
         ),
         useMaterial3: true,
-        textTheme: GoogleFonts.outfitTextTheme(ThemeData.dark().textTheme)
-            .copyWith(
+        textTheme:
+            GoogleFonts.outfitTextTheme(ThemeData.dark().textTheme).copyWith(
           titleLarge: GoogleFonts.outfit(
               fontSize: 24,
               fontWeight: FontWeight.bold,
@@ -49,8 +49,10 @@ class MyApp extends ConsumerWidget {
               fontSize: 18,
               fontWeight: FontWeight.w600,
               color: AppColors.textHeading),
-          bodyLarge: GoogleFonts.outfit(fontSize: 16, color: AppColors.textHeading),
-          bodyMedium: GoogleFonts.outfit(fontSize: 14, color: AppColors.textBody),
+          bodyLarge:
+              GoogleFonts.outfit(fontSize: 16, color: AppColors.textHeading),
+          bodyMedium:
+              GoogleFonts.outfit(fontSize: 14, color: AppColors.textBody),
         ),
         cardTheme: CardThemeData(
           color: AppColors.surface,
@@ -71,8 +73,8 @@ class MyApp extends ConsumerWidget {
           surface: AppColors.lightSurface,
         ),
         useMaterial3: true,
-        textTheme: GoogleFonts.outfitTextTheme(ThemeData.light().textTheme)
-            .copyWith(
+        textTheme:
+            GoogleFonts.outfitTextTheme(ThemeData.light().textTheme).copyWith(
           titleLarge: GoogleFonts.outfit(
               fontSize: 24,
               fontWeight: FontWeight.bold,
@@ -81,7 +83,8 @@ class MyApp extends ConsumerWidget {
               fontSize: 18,
               fontWeight: FontWeight.w600,
               color: AppColors.lightTextHeading),
-          bodyLarge: GoogleFonts.outfit(fontSize: 16, color: AppColors.lightTextHeading),
+          bodyLarge: GoogleFonts.outfit(
+              fontSize: 16, color: AppColors.lightTextHeading),
           bodyMedium:
               GoogleFonts.outfit(fontSize: 14, color: AppColors.lightTextBody),
         ),

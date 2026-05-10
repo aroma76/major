@@ -28,7 +28,8 @@ class _CreateProjectDialogState extends State<CreateProjectDialog> {
         decoration: BoxDecoration(
           color: AppColors.getSurfaceColor(context),
           borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: AppColors.getBorderColor(context), width: 1),
+          border:
+              Border.all(color: AppColors.getBorderColor(context), width: 1),
         ),
         child: Form(
           key: _formKey,
@@ -48,20 +49,19 @@ class _CreateProjectDialogState extends State<CreateProjectDialog> {
                     ),
                   ),
                   IconButton(
-                    icon: Icon(FeatherIcons.x, color: AppColors.getBodyColor(context)),
+                    icon: Icon(FeatherIcons.x,
+                        color: AppColors.getBodyColor(context)),
                     onPressed: () => Navigator.pop(context),
                   ),
                 ],
               ),
               const SizedBox(height: 24),
-              
               _buildTextField(
                 label: 'Project Name',
                 controller: _nameController,
                 hint: 'Enter project title...',
               ),
               const SizedBox(height: 16),
-              
               _buildTextField(
                 label: 'Description',
                 controller: _descriptionController,
@@ -69,7 +69,6 @@ class _CreateProjectDialogState extends State<CreateProjectDialog> {
                 maxLines: 3,
               ),
               const SizedBox(height: 16),
-              
               Row(
                 children: [
                   Expanded(
@@ -93,7 +92,6 @@ class _CreateProjectDialogState extends State<CreateProjectDialog> {
                 ],
               ),
               const SizedBox(height: 16),
-              
               Text(
                 'Priority',
                 style: TextStyle(
@@ -104,34 +102,46 @@ class _CreateProjectDialogState extends State<CreateProjectDialog> {
               ),
               const SizedBox(height: 8),
               Row(
-                children: ['Low', 'Medium', 'High'].map((p) => Padding(
-                  padding: const EdgeInsets.only(right: 12),
-                  child: ChoiceChip(
-                    label: Text(p),
-                    selected: _priority == p,
-                    onSelected: (bool selected) {
-                      if (selected) setState(() => _priority = p);
-                    },
-                    selectedColor: AppColors.accent.withValues(alpha: 0.2),
-                    labelStyle: TextStyle(
-                      color: _priority == p ? AppColors.accent : AppColors.getBodyColor(context),
-                      fontWeight: _priority == p ? FontWeight.bold : FontWeight.normal,
-                    ),
-                    backgroundColor: AppColors.getBorderColor(context).withValues(alpha: 0.1),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                    side: BorderSide(color: _priority == p ? AppColors.accent : AppColors.getBorderColor(context)),
-                  ),
-                )).toList(),
+                children: ['Low', 'Medium', 'High']
+                    .map((p) => Padding(
+                          padding: const EdgeInsets.only(right: 12),
+                          child: ChoiceChip(
+                            label: Text(p),
+                            selected: _priority == p,
+                            onSelected: (bool selected) {
+                              if (selected) setState(() => _priority = p);
+                            },
+                            selectedColor:
+                                AppColors.accent.withValues(alpha: 0.2),
+                            labelStyle: TextStyle(
+                              color: _priority == p
+                                  ? AppColors.accent
+                                  : AppColors.getBodyColor(context),
+                              fontWeight: _priority == p
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
+                            ),
+                            backgroundColor: AppColors.getBorderColor(context)
+                                .withValues(alpha: 0.1),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8)),
+                            side: BorderSide(
+                                color: _priority == p
+                                    ? AppColors.accent
+                                    : AppColors.getBorderColor(context)),
+                          ),
+                        ))
+                    .toList(),
               ),
-              
               const SizedBox(height: 32),
-              
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   TextButton(
                     onPressed: () => Navigator.pop(context),
-                    child: Text('Cancel', style: TextStyle(color: AppColors.getBodyColor(context))),
+                    child: Text('Cancel',
+                        style:
+                            TextStyle(color: AppColors.getBodyColor(context))),
                   ),
                   const SizedBox(width: 16),
                   ElevatedButton(
@@ -144,10 +154,13 @@ class _CreateProjectDialogState extends State<CreateProjectDialog> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.accent,
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 24, vertical: 12),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
                     ),
-                    child: const Text('Create Project', style: TextStyle(fontWeight: FontWeight.bold)),
+                    child: const Text('Create Project',
+                        style: TextStyle(fontWeight: FontWeight.bold)),
                   ),
                 ],
               ),
@@ -182,10 +195,12 @@ class _CreateProjectDialogState extends State<CreateProjectDialog> {
           maxLines: maxLines,
           onTap: onTap,
           readOnly: onTap != null,
-          style: TextStyle(color: AppColors.getHeadingColor(context), fontSize: 14),
+          style: TextStyle(
+              color: AppColors.getHeadingColor(context), fontSize: 14),
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: TextStyle(color: AppColors.getBodyColor(context), fontSize: 14),
+            hintStyle:
+                TextStyle(color: AppColors.getBodyColor(context), fontSize: 14),
             filled: true,
             fillColor: AppColors.getSurfaceColor(context),
             enabledBorder: OutlineInputBorder(

@@ -23,12 +23,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
     with TickerProviderStateMixin {
   bool _isStudent = true;
 
-  final _studentIdCtrl  = TextEditingController();
+  final _studentIdCtrl = TextEditingController();
   final _studentPwdCtrl = TextEditingController();
-  final _facultyIdCtrl  = TextEditingController();
+  final _facultyIdCtrl = TextEditingController();
   final _facultyPwdCtrl = TextEditingController();
-  final _formKeyStudent  = GlobalKey<FormState>();
-  final _formKeyFaculty  = GlobalKey<FormState>();
+  final _formKeyStudent = GlobalKey<FormState>();
+  final _formKeyFaculty = GlobalKey<FormState>();
 
   bool _obscureStudent = true;
   bool _obscureFaculty = true;
@@ -44,9 +44,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
       vsync: this,
       duration: const Duration(milliseconds: 350),
     );
-    _fadeAnim  = CurvedAnimation(parent: _stageCtrl, curve: Curves.easeOut);
-    _scaleAnim = Tween<double>(begin: 0.94, end: 1.0)
-        .animate(CurvedAnimation(parent: _stageCtrl, curve: Curves.easeOutCubic));
+    _fadeAnim = CurvedAnimation(parent: _stageCtrl, curve: Curves.easeOut);
+    _scaleAnim = Tween<double>(begin: 0.94, end: 1.0).animate(
+        CurvedAnimation(parent: _stageCtrl, curve: Curves.easeOutCubic));
     _stageCtrl.forward();
   }
 
@@ -70,8 +70,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
   Future<void> _login(bool isStudent) async {
     final formKey = isStudent ? _formKeyStudent : _formKeyFaculty;
     if (!formKey.currentState!.validate()) return;
-    final id  = isStudent ? _studentIdCtrl.text.trim() : _facultyIdCtrl.text.trim();
-    final pwd = isStudent ? _studentPwdCtrl.text.trim() : _facultyPwdCtrl.text.trim();
+    final id =
+        isStudent ? _studentIdCtrl.text.trim() : _facultyIdCtrl.text.trim();
+    final pwd =
+        isStudent ? _studentPwdCtrl.text.trim() : _facultyPwdCtrl.text.trim();
     await ref.read(authProvider.notifier).login(id, pwd);
   }
 
@@ -79,7 +81,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
   Widget build(BuildContext context) {
     final bgColor = AppColors.getBackgroundColor(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     // Smooth, glowing cyan gradient fade radiating from the top center
     final fadeColor = isDark
         ? const Color(0xFF00CFFF).withValues(alpha: 0.12)
@@ -99,61 +101,65 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
         child: Stack(
           children: [
             // ── Static Curved Network Background ──
-          const Positioned.fill(child: CustomPaint(painter: _NetPainter())),
+            const Positioned.fill(child: CustomPaint(painter: _NetPainter())),
 
-          // ── Main Content ──
-          FadeTransition(
-            opacity: _fadeAnim,
-            child: ScaleTransition(
-              scale: _scaleAnim,
-              child: Center(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 460),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // ── Logo (always visible) ────────────────────────────
-                        _Logo(),
-                        const SizedBox(height: 36),
-                        // ── Stage content ────────────────────────────────────
-                        if (_isStudent) _StudentLoginCard(
-                          idCtrl: _studentIdCtrl,
-                          pwdCtrl: _studentPwdCtrl,
-                          formKey: _formKeyStudent,
-                          obscure: _obscureStudent,
-                          onToggleObscure: () =>
-                              setState(() => _obscureStudent = !_obscureStudent),
-                          onLogin: () => _login(true),
-                          onToggleRole: _toggleRole,
-                          ref: ref,
-                        ) else _FacultyLoginCard(
-                          idCtrl: _facultyIdCtrl,
-                          pwdCtrl: _facultyPwdCtrl,
-                          formKey: _formKeyFaculty,
-                          obscure: _obscureFaculty,
-                          onToggleObscure: () =>
-                              setState(() => _obscureFaculty = !_obscureFaculty),
-                          onLogin: () => _login(false),
-                          onToggleRole: _toggleRole,
-                          ref: ref,
-                        ),
-                        const SizedBox(height: 24),
-                        Text(
-                          'Assam down town University, Guwahati',
-                          style: GoogleFonts.outfit(
-                              fontSize: 12, color: AppColors.textBody),
-                        ),
-                      ],
+            // ── Main Content ──
+            FadeTransition(
+              opacity: _fadeAnim,
+              child: ScaleTransition(
+                scale: _scaleAnim,
+                child: Center(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 24, vertical: 32),
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 460),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // ── Logo (always visible) ────────────────────────────
+                          _Logo(),
+                          const SizedBox(height: 36),
+                          // ── Stage content ────────────────────────────────────
+                          if (_isStudent)
+                            _StudentLoginCard(
+                              idCtrl: _studentIdCtrl,
+                              pwdCtrl: _studentPwdCtrl,
+                              formKey: _formKeyStudent,
+                              obscure: _obscureStudent,
+                              onToggleObscure: () => setState(
+                                  () => _obscureStudent = !_obscureStudent),
+                              onLogin: () => _login(true),
+                              onToggleRole: _toggleRole,
+                              ref: ref,
+                            )
+                          else
+                            _FacultyLoginCard(
+                              idCtrl: _facultyIdCtrl,
+                              pwdCtrl: _facultyPwdCtrl,
+                              formKey: _formKeyFaculty,
+                              obscure: _obscureFaculty,
+                              onToggleObscure: () => setState(
+                                  () => _obscureFaculty = !_obscureFaculty),
+                              onLogin: () => _login(false),
+                              onToggleRole: _toggleRole,
+                              ref: ref,
+                            ),
+                          const SizedBox(height: 24),
+                          Text(
+                            'Assam down town University, Guwahati',
+                            style: GoogleFonts.outfit(
+                                fontSize: 12, color: AppColors.textBody),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
               ),
             ),
-          ),
-        ],
-      ),
+          ],
+        ),
       ),
     );
   }
@@ -181,16 +187,13 @@ class _Logo extends StatelessWidget {
         const SizedBox(height: 4),
         Text(
           'Academic Workspace — Assam downtown University',
-          style:
-              GoogleFonts.outfit(fontSize: 12, color: AppColors.textBody),
+          style: GoogleFonts.outfit(fontSize: 12, color: AppColors.textBody),
           textAlign: TextAlign.center,
         ),
       ],
     );
   }
 }
-
-
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Stage 1 — Student Login
@@ -217,13 +220,13 @@ class _StudentLoginCard extends StatelessWidget {
     required this.ref,
   });
 
-  static const _blue   = Color(0xFF1E88E5);
-  static const _blueB  = Color(0xFF1565C0);
+  static const _blue = Color(0xFF1E88E5);
+  static const _blueB = Color(0xFF1565C0);
 
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
-    final error     = authState.value?.error;
+    final error = authState.value?.error;
     final isLoading = ref.watch(authProvider.notifier).isLoggingIn;
 
     return Container(
@@ -257,8 +260,7 @@ class _StudentLoginCard extends StatelessWidget {
             ),
             child: Row(
               children: [
-                const Icon(Icons.school_rounded,
-                    color: Colors.white, size: 26),
+                const Icon(Icons.school_rounded, color: Colors.white, size: 26),
                 const SizedBox(width: 12),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -350,7 +352,8 @@ class _StudentLoginCard extends StatelessWidget {
                       ),
                       child: isLoading
                           ? const SizedBox(
-                              width: 20, height: 20,
+                              width: 20,
+                              height: 20,
                               child: CircularProgressIndicator(
                                   strokeWidth: 2, color: Colors.white))
                           : Row(
@@ -415,13 +418,13 @@ class _FacultyLoginCard extends StatelessWidget {
     required this.ref,
   });
 
-  static const _purple  = Color(0xFF7B1FA2);
+  static const _purple = Color(0xFF7B1FA2);
   static const _purpleL = Color(0xFFAB47BC);
 
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
-    final error     = authState.value?.error;
+    final error = authState.value?.error;
     final isLoading = ref.watch(authProvider.notifier).isLoggingIn;
 
     return Container(
@@ -455,8 +458,7 @@ class _FacultyLoginCard extends StatelessWidget {
             ),
             child: Row(
               children: [
-                const Icon(Icons.badge_rounded,
-                    color: Colors.white, size: 26),
+                const Icon(Icons.badge_rounded, color: Colors.white, size: 26),
                 const SizedBox(width: 12),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -490,7 +492,8 @@ class _FacultyLoginCard extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: _purple.withValues(alpha: 0.08),
                       borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: _purple.withValues(alpha: 0.25)),
+                      border:
+                          Border.all(color: _purple.withValues(alpha: 0.25)),
                     ),
                     child: Row(
                       children: [
@@ -516,7 +519,8 @@ class _FacultyLoginCard extends StatelessWidget {
                     accent: _purple,
                     context: context,
                     validator: (v) {
-                      if (v == null || v.trim().isEmpty) return 'Enter your email';
+                      if (v == null || v.trim().isEmpty)
+                        return 'Enter your email';
                       if (!v.contains('@')) return 'Enter a valid email';
                       return null;
                     },
@@ -558,7 +562,8 @@ class _FacultyLoginCard extends StatelessWidget {
                       ),
                       child: isLoading
                           ? const SizedBox(
-                              width: 20, height: 20,
+                              width: 20,
+                              height: 20,
                               child: CircularProgressIndicator(
                                   strokeWidth: 2, color: Colors.white))
                           : Row(
@@ -621,8 +626,7 @@ Widget _errorBanner(String error) => Container(
           const SizedBox(width: 8),
           Expanded(
             child: Text(error,
-                style:
-                    const TextStyle(color: Color(0xFFFF6B6B), fontSize: 13)),
+                style: const TextStyle(color: Color(0xFFFF6B6B), fontSize: 13)),
           ),
         ],
       ),
@@ -645,8 +649,10 @@ Widget _field({
       style: TextStyle(color: AppColors.getHeadingColor(context)),
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: TextStyle(color: AppColors.getBodyColor(context), fontSize: 13),
-        prefixIcon: Icon(icon, color: AppColors.getBodyColor(context), size: 18),
+        hintStyle:
+            TextStyle(color: AppColors.getBodyColor(context), fontSize: 13),
+        prefixIcon:
+            Icon(icon, color: AppColors.getBodyColor(context), size: 18),
         filled: true,
         fillColor: AppColors.getBackgroundColor(context),
         contentPadding:
@@ -699,37 +705,62 @@ class _NetPainter extends CustomPainter {
 
   // Node positions as fractions [x, y] of screen size
   static const _nodes = [
-    [0.05, 0.08], [0.22, 0.03], [0.42, 0.10], [0.63, 0.05], [0.80, 0.12], [0.96, 0.04],
-    [0.10, 0.28], [0.30, 0.22], [0.50, 0.32], [0.70, 0.25], [0.90, 0.30],
-    [0.04, 0.50], [0.24, 0.46], [0.44, 0.54], [0.64, 0.48], [0.84, 0.52], [0.97, 0.44],
-    [0.12, 0.70], [0.33, 0.67], [0.53, 0.73], [0.73, 0.66], [0.90, 0.72],
-    [0.05, 0.90], [0.26, 0.94], [0.46, 0.87], [0.66, 0.92], [0.86, 0.88], [0.97, 0.95],
+    [0.05, 0.08],
+    [0.22, 0.03],
+    [0.42, 0.10],
+    [0.63, 0.05],
+    [0.80, 0.12],
+    [0.96, 0.04],
+    [0.10, 0.28],
+    [0.30, 0.22],
+    [0.50, 0.32],
+    [0.70, 0.25],
+    [0.90, 0.30],
+    [0.04, 0.50],
+    [0.24, 0.46],
+    [0.44, 0.54],
+    [0.64, 0.48],
+    [0.84, 0.52],
+    [0.97, 0.44],
+    [0.12, 0.70],
+    [0.33, 0.67],
+    [0.53, 0.73],
+    [0.73, 0.66],
+    [0.90, 0.72],
+    [0.05, 0.90],
+    [0.26, 0.94],
+    [0.46, 0.87],
+    [0.66, 0.92],
+    [0.86, 0.88],
+    [0.97, 0.95],
   ];
 
   // Edge pairs
   static const _edges = [
-    [0,1],[1,2],[2,3],[3,4],[4,5],
-    [0,6],[1,7],[2,8],[3,9],[4,10],[5,10],
-    [6,7],[7,8],[8,9],[9,10],
-    [6,11],[7,12],[8,13],[9,14],[10,15],[10,16],
-    [11,12],[12,13],[13,14],[14,15],[15,16],
-    [11,17],[12,18],[13,19],[14,20],[15,21],
-    [17,18],[18,19],[19,20],[20,21],
-    [17,22],[18,23],[19,24],[20,25],[21,26],[21,27],
-    [22,23],[23,24],[24,25],[25,26],[26,27],
+    [0, 1], [1, 2], [2, 3], [3, 4], [4, 5],
+    [0, 6], [1, 7], [2, 8], [3, 9], [4, 10], [5, 10],
+    [6, 7], [7, 8], [8, 9], [9, 10],
+    [6, 11], [7, 12], [8, 13], [9, 14], [10, 15], [10, 16],
+    [11, 12], [12, 13], [13, 14], [14, 15], [15, 16],
+    [11, 17], [12, 18], [13, 19], [14, 20], [15, 21],
+    [17, 18], [18, 19], [19, 20], [20, 21],
+    [17, 22], [18, 23], [19, 24], [20, 25], [21, 26], [21, 27],
+    [22, 23], [23, 24], [24, 25], [25, 26], [26, 27],
     // a few long-range diagonals for depth
-    [1,8],[3,9],[5,15],[7,13],[9,19],[15,25],
+    [1, 8], [3, 9], [5, 15], [7, 13], [9, 19], [15, 25],
   ];
 
   // Low-opacity neon cyan
   static const _lineColor = Color(0x1200CFFF); // ~7% opacity
   static const _nodeColor = Color(0x2200CFFF); // ~13% opacity
-  static const _dotColor  = Color(0x3300CFFF); // ~20% opacity
+  static const _dotColor = Color(0x3300CFFF); // ~20% opacity
 
   @override
   void paint(Canvas canvas, Size size) {
     // Map fractional positions → real pixel offsets
-    final pts = _nodes.map((n) => Offset(n[0] * size.width, n[1] * size.height)).toList();
+    final pts = _nodes
+        .map((n) => Offset(n[0] * size.width, n[1] * size.height))
+        .toList();
 
     final linePaint = Paint()
       ..color = _lineColor
@@ -747,11 +778,12 @@ class _NetPainter extends CustomPainter {
       final my = (a.dy + b.dy) / 2;
       final ex = b.dx - a.dx; // edge vector
       final ey = b.dy - a.dy;
-      final edgeLen = (ex * ex + ey * ey) < 1 ? 1.0 : dart_math.sqrt(ex * ex + ey * ey);
+      final edgeLen =
+          (ex * ex + ey * ey) < 1 ? 1.0 : dart_math.sqrt(ex * ex + ey * ey);
       // Perpendicular unit vector scaled to 18% of edge length for gentle bend
       const bend = 0.18;
       final cx = mx + (-ey / edgeLen) * bend * edgeLen;
-      final cy = my + ( ex / edgeLen) * bend * edgeLen;
+      final cy = my + (ex / edgeLen) * bend * edgeLen;
 
       final path = Path()
         ..moveTo(a.dx, a.dy)
@@ -774,4 +806,3 @@ class _NetPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant CustomPainter old) => false;
 }
-

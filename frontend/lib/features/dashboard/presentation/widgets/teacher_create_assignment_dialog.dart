@@ -17,16 +17,16 @@ class TeacherCreateAssignmentDialog extends ConsumerStatefulWidget {
 
 class _TeacherCreateAssignmentDialogState
     extends ConsumerState<TeacherCreateAssignmentDialog> {
-  final _formKey    = GlobalKey<FormState>();
-  final _titleCtrl  = TextEditingController();
-  final _descCtrl   = TextEditingController();
-  final _marksCtrl  = TextEditingController(text: '100');
+  final _formKey = GlobalKey<FormState>();
+  final _titleCtrl = TextEditingController();
+  final _descCtrl = TextEditingController();
+  final _marksCtrl = TextEditingController(text: '100');
 
   ChannelModel? _selectedChannel;
-  DateTime?     _dueDate;
-  String        _priority = 'medium';
-  bool          _loading  = false;
-  String?       _error;
+  DateTime? _dueDate;
+  String _priority = 'medium';
+  bool _loading = false;
+  String? _error;
 
   @override
   void dispose() {
@@ -37,7 +37,7 @@ class _TeacherCreateAssignmentDialogState
   }
 
   Future<void> _pickDate() async {
-    final now    = DateTime.now();
+    final now = DateTime.now();
     final picked = await showDatePicker(
       context: context,
       initialDate: now.add(const Duration(days: 7)),
@@ -67,18 +67,21 @@ class _TeacherCreateAssignmentDialogState
       return;
     }
 
-    setState(() { _loading = true; _error = null; });
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
 
     try {
       final api = ApiService();
       await api.dio.post(
         '/channels/${_selectedChannel!.id}/assignments',
         data: {
-          'title'      : _titleCtrl.text.trim(),
+          'title': _titleCtrl.text.trim(),
           'description': _descCtrl.text.trim(),
-          'due_date'   : _dueDate!.toIso8601String(),
-          'max_marks'  : int.tryParse(_marksCtrl.text.trim()) ?? 100,
-          'priority'   : _priority,
+          'due_date': _dueDate!.toIso8601String(),
+          'max_marks': int.tryParse(_marksCtrl.text.trim()) ?? 100,
+          'priority': _priority,
         },
       );
       // Invalidate so the assignments view refreshes
@@ -152,10 +155,13 @@ class _TeacherCreateAssignmentDialogState
                     value: _selectedChannel,
                     hint: 'Select a subject',
                     items: [
-                      const DropdownMenuItem(value: null, child: Text('Select a subject')),
+                      const DropdownMenuItem(
+                          value: null, child: Text('Select a subject')),
                       ...channels.map((ch) => DropdownMenuItem(
                             value: ch,
-                            child: Text(ch.subjectName.isNotEmpty ? ch.subjectName : ch.channelName),
+                            child: Text(ch.subjectName.isNotEmpty
+                                ? ch.subjectName
+                                : ch.channelName),
                           )),
                     ],
                     onChanged: (v) => setState(() => _selectedChannel = v),
@@ -170,8 +176,9 @@ class _TeacherCreateAssignmentDialogState
                   controller: _titleCtrl,
                   hint: 'e.g. Lab 3: Linked List Implementation',
                   context: context,
-                  validator: (v) =>
-                      (v == null || v.trim().isEmpty) ? 'Title is required' : null,
+                  validator: (v) => (v == null || v.trim().isEmpty)
+                      ? 'Title is required'
+                      : null,
                 ),
                 const SizedBox(height: 14),
 
@@ -260,9 +267,9 @@ class _TeacherCreateAssignmentDialogState
                   value: _priority,
                   hint: 'Priority',
                   items: const [
-                    DropdownMenuItem(value: 'low',    child: Text('Low')),
+                    DropdownMenuItem(value: 'low', child: Text('Low')),
                     DropdownMenuItem(value: 'medium', child: Text('Medium')),
-                    DropdownMenuItem(value: 'high',   child: Text('High')),
+                    DropdownMenuItem(value: 'high', child: Text('High')),
                   ],
                   onChanged: (v) => setState(() => _priority = v ?? 'medium'),
                 ),
@@ -274,10 +281,12 @@ class _TeacherCreateAssignmentDialogState
                     decoration: BoxDecoration(
                       color: Colors.red.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.red.withValues(alpha: 0.4)),
+                      border:
+                          Border.all(color: Colors.red.withValues(alpha: 0.4)),
                     ),
                     child: Text(_error!,
-                        style: const TextStyle(color: Colors.red, fontSize: 13)),
+                        style:
+                            const TextStyle(color: Colors.red, fontSize: 13)),
                   ),
                   const SizedBox(height: 12),
                 ],
@@ -289,7 +298,8 @@ class _TeacherCreateAssignmentDialogState
                       child: OutlinedButton(
                         onPressed: () => Navigator.pop(context),
                         style: OutlinedButton.styleFrom(
-                          side: BorderSide(color: AppColors.getBorderColor(context)),
+                          side: BorderSide(
+                              color: AppColors.getBorderColor(context)),
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10)),

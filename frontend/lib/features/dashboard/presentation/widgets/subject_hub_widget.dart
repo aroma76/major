@@ -17,7 +17,8 @@ class SubjectHubSheet extends ConsumerStatefulWidget {
   final ChannelModel channel;
   final Color color;
 
-  const SubjectHubSheet({super.key, required this.channel, required this.color});
+  const SubjectHubSheet(
+      {super.key, required this.channel, required this.color});
 
   @override
   ConsumerState<SubjectHubSheet> createState() => _SubjectHubSheetState();
@@ -27,7 +28,12 @@ class _SubjectHubSheetState extends ConsumerState<SubjectHubSheet>
     with SingleTickerProviderStateMixin {
   late TabController _tabs;
 
-  static const _tabLabels = ['Overview', 'Assignments', 'Announcements', 'Chat'];
+  static const _tabLabels = [
+    'Overview',
+    'Assignments',
+    'Announcements',
+    'Chat'
+  ];
   static const _tabIcons = [
     FeatherIcons.grid,
     FeatherIcons.checkSquare,
@@ -71,7 +77,8 @@ class _SubjectHubSheetState extends ConsumerState<SubjectHubSheet>
           Center(
             child: Container(
               margin: const EdgeInsets.only(top: 12),
-              width: 40, height: 4,
+              width: 40,
+              height: 4,
               decoration: BoxDecoration(
                 color: AppColors.getBorderColor(context),
                 borderRadius: BorderRadius.circular(2),
@@ -98,7 +105,8 @@ class _SubjectHubSheetState extends ConsumerState<SubjectHubSheet>
                     children: [
                       Text(ch.subjectName,
                           style: GoogleFonts.outfit(
-                              fontSize: 18, fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
                               color: AppColors.getHeadingColor(context)),
                           overflow: TextOverflow.ellipsis),
                       if (ch.teacherName != null)
@@ -110,14 +118,17 @@ class _SubjectHubSheetState extends ConsumerState<SubjectHubSheet>
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
                     color: color.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text('Sem ${ch.semesterNumber}',
                       style: GoogleFonts.outfit(
-                          fontSize: 11, fontWeight: FontWeight.w700, color: color)),
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: color)),
                 ),
                 const SizedBox(width: 8),
                 IconButton(
@@ -143,20 +154,21 @@ class _SubjectHubSheetState extends ConsumerState<SubjectHubSheet>
               unselectedLabelColor: AppColors.getBodyColor(context),
               indicatorColor: color,
               indicatorWeight: 2,
-              labelStyle: GoogleFonts.outfit(
-                  fontSize: 13, fontWeight: FontWeight.w600),
-              unselectedLabelStyle:
-                  GoogleFonts.outfit(fontSize: 13),
-              tabs: List.generate(4, (i) => Tab(
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(_tabIcons[i], size: 14),
-                    const SizedBox(width: 6),
-                    Text(_tabLabels[i]),
-                  ],
-                ),
-              )),
+              labelStyle:
+                  GoogleFonts.outfit(fontSize: 13, fontWeight: FontWeight.w600),
+              unselectedLabelStyle: GoogleFonts.outfit(fontSize: 13),
+              tabs: List.generate(
+                  4,
+                  (i) => Tab(
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(_tabIcons[i], size: 14),
+                            const SizedBox(width: 6),
+                            Text(_tabLabels[i]),
+                          ],
+                        ),
+                      )),
             ),
           ),
           // ── Tab Views ──
@@ -167,7 +179,8 @@ class _SubjectHubSheetState extends ConsumerState<SubjectHubSheet>
                 _OverviewTab(channel: ch, color: color, onOpenChat: _openChat),
                 _AssignmentsTab(channelId: ch.id, color: color),
                 _AnnouncementsTab(channelId: ch.id, color: color),
-                _ChatShortcutTab(color: color, onOpenChat: _openChat, channel: ch),
+                _ChatShortcutTab(
+                    color: color, onOpenChat: _openChat, channel: ch),
               ],
             ),
           ),
@@ -204,10 +217,8 @@ class _OverviewTab extends ConsumerWidget {
               final pending = assignments
                   .where((a) => !a.isSubmitted && !a.isOverdue)
                   .length;
-              final overdue =
-                  assignments.where((a) => a.isOverdue).length;
-              final submitted =
-                  assignments.where((a) => a.isSubmitted).length;
+              final overdue = assignments.where((a) => a.isOverdue).length;
+              final submitted = assignments.where((a) => a.isSubmitted).length;
 
               return Row(
                 children: [
@@ -242,20 +253,19 @@ class _OverviewTab extends ConsumerWidget {
             decoration: BoxDecoration(
               color: AppColors.getCardColor(context),
               borderRadius: BorderRadius.circular(12),
-              border:
-                  Border.all(color: AppColors.getBorderColor(context)),
+              border: Border.all(color: AppColors.getBorderColor(context)),
             ),
             child: Column(
               children: [
-                _InfoRow(FeatherIcons.hash, 'Channel',
-                    channel.channelName, context),
+                _InfoRow(
+                    FeatherIcons.hash, 'Channel', channel.channelName, context),
                 const SizedBox(height: 10),
                 _InfoRow(FeatherIcons.bookOpen, 'Semester',
                     'Semester ${channel.semesterNumber}', context),
                 if (channel.teacherName != null) ...[
                   const SizedBox(height: 10),
-                  _InfoRow(FeatherIcons.user, 'Teacher',
-                      channel.teacherName!, context),
+                  _InfoRow(FeatherIcons.user, 'Teacher', channel.teacherName!,
+                      context),
                 ],
               ],
             ),
@@ -265,10 +275,8 @@ class _OverviewTab extends ConsumerWidget {
           // ── Upcoming assignments ──
           assignAsync.maybeWhen(
             data: (assignments) {
-              final upcoming = assignments
-                  .where((a) => !a.isSubmitted)
-                  .take(3)
-                  .toList();
+              final upcoming =
+                  assignments.where((a) => !a.isSubmitted).take(3).toList();
               if (upcoming.isEmpty) return const SizedBox.shrink();
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -318,12 +326,11 @@ class _AssignmentsTab extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final async = ref.watch(channelAssignmentsProvider(channelId));
     return async.when(
-      loading: () =>
-          const Center(child: CircularProgressIndicator()),
+      loading: () => const Center(child: CircularProgressIndicator()),
       error: (e, _) => Center(
           child: Text('Failed to load assignments',
-              style: GoogleFonts.outfit(
-                  color: AppColors.getBodyColor(context)))),
+              style:
+                  GoogleFonts.outfit(color: AppColors.getBodyColor(context)))),
       data: (assignments) {
         if (assignments.isEmpty) {
           return _EmptyTab(
@@ -347,25 +354,21 @@ class _AssignmentsTab extends ConsumerWidget {
 class _AnnouncementsTab extends ConsumerWidget {
   final int channelId;
   final Color color;
-  const _AnnouncementsTab(
-      {required this.channelId, required this.color});
+  const _AnnouncementsTab({required this.channelId, required this.color});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final async = ref.watch(channelAnnouncementsProvider(channelId));
     return async.when(
-      loading: () =>
-          const Center(child: CircularProgressIndicator()),
+      loading: () => const Center(child: CircularProgressIndicator()),
       error: (e, _) => Center(
           child: Text('Failed to load announcements',
-              style: GoogleFonts.outfit(
-                  color: AppColors.getBodyColor(context)))),
+              style:
+                  GoogleFonts.outfit(color: AppColors.getBodyColor(context)))),
       data: (announcements) {
         if (announcements.isEmpty) {
           return _EmptyTab(
-              icon: FeatherIcons.bell,
-              label: 'No announcements',
-              color: color);
+              icon: FeatherIcons.bell, label: 'No announcements', color: color);
         }
         return ListView.separated(
           padding: const EdgeInsets.all(16),
@@ -385,9 +388,7 @@ class _ChatShortcutTab extends StatelessWidget {
   final VoidCallback onOpenChat;
   final ChannelModel channel;
   const _ChatShortcutTab(
-      {required this.color,
-      required this.onOpenChat,
-      required this.channel});
+      {required this.color, required this.onOpenChat, required this.channel});
 
   @override
   Widget build(BuildContext context) {
@@ -403,8 +404,7 @@ class _ChatShortcutTab extends StatelessWidget {
                 color: color.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child:
-                  Icon(FeatherIcons.messageSquare, size: 48, color: color),
+              child: Icon(FeatherIcons.messageSquare, size: 48, color: color),
             ),
             const SizedBox(height: 20),
             Text('${channel.subjectName} Chat',
@@ -417,19 +417,16 @@ class _ChatShortcutTab extends StatelessWidget {
             Text(
                 'Jump into the live channel to chat with classmates and your teacher.',
                 style: GoogleFonts.outfit(
-                    fontSize: 13,
-                    color: AppColors.getBodyColor(context)),
+                    fontSize: 13, color: AppColors.getBodyColor(context)),
                 textAlign: TextAlign.center),
             const SizedBox(height: 28),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
                 onPressed: onOpenChat,
-                icon:
-                    const Icon(FeatherIcons.messageSquare, size: 16),
+                icon: const Icon(FeatherIcons.messageSquare, size: 16),
                 label: Text('Open Chat',
-                    style: GoogleFonts.outfit(
-                        fontWeight: FontWeight.w600)),
+                    style: GoogleFonts.outfit(fontWeight: FontWeight.w600)),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: color,
                   foregroundColor: Colors.white,
@@ -458,7 +455,9 @@ class _SectionHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Container(width: 3, height: 16,
+        Container(
+            width: 3,
+            height: 16,
             decoration: BoxDecoration(
                 color: color, borderRadius: BorderRadius.circular(2))),
         const SizedBox(width: 8),
@@ -499,9 +498,7 @@ class _StatChip extends StatelessWidget {
             const SizedBox(height: 6),
             Text(value,
                 style: GoogleFonts.outfit(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: color)),
+                    fontSize: 20, fontWeight: FontWeight.bold, color: color)),
             Text(label,
                 style: GoogleFonts.outfit(
                     fontSize: 10, color: AppColors.getBodyColor(context))),
@@ -527,8 +524,7 @@ class _InfoRow extends StatelessWidget {
         const SizedBox(width: 8),
         Text('$label: ',
             style: GoogleFonts.outfit(
-                fontSize: 12,
-                color: AppColors.getBodyColor(ctx))),
+                fontSize: 12, color: AppColors.getBodyColor(ctx))),
         Expanded(
           child: Text(value,
               style: GoogleFonts.outfit(
@@ -561,10 +557,8 @@ class _MiniAssignmentCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(
-              isOverdue ? FeatherIcons.alertCircle : FeatherIcons.clock,
-              color: statusColor,
-              size: 14),
+          Icon(isOverdue ? FeatherIcons.alertCircle : FeatherIcons.clock,
+              color: statusColor, size: 14),
           const SizedBox(width: 10),
           Expanded(
             child: Text(a.title,
@@ -574,10 +568,8 @@ class _MiniAssignmentCard extends StatelessWidget {
                     color: AppColors.getHeadingColor(context)),
                 overflow: TextOverflow.ellipsis),
           ),
-          Text(
-              DateFormat('MMM d').format(a.dueDate.toLocal()),
-              style: GoogleFonts.outfit(
-                  fontSize: 11, color: statusColor)),
+          Text(DateFormat('MMM d').format(a.dueDate.toLocal()),
+              style: GoogleFonts.outfit(fontSize: 11, color: statusColor)),
         ],
       ),
     );
@@ -622,8 +614,7 @@ class _AssignmentCard extends StatelessWidget {
                         color: AppColors.getHeadingColor(context))),
               ),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
                   color: statusColor.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(20),
@@ -642,8 +633,7 @@ class _AssignmentCard extends StatelessWidget {
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: GoogleFonts.outfit(
-                    fontSize: 12,
-                    color: AppColors.getBodyColor(context))),
+                    fontSize: 12, color: AppColors.getBodyColor(context))),
           ],
           const SizedBox(height: 8),
           Row(
@@ -653,8 +643,7 @@ class _AssignmentCard extends StatelessWidget {
               const SizedBox(width: 4),
               Text('Due ${DateFormat('MMM d, y').format(a.dueDate.toLocal())}',
                   style: GoogleFonts.outfit(
-                      fontSize: 11,
-                      color: AppColors.getBodyColor(context))),
+                      fontSize: 11, color: AppColors.getBodyColor(context))),
               const Spacer(),
               if (a.marks != null)
                 Text('${a.marks}/${a.maxMarks} marks',
@@ -719,8 +708,7 @@ class _AnnouncementCard extends StatelessWidget {
           const SizedBox(height: 6),
           Text(content,
               style: GoogleFonts.outfit(
-                  fontSize: 13,
-                  color: AppColors.getBodyColor(context))),
+                  fontSize: 13, color: AppColors.getBodyColor(context))),
           const SizedBox(height: 8),
           Row(
             children: [
@@ -729,13 +717,11 @@ class _AnnouncementCard extends StatelessWidget {
               const SizedBox(width: 4),
               Text(createdBy,
                   style: GoogleFonts.outfit(
-                      fontSize: 11,
-                      color: AppColors.getBodyColor(context))),
+                      fontSize: 11, color: AppColors.getBodyColor(context))),
               const Spacer(),
               Text(date,
                   style: GoogleFonts.outfit(
-                      fontSize: 10,
-                      color: AppColors.getBodyColor(context))),
+                      fontSize: 10, color: AppColors.getBodyColor(context))),
             ],
           ),
         ],
@@ -760,15 +746,13 @@ class _EmptyTab extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.08),
-                shape: BoxShape.circle),
+                color: color.withValues(alpha: 0.08), shape: BoxShape.circle),
             child: Icon(icon, size: 40, color: color.withValues(alpha: 0.4)),
           ),
           const SizedBox(height: 16),
           Text(label,
               style: GoogleFonts.outfit(
-                  fontSize: 15,
-                  color: AppColors.getBodyColor(context))),
+                  fontSize: 15, color: AppColors.getBodyColor(context))),
         ],
       ),
     );
