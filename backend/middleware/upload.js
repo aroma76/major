@@ -34,6 +34,7 @@ const storage = new CloudinaryStorage({
         'zip', 'rar', '7z',
       ],
       resource_type: getResourceType(ext),
+      type: 'upload',   // Force public delivery — prevents 401 "Unauthorized" errors
       public_id: `${Date.now()}-${file.originalname.replace(/\.[^.]+$/, '')}`,
     };
   },
