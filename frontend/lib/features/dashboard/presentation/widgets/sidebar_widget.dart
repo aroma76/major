@@ -239,8 +239,9 @@ class SidebarWidget extends ConsumerWidget {
                         child: InkWell(
                           onTap: () {
                             ref.read(navigationProvider.notifier).navigateTo(7);
-                            if (Navigator.of(context).canPop())
+                            if (Navigator.of(context).canPop()) {
                               Navigator.of(context).pop();
+                            }
                           },
                           borderRadius: BorderRadius.circular(10),
                           child: Row(
@@ -292,8 +293,9 @@ class SidebarWidget extends ConsumerWidget {
                           borderRadius: BorderRadius.circular(8),
                           onTap: () {
                             ref.read(navigationProvider.notifier).navigateTo(7);
-                            if (Navigator.of(context).canPop())
+                            if (Navigator.of(context).canPop()) {
                               Navigator.of(context).pop();
+                            }
                           },
                           child: Padding(
                             padding: const EdgeInsets.all(6),

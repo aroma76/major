@@ -99,8 +99,9 @@ class MessagesNotifier extends Notifier<MessagesState> {
   }
 
   Future<void> loadMore() async {
-    if (!state.hasMore || state.isFetchingMore || state.messages.isEmpty)
+    if (!state.hasMore || state.isFetchingMore || state.messages.isEmpty) {
       return;
+    }
     if (_disposed) return;
     state = state.copyWith(isFetchingMore: true);
     final cursorId = state.messages.first.id;

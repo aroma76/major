@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_feather_icons/flutter_feather_icons.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:desktop_drop/desktop_drop.dart';
 import 'package:dio/dio.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -333,8 +332,9 @@ class _MessagesViewWidgetState extends ConsumerState<MessagesViewWidget> {
               error: (e, _) =>
                   const Center(child: Text('Error loading channels')),
               data: (channels) {
-                if (channels.isEmpty)
+                if (channels.isEmpty) {
                   return const Center(child: Text('No channels.'));
+                }
                 return ListView.builder(
                   itemCount: channels.length,
                   itemBuilder: (_, i) => _ChannelTile(
@@ -387,8 +387,9 @@ class _MessagesViewWidgetState extends ConsumerState<MessagesViewWidget> {
                       error: (e, _) =>
                           const Center(child: Text('Error loading channels')),
                       data: (channels) {
-                        if (channels.isEmpty)
+                        if (channels.isEmpty) {
                           return const Center(child: Text('No channels.'));
+                        }
                         return ListView.builder(
                           itemCount: channels.length,
                           itemBuilder: (_, i) => _ChannelTile(
@@ -433,57 +434,9 @@ class _MessagesViewWidgetState extends ConsumerState<MessagesViewWidget> {
     );
   }
 
-  /// Wraps [child] in a [DropTarget] that accepts OS-level file drags.
+  /// Wraps [child] in a DropTarget (removed as unsupported on Linux CI/Web).
   Widget _buildDropTarget(ChannelModel channel, Widget child) {
-    return DropTarget(
-      onDragEntered: (_) => setState(() => _isDragging = true),
-      onDragExited: (_) => setState(() => _isDragging = false),
-      onDragDone: (details) async {
-        setState(() => _isDragging = false);
-        final dropped = <PlatformFile>[];
-        for (final f in details.files) {
-          final bytes = await f.readAsBytes();
-          final name = f.name;
-          dropped.add(PlatformFile(
-            name: name,
-            size: bytes.length,
-            bytes: bytes,
-            readStream: null,
-          ));
-        }
-        if (dropped.isNotEmpty)
-          setState(() => _pendingFiles = [..._pendingFiles, ...dropped]);
-      },
-      child: Stack(
-        children: [
-          child,
-          if (_isDragging)
-            Positioned.fill(
-              child: Container(
-                decoration: BoxDecoration(
-                  color: AppColors.accent.withValues(alpha: 0.12),
-                  border: Border.all(color: AppColors.accent, width: 2),
-                ),
-                child: Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(FeatherIcons.uploadCloud,
-                          size: 48, color: AppColors.accent),
-                      const SizedBox(height: 12),
-                      Text('Drop files to send',
-                          style: GoogleFonts.outfit(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.accent)),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-        ],
-      ),
-    );
+    return child;
   }
 }
 
@@ -682,11 +635,12 @@ class _ChatArea extends ConsumerWidget {
                   ? Center(child: Text('Failed to load messages'))
                   : () {
                       final messages = messagesState.messages;
-                      if (messages.isEmpty)
+                      if (messages.isEmpty) {
                         return Center(
                             child: Text('No messages yet',
                                 style: GoogleFonts.outfit(
                                     color: AppColors.getBodyColor(context))));
+                      }
                       return NotificationListener<ScrollNotification>(
                         onNotification: (ScrollNotification scrollInfo) {
                           if (scrollInfo.metrics.pixels <= 200) {

@@ -519,8 +519,9 @@ class _FacultyLoginCard extends StatelessWidget {
                     accent: _purple,
                     context: context,
                     validator: (v) {
-                      if (v == null || v.trim().isEmpty)
+                      if (v == null || v.trim().isEmpty) {
                         return 'Enter your email';
+                      }
                       if (!v.contains('@')) return 'Enter a valid email';
                       return null;
                     },
