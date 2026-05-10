@@ -11,12 +11,14 @@ on:
     paths:
       - 'backend/**'
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true  # Opt into Node.js 24 before it becomes mandatory June 2026
+
 jobs:
   validate:
     name: Validate Node.js Backend
     runs-on: ubuntu-latest
 
-    # Use the same Node version that Render deploys with
     strategy:
       matrix:
         node-version: [20.x]
