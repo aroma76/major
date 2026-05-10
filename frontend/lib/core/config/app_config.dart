@@ -1,9 +1,7 @@
 class AppConfig {
   // ── Backend URLs ──
-  // Production (Render): 'https://major-gin9.onrender.com'
-  static const String _localUrl = 'http://localhost:5000';
-
-  // ── Auto-select URL based on environment ──
+  // Development:  'http://localhost:5000/api'
+  // Production:   'https://major-gin9.onrender.com/api'
   static const String _productionUrl = 'https://major-gin9.onrender.com';
   static String get baseUrl => _productionUrl;
 

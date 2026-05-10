@@ -77,10 +77,6 @@ class ApiService {
   Future<Response> getNotes(int channelId) =>
       dio.get('/channels/$channelId/notes');
 
-  // ── Files ─────────────────────────────────────────────────────────────────
-  Future<Response> getFiles(int channelId) =>
-      dio.get('/channels/$channelId/files');
-
   // ── Notifications ─────────────────────────────────────────────────────────
   Future<Response> getNotifications() => dio.get('/notifications');
 

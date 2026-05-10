@@ -163,11 +163,11 @@ class SidebarWidget extends ConsumerWidget {
                 duration: const Duration(milliseconds: 180),
                 padding: const EdgeInsets.symmetric(vertical: 13, horizontal: 16),
                 decoration: BoxDecoration(
-                  color: ref.watch(navigationProvider) == 8
+                  color: selectedIndex == 7
                       ? AppColors.accent.withValues(alpha: 0.12)
                       : Colors.transparent,
                   borderRadius: BorderRadius.circular(12),
-                  border: ref.watch(navigationProvider) == 7
+                  border: selectedIndex == 7
                       ? Border.all(color: AppColors.accent.withValues(alpha: 0.3))
                       : null,
                 ),
@@ -176,7 +176,7 @@ class SidebarWidget extends ConsumerWidget {
                     Icon(
                       FeatherIcons.settings,
                       size: 20,
-                      color: ref.watch(navigationProvider) == 8
+                      color: selectedIndex == 7
                           ? AppColors.accent
                           : AppColors.getBodyColor(context),
                     ),
@@ -185,10 +185,10 @@ class SidebarWidget extends ConsumerWidget {
                       'Settings',
                       style: TextStyle(
                         fontSize: 15,
-                        fontWeight: ref.watch(navigationProvider) == 7
+                        fontWeight: selectedIndex == 7
                             ? FontWeight.w600
                             : FontWeight.w500,
-                        color: ref.watch(navigationProvider) == 8
+                        color: selectedIndex == 7
                             ? AppColors.accent
                             : AppColors.getBodyColor(context),
                       ),

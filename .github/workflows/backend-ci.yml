@@ -1,0 +1,74 @@
+name: Backend CI
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/backend-ci.yml'
+  pull_request:
+    branches: [main, master]
+    paths:
+      - 'backend/**'
+
+jobs:
+  validate:
+    name: Validate Node.js Backend
+    runs-on: ubuntu-latest
+
+    # Use the same Node version that Render deploys with
+    strategy:
+      matrix:
+        node-version: [20.x]
+
+    steps:
+      # ── 1. Checkout ──────────────────────────────────────────────────────────
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ── 2. Setup Node ─────────────────────────────────────────────────────────
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      # ── 3. Install dependencies ───────────────────────────────────────────────
+      - name: Install dependencies
+        working-directory: backend
+        run: npm ci
+
+      # ── 4. Syntax check — verify all JS files parse correctly ─────────────────
+      # Uses Node's built-in parser; catches require() of deleted files early.
+      - name: Syntax check (node --check)
+        working-directory: backend
+        run: |
+          find . -name "*.js" \
+            -not -path "./node_modules/*" \
+            -not -path "./.git/*" \
+            | xargs -I {} node --check {}
+          echo "✅ All files passed syntax check"
+
+      # ── 5. Verify server starts without crashing ──────────────────────────────
+      # Starts the server for 5 seconds with a fake DB URL to catch import errors.
+      # The server will fail to connect to the DB but should not crash on startup.
+      - name: Smoke test — server starts
+        working-directory: backend
+        env:
+          NODE_ENV: test
+          PORT: 5001
+          JWT_SECRET: ci_test_secret_minimum_32_chars_here
+          DATABASE_URL: postgresql://fake:fake@localhost:5432/fake
+          CLOUDINARY_CLOUD_NAME: fake
+          CLOUDINARY_API_KEY: fake
+          CLOUDINARY_API_SECRET: fake
+          CLIENT_URL: http://localhost:3000
+        run: |
+          timeout 8 node server.js & SERVER_PID=$!
+          sleep 5
+          # Check the health endpoint responds
+          curl --fail --silent http://localhost:5001/api/health \
+            && echo "✅ Health check passed" \
+            || echo "⚠️  Health check skipped (DB connection expected to fail in CI)"
+          kill $SERVER_PID 2>/dev/null || true

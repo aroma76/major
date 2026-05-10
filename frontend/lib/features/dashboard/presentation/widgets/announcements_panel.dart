@@ -7,11 +7,31 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../features/auth/auth_provider.dart';
 import '../providers/api_providers.dart';
 
-class AnnouncementsPanel extends ConsumerWidget {
+class AnnouncementsPanel extends ConsumerStatefulWidget {
   const AnnouncementsPanel({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<AnnouncementsPanel> createState() => _AnnouncementsPanelState();
+}
+
+class _AnnouncementsPanelState extends ConsumerState<AnnouncementsPanel> {
+  @override
+  void initState() {
+    super.initState();
+    // Invalidate on mount so a stale error from a previous session re-fetches.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final isFaculty = ref.read(authProvider).value?.isFaculty ?? false;
+      // Only invalidate if the provider is in error state — avoids redundant calls
+      final current = ref.read(dashboardRecentActivityProvider(isFaculty));
+      if (current.hasError) {
+        ref.invalidate(dashboardRecentActivityProvider(isFaculty));
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final isFaculty = ref.watch(authProvider).value?.isFaculty ?? false;
     final activityAsync = ref.watch(dashboardRecentActivityProvider(isFaculty));
 

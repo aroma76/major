@@ -132,18 +132,19 @@ class _TeacherOverviewWidgetState extends ConsumerState<TeacherOverviewWidget>
 
   @override
   Widget build(BuildContext context) {
+    final isMobile = MediaQuery.of(context).size.width < 600;
     return FadeTransition(
       opacity: _fadeAnim,
       child: SlideTransition(
         position: _slideAnim,
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
+          padding: EdgeInsets.all(isMobile ? 16 : 24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // ── Hero Banner ─────────────────────────────────────────────
               _TeacherHeroBanner(greeting: _getGreeting(), date: _formatDate()),
-              const SizedBox(height: 28),
+              SizedBox(height: isMobile ? 20 : 28),
 
               // ── Stat Cards (real API) ─────────────────────────────────────
               _SectionHeader(title: 'At a Glance', icon: FeatherIcons.barChart2),
@@ -192,13 +193,13 @@ class _TeacherOverviewWidgetState extends ConsumerState<TeacherOverviewWidget>
                   return _StatGrid(stats: liveStats);
                 },
               ),
-              const SizedBox(height: 28),
+              SizedBox(height: isMobile ? 20 : 28),
 
               // ── Quick Actions ────────────────────────────────────────────
               _SectionHeader(title: 'Quick Actions', icon: FeatherIcons.zap),
               const SizedBox(height: 14),
-              _QuickActionsRow(actions: _actions, ref: ref),
-              const SizedBox(height: 28),
+              _QuickActionsGrid(actions: _actions, ref: ref, isMobile: isMobile),
+              SizedBox(height: isMobile ? 20 : 28),
 
               // ── Managed Subjects (real API data) ─────────────────────────
               ref.watch(channelsProvider).when(
@@ -249,7 +250,7 @@ class _TeacherOverviewWidgetState extends ConsumerState<TeacherOverviewWidget>
                         ],
                       ),
               ),
-              const SizedBox(height: 28),
+              SizedBox(height: isMobile ? 20 : 28),
 
               // ── Recent Announcements ─────────────────────────────────────
               _SectionHeader(title: 'Recent Announcements', icon: FeatherIcons.bell),
@@ -283,10 +284,11 @@ class _TeacherHeroBanner extends ConsumerWidget {
     final students = statsData?['totalStudents'] as int? ?? 0;
     final subjects = statsData?['totalSubjects']  as int? ?? 0;
     final pending  = statsData?['pendingReviews'] as int? ?? 0;
+    final isMobile = MediaQuery.of(context).size.width < 600;
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(28),
+      padding: EdgeInsets.all(isMobile ? 18 : 28),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [Color(0xFF6B21A8), Color(0xFFA855F7), Color(0xFF3B82F6)],
@@ -351,7 +353,7 @@ class _TeacherHeroBanner extends ConsumerWidget {
                         Text(
                           '$greeting, $firstName!',
                           style: GoogleFonts.outfit(
-                            fontSize: 22,
+                            fontSize: isMobile ? 18 : 22,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
                           ),
@@ -359,7 +361,7 @@ class _TeacherHeroBanner extends ConsumerWidget {
                         Text(
                           date,
                           style: GoogleFonts.outfit(
-                            fontSize: 13,
+                            fontSize: isMobile ? 11 : 13,
                             color: Colors.white.withValues(alpha: 0.75),
                           ),
                         ),
@@ -368,7 +370,7 @@ class _TeacherHeroBanner extends ConsumerWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: isMobile ? 14 : 20),
               Wrap(
                 spacing: 10,
                 runSpacing: 8,
@@ -443,9 +445,9 @@ class _StatGrid extends StatelessWidget {
     return GridView.builder(
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: isMobile ? 2 : 4,
-        crossAxisSpacing: 14,
-        mainAxisSpacing: 14,
-        childAspectRatio: isMobile ? 1.4 : 1.6,
+        crossAxisSpacing: 12,
+        mainAxisSpacing: 12,
+        childAspectRatio: isMobile ? 1.6 : 1.6,
       ),
       itemCount: stats.length,
       shrinkWrap: true,
@@ -548,14 +550,39 @@ class _StatCardState extends State<_StatCard> {
 // Quick Actions Row
 // ─────────────────────────────────────────────────────────────────────────────
 
-class _QuickActionsRow extends StatelessWidget {
+class _QuickActionsGrid extends StatelessWidget {
   final List<_TeacherAction> actions;
   final WidgetRef ref;
+  final bool isMobile;
 
-  const _QuickActionsRow({required this.actions, required this.ref});
+  const _QuickActionsGrid({required this.actions, required this.ref, this.isMobile = false});
 
   @override
   Widget build(BuildContext ctx) {
+    if (isMobile) {
+      // 2×2 grid on mobile
+      return Column(
+        children: [
+          for (int row = 0; row < 2; row++) ...[
+            Row(
+              children: [
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: _QuickActionCard(action: actions[row * 2], ref: ref),
+                  ),
+                ),
+                Expanded(
+                  child: _QuickActionCard(action: actions[row * 2 + 1], ref: ref),
+                ),
+              ],
+            ),
+            if (row < 1) const SizedBox(height: 10),
+          ],
+        ],
+      );
+    }
+    // Desktop: single row of 4
     return Row(
       children: actions.map((action) {
         final isLast = actions.indexOf(action) == actions.length - 1;

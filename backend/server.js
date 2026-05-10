@@ -16,15 +16,14 @@ const compression   = require('compression');
 const authRoutes         = require('./routes/authRoutes');
 const channelRoutes      = require('./routes/subjectRoutes');
 const messageRoutes      = require('./routes/messageRoutes');
-const fileRoutes         = require('./routes/fileRoutes');
 const assignmentRoutes   = require('./routes/assignmentRoutes');
 const announcementRoutes = require('./routes/announcementRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 const actualNotesRoutes  = require('./routes/actualNotesRoutes');
-const projectRoutes           = require('./routes/projectRoutes');
-const academicEventRoutes     = require('./routes/academicEventRoutes');
-const enrollmentRoutes        = require('./routes/enrollmentRoutes');
-const teacherRoutes           = require('./routes/teacherRoutes');
+const projectRoutes      = require('./routes/projectRoutes');
+const academicEventRoutes = require('./routes/academicEventRoutes');
+const enrollmentRoutes   = require('./routes/enrollmentRoutes');
+const teacherRoutes      = require('./routes/teacherRoutes');
 
 const app = express();
 const server = http.createServer(app);
@@ -100,7 +99,6 @@ app.use('/api/auth', authRoutes);
 
 app.use('/api/channels',                   channelRoutes);
 app.use('/api/channels/:id/messages',      messageRoutes);
-app.use('/api/channels/:id/files',         fileRoutes);
 app.use('/api/channels/:id/assignments',   assignmentRoutes);
 app.use('/api/channels/:id/announcements', announcementRoutes);
 app.use('/api/channels/:id/notes',         actualNotesRoutes);

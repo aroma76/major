@@ -1,5 +1,11 @@
 const pool = require('../config/db');
 
+/**
+ * GET /api/channels/:id/announcements
+ * Returns all announcements for a channel, newest first.
+ * Joins with users to include the poster's name and role.
+ * Accessible by any authenticated user enrolled in the channel.
+ */
 const getAnnouncements = async (req, res) => {
   const result = await pool.query(
     // schema uses 'user_id' not 'created_by'
@@ -11,6 +17,15 @@ const getAnnouncements = async (req, res) => {
   res.json({ success: true, announcements: result.rows });
 };
 
+/**
+ * POST /api/channels/:id/announcements
+ * Creates a new announcement in a channel.
+ * Restricted to faculty and admin roles only.
+ * Also inserts a notification row for every enrolled student so they
+ * see an in-app alert even if they are offline at time of posting.
+ *
+ * Body: { title: string, content: string, is_important?: boolean }
+ */
 const createAnnouncement = async (req, res) => {
   const { title, content, is_important = false } = req.body;
   if (!title || !content)
@@ -38,8 +53,13 @@ const createAnnouncement = async (req, res) => {
   res.status(201).json({ success: true, announcement: result.rows[0] });
 };
 
+/**
+ * DELETE /api/channels/:id/announcements/:announcementId
+ * Permanently deletes a single announcement by its ID.
+ * Restricted to faculty and admin roles only.
+ */
 const deleteAnnouncement = async (req, res) => {
-  await pool.query('DELETE FROM announcements WHERE id=$1', [req.params.id]);
+  await pool.query('DELETE FROM announcements WHERE id=$1', [req.params.announcementId]);
   res.json({ success: true, message: 'Announcement deleted' });
 };
 

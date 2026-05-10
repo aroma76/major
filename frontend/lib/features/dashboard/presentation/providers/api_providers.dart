@@ -92,42 +92,37 @@ final academicEventsProvider =
 
 final teacherStatsProvider =
     FutureProvider<Map<String, dynamic>>((ref) async {
+  ref.keepAlive(); // Expensive query — cache for the session
   final api = ApiService();
   final res = await api.getTeacherStats();
   final data = res.data as Map<String, dynamic>;
   return data['stats'] as Map<String, dynamic>? ?? {};
 });
 
-// ── Teacher Recent Activity (announcements + messages) ───────────────────
 
-final teacherRecentActivityProvider =
-    FutureProvider<Map<String, dynamic>>((ref) async {
-  final api = ApiService();
-  final res = await api.getTeacherRecentActivity();
-  final data = res.data as Map<String, dynamic>;
-  return {
-    'announcements': (data['announcements'] as List<dynamic>? ?? [])
-        .cast<Map<String, dynamic>>(),
-    'recentMessages': (data['recentMessages'] as List<dynamic>? ?? [])
-        .cast<Map<String, dynamic>>(),
-  };
-});
 // ── Unified Dashboard Recent Activity ───────────────────────────────────────
 // Pass isFaculty = true for teachers, false for students.
 // Using family avoids a circular import with auth_provider.dart.
 
 final dashboardRecentActivityProvider =
     FutureProvider.family<Map<String, dynamic>, bool>((ref, isFaculty) async {
-  ref.keepAlive(); // cache so re-navigating to dashboard doesn't re-fetch
   final api = ApiService();
-  final res = isFaculty
-      ? await api.getTeacherRecentActivity()
-      : await api.getStudentRecentActivity();
-  final data = res.data as Map<String, dynamic>;
-  return {
-    'announcements': (data['announcements'] as List<dynamic>? ?? [])
-        .cast<Map<String, dynamic>>(),
-    'recentMessages': (data['recentMessages'] as List<dynamic>? ?? [])
-        .cast<Map<String, dynamic>>(),
-  };
+  try {
+    final res = isFaculty
+        ? await api.getTeacherRecentActivity()
+        : await api.getStudentRecentActivity();
+    final data = res.data as Map<String, dynamic>;
+    final result = {
+      'announcements': (data['announcements'] as List<dynamic>? ?? [])
+          .cast<Map<String, dynamic>>(),
+      'recentMessages': (data['recentMessages'] as List<dynamic>? ?? [])
+          .cast<Map<String, dynamic>>(),
+    };
+    // Only keep alive after a successful fetch — errors remain disposable
+    // so ref.invalidate() from the Retry button works correctly.
+    ref.keepAlive();
+    return result;
+  } catch (e) {
+    rethrow;
+  }
 });

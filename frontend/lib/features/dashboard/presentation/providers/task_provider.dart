@@ -1,7 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import '../../data/models/task_model.dart';
-import '../../data/models/subject_model.dart';
 import '../../data/models/project_model.dart';
 
 final taskProvider = NotifierProvider<TaskNotifier, List<TaskModel>>(() {
@@ -87,59 +86,6 @@ class TaskNotifier extends Notifier<List<TaskModel>> {
   }
 }
 
-final subjectProvider = NotifierProvider<SubjectNotifier, List<SubjectModel>>(() {
-  return SubjectNotifier();
-});
-
-class SubjectNotifier extends Notifier<List<SubjectModel>> {
-  @override
-  List<SubjectModel> build() {
-    return _initialSubjects;
-  }
-
-  static final List<SubjectModel> _initialSubjects = [
-    SubjectModel(
-      id: 's1',
-      name: 'Mobile Development',
-      teacher: 'Dr. Sarah Mitchell',
-      progress: 0.65,
-      pendingTasks: 3,
-      lastUpdated: '2 hours ago',
-      imageUrl: 'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?q=80&w=200&auto=format&fit=crop',
-      color: Colors.blue,
-    ),
-    SubjectModel(
-      id: 's2',
-      name: 'Database Management',
-      teacher: 'Prof. James Wilson',
-      progress: 0.40,
-      pendingTasks: 5,
-      lastUpdated: '1 day ago',
-      imageUrl: 'https://images.unsplash.com/photo-1544383835-bda2bc66a55d?q=80&w=200&auto=format&fit=crop',
-      color: Colors.orange,
-    ),
-    SubjectModel(
-      id: 's3',
-      name: 'Operating Systems',
-      teacher: 'Dr. Robert Chen',
-      progress: 0.82,
-      pendingTasks: 1,
-      lastUpdated: '4 hours ago',
-      imageUrl: 'https://images.unsplash.com/photo-1629654297299-c8506221ca97?q=80&w=200&auto=format&fit=crop',
-      color: Colors.teal,
-    ),
-    SubjectModel(
-      id: 's4',
-      name: 'Design & Analysis of Algorithms',
-      teacher: 'Prof. Alice Thompson',
-      progress: 0.25,
-      pendingTasks: 4,
-      lastUpdated: 'Just now',
-      imageUrl: 'https://images.unsplash.com/photo-1509228468518-180dd482180c?q=80&w=200&auto=format&fit=crop',
-      color: Colors.purple,
-    ),
-  ];
-}
 
 final projectProvider = NotifierProvider<ProjectNotifier, List<ProjectModel>>(() {
   return ProjectNotifier();

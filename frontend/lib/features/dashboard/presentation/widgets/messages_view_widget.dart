@@ -709,6 +709,7 @@ class _MessageBubbleState extends ConsumerState<_MessageBubble> {
     final ext = fileName?.split('.').last.toLowerCase() ?? '';
     final isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp'].contains(ext);
     final isPdf = ext == 'pdf';
+    final isMobile = MediaQuery.of(context).size.width < 700;
 
     if (isImage) {
       // ── Image: full-screen zoomable overlay ────────────────────────────────
@@ -747,16 +748,97 @@ class _MessageBubbleState extends ConsumerState<_MessageBubble> {
           ),
         ),
       );
+    } else if (isMobile) {
+      // ── Mobile: show an in-app bottom sheet with open / download ───────────
+      // Opening new tabs is blocked on mobile browsers, so we show a sheet
+      // with explicit "Open" (externalApplication) and "Download" buttons.
+      final isDark = Theme.of(context).brightness == Brightness.dark;
+      showModalBottomSheet(
+        context: context,
+        backgroundColor: Colors.transparent,
+        builder: (sheetCtx) => Container(
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
+          decoration: BoxDecoration(
+            color: isDark ? AppColors.secondaryBackground : AppColors.lightSecondaryBackground,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // drag handle
+              Container(
+                width: 36, height: 4,
+                margin: const EdgeInsets.only(bottom: 20),
+                decoration: BoxDecoration(
+                  color: AppColors.getBorderColor(context),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              Icon(
+                isPdf ? FeatherIcons.fileText : FeatherIcons.file,
+                size: 48,
+                color: AppColors.accent,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                fileName ?? 'Attachment',
+                style: GoogleFonts.outfit(
+                  fontSize: 15, fontWeight: FontWeight.bold,
+                  color: AppColors.getHeadingColor(context),
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        Navigator.pop(sheetCtx);
+                        _downloadFile(url);
+                      },
+                      icon: const Icon(FeatherIcons.download, size: 16),
+                      label: const Text('Download'),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () async {
+                        Navigator.pop(sheetCtx);
+                        final uri = Uri.parse(url);
+                        if (await canLaunchUrl(uri)) {
+                          await launchUrl(uri, mode: LaunchMode.externalApplication);
+                        }
+                      },
+                      icon: const Icon(FeatherIcons.externalLink, size: 16),
+                      label: const Text('Open'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.accent,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      );
     } else if (isPdf) {
-      // ── PDF: open directly in a new browser tab ───────────────────────────
-      // The browser's built-in PDF viewer is far more reliable than an iframe.
-      // Cloudinary PDFs are served with correct MIME types, so this just works.
+      // ── Desktop PDF: open in new browser tab ──────────────────────────────
       final uri = Uri.parse(url);
       if (await canLaunchUrl(uri)) {
         await launchUrl(uri, webOnlyWindowName: '_blank');
       }
     } else {
-      // ── Other file types (docx, pptx, etc.) — open in new tab ─────────────
+      // ── Desktop other files: open in new tab ──────────────────────────────
       final uri = Uri.parse(url);
       if (await canLaunchUrl(uri)) {
         launchUrl(uri, webOnlyWindowName: '_blank');
@@ -798,7 +880,11 @@ class _MessageBubbleState extends ConsumerState<_MessageBubble> {
       alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
         margin: const EdgeInsets.only(bottom: 18),
-        constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.55),
+        constraints: BoxConstraints(
+          maxWidth: MediaQuery.of(context).size.width < 700
+              ? MediaQuery.of(context).size.width * 0.82
+              : MediaQuery.of(context).size.width * 0.55,
+        ),
         child: Column(
           crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
           children: [
@@ -1051,8 +1137,9 @@ class _InputBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isMobile = MediaQuery.of(context).size.width < 700;
     return Container(
-      padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+      padding: EdgeInsets.fromLTRB(isMobile ? 12 : 20, 0, isMobile ? 12 : 20, isMobile ? 12 : 20),
       child: Column(
         children: [
           // ── Replying-to chip ─────────────────────────────────────────
