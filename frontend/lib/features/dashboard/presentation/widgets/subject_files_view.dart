@@ -1,3 +1,5 @@
+import 'dart:async' show unawaited;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_feather_icons/flutter_feather_icons.dart';
@@ -5,6 +7,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/theme/app_colors.dart';
+// ignore: avoid_web_libraries_in_flutter
+import 'dart:html' as html show window;
 import '../providers/saved_files_provider.dart';
 
 /// Reusable subject-grouped file browser.
@@ -337,16 +341,19 @@ class _FileCard extends StatefulWidget {
 class _FileCardState extends State<_FileCard> {
   bool _hovered = false;
 
-  Future<void> _openFile() async {
-    final uri = Uri.parse(widget.file.fileUrl);
-    try {
-      await launchUrl(uri, webOnlyWindowName: '_blank');
-    } catch (_) {
-      // URL could not be launched
+  void _openFile() {
+    // Use synchronous window.open on web to preserve user gesture context.
+    // async launchUrl loses the gesture and browsers block the popup.
+    if (kIsWeb) {
+      html.window.open(widget.file.fileUrl, '_blank');
+    } else {
+      unawaited(
+          launchUrl(Uri.parse(widget.file.fileUrl),
+              webOnlyWindowName: '_blank'));
     }
   }
 
-  Future<void> _downloadFile() async {
+  void _downloadFile() {
     final url = widget.file.fileUrl;
     // Insert fl_attachment as a Cloudinary path transformation (not query param)
     String downloadUrl = url.split('?').first;
@@ -354,11 +361,11 @@ class _FileCardState extends State<_FileCard> {
       downloadUrl =
           downloadUrl.replaceFirst('/upload/', '/upload/fl_attachment/');
     }
-    final uri = Uri.parse(downloadUrl);
-    try {
-      await launchUrl(uri, webOnlyWindowName: '_blank');
-    } catch (_) {
-      // URL could not be launched
+    if (kIsWeb) {
+      html.window.open(downloadUrl, '_blank');
+    } else {
+      unawaited(launchUrl(Uri.parse(downloadUrl),
+          webOnlyWindowName: '_blank'));
     }
   }
 

@@ -45,15 +45,19 @@ class _TeacherPostAnnouncementDialogState
     });
     try {
       final api = ApiService();
-      await api.dio.post(
-        '/channels/${_selectedChannel!.id}/announcements',
-        data: {
-          'title': _titleCtrl.text.trim(),
-          'content': _contentCtrl.text.trim(),
-          'is_important': _isImportant,
-        },
+      await api.createAnnouncement(
+        _selectedChannel!.id,
+        _titleCtrl.text.trim(),
+        _contentCtrl.text.trim(),
+        isImportant: _isImportant,
       );
+      // Invalidate the per-channel provider (Subject Hub tab)
       ref.invalidate(channelAnnouncementsProvider(_selectedChannel!.id));
+      // ✅ Also invalidate the dashboard recent-activity provider so the
+      // AnnouncementsPanel on the home dashboard shows the new announcement
+      // immediately — invalidate for both faculty and student roles.
+      ref.invalidate(dashboardRecentActivityProvider(true));
+      ref.invalidate(dashboardRecentActivityProvider(false));
       if (mounted) Navigator.pop(context, true);
     } catch (e) {
       setState(() {

@@ -166,13 +166,110 @@ class TaskDetailsDialog extends ConsumerWidget {
               ),
             ),
 
-            // ── Actions ──────────────────────────────────────────────────────
+            // ── Move to status ────────────────────────────────────────────
             Container(
-              padding: const EdgeInsets.fromLTRB(24, 14, 24, 18),
+              padding: const EdgeInsets.fromLTRB(24, 14, 24, 0),
               decoration: BoxDecoration(
                 border: Border(
                     top: BorderSide(color: AppColors.getBorderColor(context))),
               ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Move to',
+                    style: GoogleFonts.outfit(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.getBodyColor(context),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      _StatusChip(
+                        label: 'To Do',
+                        icon: FeatherIcons.circle,
+                        color: AppColors.todoColor,
+                        isActive: task.status == TaskStatus.todo,
+                        onTap: task.status == TaskStatus.todo
+                            ? null
+                            : () {
+                                ref
+                                    .read(taskProvider.notifier)
+                                    .updateTaskStatus(
+                                        task.id, TaskStatus.todo);
+                                Navigator.pop(context);
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                        '"${task.title}" moved to To Do',
+                                        style: GoogleFonts.outfit()),
+                                    behavior: SnackBarBehavior.floating,
+                                    duration: const Duration(seconds: 2),
+                                  ),
+                                );
+                              },
+                      ),
+                      const SizedBox(width: 8),
+                      _StatusChip(
+                        label: 'In Progress',
+                        icon: FeatherIcons.loader,
+                        color: AppColors.inProgressColor,
+                        isActive: task.status == TaskStatus.inProgress,
+                        onTap: task.status == TaskStatus.inProgress
+                            ? null
+                            : () {
+                                ref
+                                    .read(taskProvider.notifier)
+                                    .updateTaskStatus(
+                                        task.id, TaskStatus.inProgress);
+                                Navigator.pop(context);
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                        '"${task.title}" moved to In Progress',
+                                        style: GoogleFonts.outfit()),
+                                    behavior: SnackBarBehavior.floating,
+                                    duration: const Duration(seconds: 2),
+                                  ),
+                                );
+                              },
+                      ),
+                      const SizedBox(width: 8),
+                      _StatusChip(
+                        label: 'Done',
+                        icon: FeatherIcons.checkCircle,
+                        color: AppColors.doneColor,
+                        isActive: task.status == TaskStatus.done,
+                        onTap: task.status == TaskStatus.done
+                            ? null
+                            : () {
+                                ref
+                                    .read(taskProvider.notifier)
+                                    .updateTaskStatus(
+                                        task.id, TaskStatus.done);
+                                Navigator.pop(context);
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                        '"${task.title}" marked as Done ✓',
+                                        style: GoogleFonts.outfit()),
+                                    behavior: SnackBarBehavior.floating,
+                                    duration: const Duration(seconds: 2),
+                                  ),
+                                );
+                              },
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+
+            // ── Actions ──────────────────────────────────────────────────────
+            Container(
+              padding: const EdgeInsets.fromLTRB(24, 14, 24, 18),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -383,6 +480,73 @@ class _DetailSection extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _StatusChip extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final Color color;
+  final bool isActive;
+  final VoidCallback? onTap;
+
+  const _StatusChip({
+    required this.label,
+    required this.icon,
+    required this.color,
+    required this.isActive,
+    this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
+          decoration: BoxDecoration(
+            color: isActive
+                ? color.withValues(alpha: 0.18)
+                : AppColors.getSurfaceColor(context),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: isActive
+                  ? color
+                  : AppColors.getBorderColor(context),
+              width: isActive ? 1.5 : 1.0,
+            ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon,
+                  size: 12,
+                  color: isActive ? color : AppColors.getBodyColor(context)),
+              const SizedBox(width: 5),
+              Flexible(
+                child: Text(
+                  label,
+                  style: GoogleFonts.outfit(
+                    fontSize: 11,
+                    fontWeight:
+                        isActive ? FontWeight.bold : FontWeight.w500,
+                    color: isActive
+                        ? color
+                        : AppColors.getBodyColor(context),
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

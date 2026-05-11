@@ -1,0 +1,25 @@
+name: Keep Render Warm
+
+# Pings the backend health endpoint every 10 minutes so Render's free tier
+# never goes cold. This eliminates the 20–30 second cold-start delay on login.
+on:
+  schedule:
+    - cron: '*/10 * * * *'   # every 10 minutes, 24/7
+  workflow_dispatch:          # allow manual trigger from GitHub Actions UI
+
+jobs:
+  ping:
+    name: Ping Backend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping health endpoint
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            --max-time 35 \
+            https://major-gin9.onrender.com/api/health)
+          echo "Health check status: $STATUS"
+          if [ "$STATUS" != "200" ]; then
+            echo "⚠️  Backend returned $STATUS — may still be warming up"
+          else
+            echo "✅ Backend is warm"
+          fi

@@ -1,3 +1,5 @@
+import 'dart:async' show unawaited;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_feather_icons/flutter_feather_icons.dart';
@@ -7,6 +9,8 @@ import 'package:http_parser/http_parser.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+// ignore: avoid_web_libraries_in_flutter
+import 'dart:html' as html show window;
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/services/socket_service.dart';
@@ -896,13 +900,14 @@ class _MessageBubbleState extends ConsumerState<_MessageBubble> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: ElevatedButton.icon(
-                      onPressed: () async {
+                      onPressed: () {
                         Navigator.pop(sheetCtx);
-                        final uri = Uri.parse(url);
-                        try {
-                          await launchUrl(uri,
-                              mode: LaunchMode.externalApplication);
-                        } catch (_) {}
+                        if (kIsWeb) {
+                          html.window.open(url, '_blank');
+                        } else {
+                          unawaited(launchUrl(Uri.parse(url),
+                              mode: LaunchMode.externalApplication));
+                        }
                       },
                       icon: const Icon(FeatherIcons.externalLink, size: 16),
                       label: const Text('Open'),
@@ -923,20 +928,28 @@ class _MessageBubbleState extends ConsumerState<_MessageBubble> {
       );
     } else if (isPdf) {
       // ── Desktop PDF: open in new browser tab ──────────────────────────────
-      final uri = Uri.parse(url);
-      try {
-        await launchUrl(uri, webOnlyWindowName: '_blank');
-      } catch (_) {}
+      if (kIsWeb) {
+        html.window.open(url, '_blank');
+      } else {
+        final uri = Uri.parse(url);
+        try {
+          await launchUrl(uri, webOnlyWindowName: '_blank');
+        } catch (_) {}
+      }
     } else {
       // ── Desktop other files: open in new tab ──────────────────────────────
-      final uri = Uri.parse(url);
-      try {
-        await launchUrl(uri, webOnlyWindowName: '_blank');
-      } catch (_) {}
+      if (kIsWeb) {
+        html.window.open(url, '_blank');
+      } else {
+        final uri = Uri.parse(url);
+        try {
+          await launchUrl(uri, webOnlyWindowName: '_blank');
+        } catch (_) {}
+      }
     }
   }
 
-  void _downloadFile(String url) async {
+  void _downloadFile(String url) {
     // For Cloudinary URLs, insert fl_attachment as a path transformation
     // so the browser downloads instead of rendering inline.
     // Works for both /image/upload/ and /raw/upload/ paths.
@@ -947,10 +960,14 @@ class _MessageBubbleState extends ConsumerState<_MessageBubble> {
           .replaceFirst('/image/upload/', '/image/upload/fl_attachment/')
           .replaceFirst('/raw/upload/', '/raw/upload/fl_attachment/');
     }
-    final uri = Uri.parse(downloadUrl);
-    try {
-      await launchUrl(uri, webOnlyWindowName: '_blank');
-    } catch (_) {}
+    // On web, use window.open() SYNCHRONOUSLY — async launchUrl loses
+    // the user gesture context and browsers block the popup.
+    if (kIsWeb) {
+      html.window.open(downloadUrl, '_blank');
+    } else {
+      unawaited(launchUrl(Uri.parse(downloadUrl),
+          webOnlyWindowName: '_blank'));
+    }
   }
 
   @override

@@ -73,6 +73,15 @@ class ApiService {
   Future<Response> getAnnouncements(int channelId) =>
       dio.get('/channels/$channelId/announcements');
 
+  Future<Response> createAnnouncement(
+          int channelId, String title, String content,
+          {bool isImportant = false}) =>
+      dio.post('/channels/$channelId/announcements', data: {
+        'title': title,
+        'content': content,
+        'is_important': isImportant,
+      });
+
   // ── Notes ─────────────────────────────────────────────────────────────────
   Future<Response> getNotes(int channelId) =>
       dio.get('/channels/$channelId/notes');

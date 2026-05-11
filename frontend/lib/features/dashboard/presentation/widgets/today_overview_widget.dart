@@ -159,23 +159,85 @@ class _TodayOverviewWidgetState extends ConsumerState<TodayOverviewWidget>
               channelsAsync.whenOrNull(
                     data: (channels) => channels.isEmpty
                         ? const SizedBox.shrink()
-                        : Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              _SectionHeader(
-                                  title: 'Enrolled Subjects',
-                                  icon: FeatherIcons.bookOpen),
-                              const SizedBox(height: 14),
-                              ...channels.map((ch) => _SubjectProgressRow(
-                                    name: ch.subjectName.isNotEmpty
-                                        ? ch.subjectName
-                                        : ch.channelName,
-                                    progress: 0.0,
-                                    teacher: ch.teacherName ?? 'Faculty',
-                                    pendingTasks: 0,
-                                  )),
-                              const SizedBox(height: 24),
-                            ],
+                        : Consumer(
+                            builder: (context, ref, _) {
+                              final assignmentsAsync =
+                                  ref.watch(allAssignmentsProvider);
+                              return assignmentsAsync.when(
+                                loading: () => Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    _SectionHeader(
+                                        title: 'Enrolled Subjects',
+                                        icon: FeatherIcons.bookOpen),
+                                    const SizedBox(height: 14),
+                                    ...channels.map((ch) => _SubjectProgressRow(
+                                          name: ch.subjectName.isNotEmpty
+                                              ? ch.subjectName
+                                              : ch.channelName,
+                                          progress: 0.0,
+                                          teacher: ch.teacherName ?? 'Faculty',
+                                          pendingTasks: 0,
+                                        )),
+                                    const SizedBox(height: 24),
+                                  ],
+                                ),
+                                error: (_, __) => Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    _SectionHeader(
+                                        title: 'Enrolled Subjects',
+                                        icon: FeatherIcons.bookOpen),
+                                    const SizedBox(height: 14),
+                                    ...channels.map((ch) => _SubjectProgressRow(
+                                          name: ch.subjectName.isNotEmpty
+                                              ? ch.subjectName
+                                              : ch.channelName,
+                                          progress: 0.0,
+                                          teacher: ch.teacherName ?? 'Faculty',
+                                          pendingTasks: 0,
+                                        )),
+                                    const SizedBox(height: 24),
+                                  ],
+                                ),
+                                data: (allAssignments) => Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    _SectionHeader(
+                                        title: 'Enrolled Subjects',
+                                        icon: FeatherIcons.bookOpen),
+                                    const SizedBox(height: 14),
+                                    ...channels.map((ch) {
+                                      // Filter assignments for this channel
+                                      final chAssignments = allAssignments
+                                          .where((a) => a.channelId == ch.id)
+                                          .toList();
+                                      final total = chAssignments.length;
+                                      final submitted = chAssignments
+                                          .where((a) => a.isSubmitted)
+                                          .length;
+                                      // Pending = not yet submitted AND not overdue
+                                      final pending = chAssignments
+                                          .where((a) =>
+                                              !a.isSubmitted && !a.isOverdue)
+                                          .length;
+                                      // Progress = submitted / total (0.0 if no assignments)
+                                      final progress =
+                                          total > 0 ? submitted / total : 0.0;
+                                      return _SubjectProgressRow(
+                                        name: ch.subjectName.isNotEmpty
+                                            ? ch.subjectName
+                                            : ch.channelName,
+                                        progress: progress,
+                                        teacher: ch.teacherName ?? 'Faculty',
+                                        pendingTasks: pending,
+                                      );
+                                    }),
+                                    const SizedBox(height: 24),
+                                  ],
+                                ),
+                              );
+                            },
                           ),
                   ) ??
                   const SizedBox.shrink(),

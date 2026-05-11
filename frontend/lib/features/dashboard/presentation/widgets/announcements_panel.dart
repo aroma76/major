@@ -18,15 +18,13 @@ class _AnnouncementsPanelState extends ConsumerState<AnnouncementsPanel> {
   @override
   void initState() {
     super.initState();
-    // Invalidate on mount so a stale error from a previous session re-fetches.
+    // Always re-fetch on mount so new announcements posted since last view appear.
+    // dashboardRecentActivityProvider uses keepAlive so it won't auto-refresh
+    // without an explicit invalidate here.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       final isFaculty = ref.read(authProvider).value?.isFaculty ?? false;
-      // Only invalidate if the provider is in error state — avoids redundant calls
-      final current = ref.read(dashboardRecentActivityProvider(isFaculty));
-      if (current.hasError) {
-        ref.invalidate(dashboardRecentActivityProvider(isFaculty));
-      }
+      ref.invalidate(dashboardRecentActivityProvider(isFaculty));
     });
   }
 

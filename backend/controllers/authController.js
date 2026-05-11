@@ -2,8 +2,13 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const pool = require('../config/db');
 
-const generateToken = (id) =>
-  jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN || '7d' });
+const generateToken = (user) =>
+  jwt.sign(
+    // Embed key fields in the token so protect() needs no DB query per request
+    { id: user.id, role: user.role, name: user.name, email: user.email },
+    process.env.JWT_SECRET,
+    { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
+  );
 
 /**
  * POST /api/auth/register
@@ -41,7 +46,9 @@ const register = async (req, res) => {
       return res.status(400).json({ success: false, message: 'This Roll Number is already registered' });
   }
 
-  const hashed = await bcrypt.hash(password, 12);
+  // Cost 10 = OWASP recommended default (~100ms on modern hardware, ~4× faster
+  // than cost 12 with no meaningful security reduction on this threat model)
+  const hashed = await bcrypt.hash(password, 10);
   const initials = name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
 
   const result = await pool.query(
@@ -52,7 +59,7 @@ const register = async (req, res) => {
   );
 
   const user = result.rows[0];
-  res.status(201).json({ success: true, token: generateToken(user.id), user });
+  res.status(201).json({ success: true, token: generateToken(user), user });
 };
 
 /**
@@ -83,7 +90,7 @@ const login = async (req, res) => {
     return res.status(401).json({ success: false, message: 'Invalid credentials' });
 
   const { password: _, ...safeUser } = user;
-  res.json({ success: true, token: generateToken(user.id), user: safeUser });
+  res.json({ success: true, token: generateToken(safeUser), user: safeUser });
 };
 
 /**
@@ -156,7 +163,7 @@ const changePassword = async (req, res) => {
   }
 
   // Hash new password
-  const hashedNewPassword = await bcrypt.hash(newPassword, 12);
+  const hashedNewPassword = await bcrypt.hash(newPassword, 10);
 
   // Update password in database
   await pool.query('UPDATE users SET password = $1 WHERE id = $2', [hashedNewPassword, req.user.id]);
