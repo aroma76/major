@@ -1,4 +1,5 @@
 import 'dart:async' show unawaited;
+import 'dart:typed_data' show ByteBuffer;
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,8 +10,8 @@ import 'package:http_parser/http_parser.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-// ignore: avoid_web_libraries_in_flutter
-import 'dart:html' as html show window;
+// ignore: avoid_web_libraries_in_flutter, deprecated_member_use
+import 'dart:html' as html;
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/services/socket_service.dart';
@@ -438,10 +439,128 @@ class _MessagesViewWidgetState extends ConsumerState<MessagesViewWidget> {
     );
   }
 
-  /// Wraps [child] in a DropTarget (removed as unsupported on Linux CI/Web).
+  /// Wraps [child] in a native HTML5 drag-and-drop zone (web only).
+  /// Dropped files are converted to [PlatformFile] and queued for upload.
   Widget _buildDropTarget(ChannelModel channel, Widget child) {
-    return child;
+    if (!kIsWeb) return child;
+    return _WebDropZone(
+      onFilesDropped: (files) =>
+          setState(() => _pendingFiles = [..._pendingFiles, ...files]),
+      onDragStateChanged: (dragging) =>
+          setState(() => _isDragging = dragging),
+      child: child,
+    );
   }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+/// Listens to the browser's native HTML5 drag-and-drop events so users can
+/// drop files from their desktop directly onto the chat area.
+///
+/// Strategy:
+///  • [dragenter] / [dragleave] are tracked with a counter to avoid the
+///    flicker that occurs when the cursor crosses child element boundaries.
+///  • [dragover] has `preventDefault()` called on every tick — without this
+///    the browser won't fire [drop] at all.
+///  • [drop] reads every dropped [html.File] via [html.FileReader] and
+///    converts them to [PlatformFile] (with bytes) so they slot into the
+///    existing upload pipeline without any extra package.
+class _WebDropZone extends StatefulWidget {
+  final Widget child;
+  final void Function(List<PlatformFile>) onFilesDropped;
+  final void Function(bool) onDragStateChanged;
+
+  const _WebDropZone({
+    required this.child,
+    required this.onFilesDropped,
+    required this.onDragStateChanged,
+  });
+
+  @override
+  State<_WebDropZone> createState() => _WebDropZoneState();
+}
+
+class _WebDropZoneState extends State<_WebDropZone> {
+  // Track enter/leave pairs so crossing child boundaries doesn't flicker.
+  int _dragCounter = 0;
+
+  // We keep explicit listener references so we can remove them on dispose.
+  late final void Function(html.Event) _onDragEnter;
+  late final void Function(html.Event) _onDragOver;
+  late final void Function(html.Event) _onDragLeave;
+  late final void Function(html.Event) _onDrop;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _onDragEnter = (html.Event e) {
+      e.preventDefault();
+      _dragCounter++;
+      if (_dragCounter == 1) widget.onDragStateChanged(true);
+    };
+
+    _onDragOver = (html.Event e) {
+      e.preventDefault(); // required for drop to fire
+      (e as html.MouseEvent); // cast is safe; just ensures type
+    };
+
+    _onDragLeave = (html.Event e) {
+      e.preventDefault();
+      _dragCounter--;
+      if (_dragCounter <= 0) {
+        _dragCounter = 0;
+        widget.onDragStateChanged(false);
+      }
+    };
+
+    _onDrop = (html.Event e) async {
+      e.preventDefault();
+      _dragCounter = 0;
+      widget.onDragStateChanged(false);
+
+      final drag = e as html.MouseEvent;
+      final dt = (drag as dynamic).dataTransfer as html.DataTransfer?;
+      final htmlFiles = dt?.files;
+      if (htmlFiles == null || htmlFiles.isEmpty) return;
+
+      final result = <PlatformFile>[];
+      for (final htmlFile in htmlFiles) {
+        try {
+          final reader = html.FileReader();
+          reader.readAsArrayBuffer(htmlFile);
+          await reader.onLoadEnd.first;
+          final buf = reader.result as ByteBuffer;
+          final bytes = buf.asUint8List();
+          result.add(PlatformFile(
+            name: htmlFile.name,
+            size: bytes.length,
+            bytes: bytes,
+          ));
+        } catch (_) {
+          // Skip unreadable files silently.
+        }
+      }
+      if (result.isNotEmpty) widget.onFilesDropped(result);
+    };
+
+    html.document.addEventListener('dragenter', _onDragEnter);
+    html.document.addEventListener('dragover', _onDragOver);
+    html.document.addEventListener('dragleave', _onDragLeave);
+    html.document.addEventListener('drop', _onDrop);
+  }
+
+  @override
+  void dispose() {
+    html.document.removeEventListener('dragenter', _onDragEnter);
+    html.document.removeEventListener('dragover', _onDragOver);
+    html.document.removeEventListener('dragleave', _onDragLeave);
+    html.document.removeEventListener('drop', _onDrop);
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -578,8 +697,11 @@ class _ChatArea extends ConsumerWidget {
     final messagesState = ref.watch(messagesNotifierProvider(channel.id));
     final myId = AuthService().currentUser?['id']?.toString();
 
-    return Column(
+    return Stack(
       children: [
+        // ── Main chat UI ──────────────────────────────────────────────────
+        Column(
+          children: [
         // ── Header ────────────────────────────────────────────────────────
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
@@ -705,8 +827,67 @@ class _ChatArea extends ConsumerWidget {
           onTyping: onTyping,
           onClearReply: onClearReply,
         ),
+          ], // end Column children
+        ), // end Column
+
+        // ── Drag-over overlay ─────────────────────────────────────────────
+        if (isDragging)
+          Positioned.fill(
+            child: AnimatedOpacity(
+              opacity: isDragging ? 1.0 : 0.0,
+              duration: const Duration(milliseconds: 150),
+              child: Container(
+                margin: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.accent.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: AppColors.accent.withValues(alpha: 0.6),
+                    width: 2,
+                    // Dashed border via a custom painter
+                  ),
+                ),
+                child: Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: AppColors.accent.withValues(alpha: 0.12),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          FeatherIcons.uploadCloud,
+                          size: 48,
+                          color: AppColors.accent,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Drop files here',
+                        style: GoogleFonts.outfit(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.accent,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        'Release to attach to your message',
+                        style: GoogleFonts.outfit(
+                          fontSize: 13,
+                          color: AppColors.accent.withValues(alpha: 0.7),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
       ],
-    );
+    ); // end Stack
   }
 }
 
