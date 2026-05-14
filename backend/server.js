@@ -74,7 +74,11 @@ app.use(helmet({
       scriptSrc:  ["'self'"],
       styleSrc:   ["'self'", "'unsafe-inline'"],
       imgSrc:     ["'self'", 'data:', 'https://res.cloudinary.com'],
-      connectSrc: ["'self'", process.env.CLIENT_URL, 'https://major-three-tau.vercel.app'].filter(Boolean),
+      // [FIX] Allow browser to fetch/download files from Cloudinary (fl_attachment URLs)
+      connectSrc: ["'self'", process.env.CLIENT_URL, 'https://major-three-tau.vercel.app', 'https://res.cloudinary.com'].filter(Boolean),
+      // Allow Cloudinary URLs in iframes (PDF preview) and as media sources
+      frameSrc:   ["'self'", 'https://res.cloudinary.com'],
+      mediaSrc:   ["'self'", 'https://res.cloudinary.com'],
     },
   },
 }));
