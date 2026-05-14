@@ -112,7 +112,7 @@ app.use('/api/projects',                   projectRoutes);
 app.use('/api/academic-events',            academicEventRoutes);
 app.use('/api/enrollments',               enrollmentRoutes);
 app.use('/api/teacher',                   teacherRoutes);
-app.use('/api/signed-download',           downloadRoutes);
+app.use('/api/file-proxy',                downloadRoutes);
 
 app.use((req, res) => res.status(404).json({ success: false, message: `Route ${req.originalUrl} not found` }));
 app.use(errorHandler);

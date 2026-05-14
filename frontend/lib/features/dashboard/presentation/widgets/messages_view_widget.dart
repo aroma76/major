@@ -17,6 +17,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/services/socket_service.dart';
 import '../../../../core/services/auth_service.dart';
 import '../../../../core/services/api_service.dart';
+import '../../../../core/config/app_config.dart';
 import '../../data/models/channel_model.dart';
 import '../../data/models/api_message_model.dart';
 import '../providers/api_providers.dart';
@@ -1144,31 +1145,21 @@ class _MessageBubbleState extends ConsumerState<_MessageBubble> {
     }
   }
 
-  void _downloadFile(String url) async {
-    String downloadUrl = url.split('?').first;
-
-    // Get a signed URL from the backend to bypass Cloudinary 401 restriction.
-    // The backend generates a 1-hour signed URL using the Cloudinary SDK.
-    final signed = await ApiService().getSignedDownloadUrl(downloadUrl);
-    if (signed != null && signed.isNotEmpty) {
-      if (kIsWeb) {
-        html.window.open(signed, '_blank');
-      } else {
-        unawaited(launchUrl(Uri.parse(signed), webOnlyWindowName: '_blank'));
-      }
-      return;
-    }
-
-    // Fallback: try fl_attachment on raw-type URLs, or open directly.
-    if (downloadUrl.contains('cloudinary.com') &&
-        downloadUrl.contains('/raw/upload/')) {
-      downloadUrl = downloadUrl.replaceFirst(
-          '/raw/upload/', '/raw/upload/fl_attachment/');
-    }
+  void _downloadFile(String url) {
+    final cleanUrl = url.split('?').first;
     if (kIsWeb) {
-      html.window.open(downloadUrl, '_blank');
+      // Read JWT synchronously from localStorage.
+      // flutter_secure_storage stores under 'flutter.{key}' on web.
+      final token = html.window.localStorage['flutter.adtu_token'] ?? '';
+      final encoded = Uri.encodeComponent(cleanUrl);
+      final proxyUrl =
+          '${AppConfig.apiUrl}/file-proxy?url=$encoded&token=${Uri.encodeComponent(token)}';
+      // window.open() called synchronously — preserves user gesture,
+      // bypasses popup blocker. Backend generates signed Cloudinary URL
+      // and 302-redirects, so no file bytes pass through our server.
+      html.window.open(proxyUrl, '_blank');
     } else {
-      unawaited(launchUrl(Uri.parse(downloadUrl), webOnlyWindowName: '_blank'));
+      unawaited(launchUrl(Uri.parse(cleanUrl), webOnlyWindowName: '_blank'));
     }
   }
 

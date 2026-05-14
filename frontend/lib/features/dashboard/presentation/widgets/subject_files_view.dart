@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/services/api_service.dart';
+import '../../../../core/config/app_config.dart';
 // ignore: avoid_web_libraries_in_flutter
 import 'dart:html' as html show window;
 import '../providers/saved_files_provider.dart';
@@ -360,32 +361,16 @@ class _FileCardState extends State<_FileCard> {
     }
   }
 
-  void _downloadFile() async {
-    final url = widget.file.fileUrl;
-    final cleanUrl = url.split('?').first;
-
-    // Get a signed URL from backend to bypass Cloudinary 401 on raw delivery.
-    final signed = await ApiService().getSignedDownloadUrl(cleanUrl);
-    if (signed != null && signed.isNotEmpty) {
-      if (kIsWeb) {
-        html.window.open(signed, '_blank');
-      } else {
-        unawaited(launchUrl(Uri.parse(signed), webOnlyWindowName: '_blank'));
-      }
-      return;
-    }
-
-    // Fallback: only add fl_attachment for raw-type URLs.
-    String downloadUrl = cleanUrl;
-    if (downloadUrl.contains('cloudinary.com') &&
-        downloadUrl.contains('/raw/upload/')) {
-      downloadUrl = downloadUrl.replaceFirst(
-          '/raw/upload/', '/raw/upload/fl_attachment/');
-    }
+  void _downloadFile() {
+    final cleanUrl = widget.file.fileUrl.split('?').first;
     if (kIsWeb) {
-      html.window.open(downloadUrl, '_blank');
+      final token = html.window.localStorage['flutter.adtu_token'] ?? '';
+      final encoded = Uri.encodeComponent(cleanUrl);
+      final proxyUrl =
+          '${AppConfig.apiUrl}/file-proxy?url=$encoded&token=${Uri.encodeComponent(token)}';
+      html.window.open(proxyUrl, '_blank');
     } else {
-      unawaited(launchUrl(Uri.parse(downloadUrl), webOnlyWindowName: '_blank'));
+      unawaited(launchUrl(Uri.parse(cleanUrl), webOnlyWindowName: '_blank'));
     }
   }
 
