@@ -361,11 +361,14 @@ class _FileCardState extends State<_FileCard> {
 
   void _downloadFile() {
     final url = widget.file.fileUrl;
-    // Insert fl_attachment as a Cloudinary path transformation (not query param)
     String downloadUrl = url.split('?').first;
     if (downloadUrl.contains('cloudinary.com')) {
-      downloadUrl =
-          downloadUrl.replaceFirst('/upload/', '/upload/fl_attachment/');
+      if (downloadUrl.contains('/raw/upload/')) {
+        // raw-type: fl_attachment works correctly
+        downloadUrl = downloadUrl.replaceFirst(
+            '/raw/upload/', '/raw/upload/fl_attachment/');
+      }
+      // image-type: do NOT add fl_attachment — causes ERR_INVALID_RESPONSE
     }
     if (kIsWeb) {
       html.window.open(downloadUrl, '_blank');
@@ -374,6 +377,7 @@ class _FileCardState extends State<_FileCard> {
           webOnlyWindowName: '_blank'));
     }
   }
+
 
   @override
   Widget build(BuildContext context) {

@@ -1145,18 +1145,21 @@ class _MessageBubbleState extends ConsumerState<_MessageBubble> {
   }
 
   void _downloadFile(String url) {
-    // For Cloudinary URLs, insert fl_attachment as a path transformation
-    // so the browser downloads instead of rendering inline.
-    // Works for both /image/upload/ and /raw/upload/ paths.
-    String downloadUrl = url.split('?').first; // strip query params
+    // Strip query params first.
+    String downloadUrl = url.split('?').first;
+
     if (downloadUrl.contains('cloudinary.com')) {
-      // Handle both image and raw delivery types
-      downloadUrl = downloadUrl
-          .replaceFirst('/image/upload/', '/image/upload/fl_attachment/')
-          .replaceFirst('/raw/upload/', '/raw/upload/fl_attachment/');
+      if (downloadUrl.contains('/raw/upload/')) {
+        // raw-type resources: fl_attachment works correctly.
+        downloadUrl = downloadUrl.replaceFirst(
+            '/raw/upload/', '/raw/upload/fl_attachment/');
+      }
+      // image-type resources (legacy uploads, actual images):
+      // Do NOT add fl_attachment — Cloudinary's image pipeline transforms
+      // the file before serving, which returns ERR_INVALID_RESPONSE for PDFs.
+      // Opening the plain URL lets the browser display/download natively.
     }
-    // On web, use window.open() SYNCHRONOUSLY — async launchUrl loses
-    // the user gesture context and browsers block the popup.
+
     if (kIsWeb) {
       html.window.open(downloadUrl, '_blank');
     } else {
@@ -1164,6 +1167,7 @@ class _MessageBubbleState extends ConsumerState<_MessageBubble> {
           webOnlyWindowName: '_blank'));
     }
   }
+
 
   @override
   Widget build(BuildContext context) {

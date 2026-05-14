@@ -4,16 +4,18 @@ const multer = require('multer');
 
 /**
  * Determines the correct Cloudinary resource_type for a file.
- * - 'image' → Images AND PDFs (Cloudinary serves PDFs with correct MIME type under image delivery)
- * - 'raw'   → Everything else (docx, pptx, zip, txt, etc.)
- * Using 'auto' is avoided because it causes 501 errors when Cloudinary
- * auto-assigns 'raw' but the returned URL still uses the '/image/upload/' path.
+ * - 'image' → Images only (jpg, png, gif, etc.)
+ * - 'raw'   → Everything else: PDFs, docx, pptx, zip, txt, etc.
+ *
+ * PDFs must NOT use 'image' type — when fl_attachment is applied to an
+ * image-delivery PDF URL, Cloudinary runs its image transformation pipeline
+ * which returns a malformed HTTP response (ERR_INVALID_RESPONSE in Chrome).
+ * With 'raw' type, fl_attachment works reliably.
  */
 const getResourceType = (ext) => {
   const imageExts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg'];
-  const pdfExts   = ['pdf'];
-  if (imageExts.includes(ext) || pdfExts.includes(ext)) return 'image';
-  return 'raw'; // docx, pptx, xls, zip, txt, py, etc.
+  if (imageExts.includes(ext)) return 'image';
+  return 'raw'; // PDFs, docs, pptx, zip, txt, code files, etc.
 };
 
 const storage = new CloudinaryStorage({
