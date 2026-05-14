@@ -1117,17 +1117,16 @@ class _MessageBubbleState extends ConsumerState<_MessageBubble> {
         ),
       );
     } else if (isPdf) {
-      // ── Desktop PDF: render via Google Docs Viewer ────────────────────────
-      // Cloudinary image-type PDF URLs sometimes fail Chrome's built-in viewer
-      // (returns image bytes instead of raw PDF). Google Docs Viewer is a
-      // reliable cross-browser fallback that needs no extra setup.
-      final encodedUrl = Uri.encodeComponent(url);
-      final viewerUrl =
-          'https://docs.google.com/viewer?url=$encodedUrl&embedded=true';
+      // ── PDF viewer ───────────────────────────────────────────────────────
+      // Supabase URLs serve PDF with correct Content-Type — open directly.
+      // Legacy Cloudinary image-type URLs need Google Docs Viewer as fallback.
       if (kIsWeb) {
-        html.window.open(viewerUrl, '_blank');
+        final viewUrl = url.contains('supabase.co')
+            ? url
+            : 'https://docs.google.com/viewer?url=${Uri.encodeComponent(url)}&embedded=true';
+        html.window.open(viewUrl, '_blank');
       } else {
-        final uri = Uri.parse(url); // on native, the OS handles PDF natively
+        final uri = Uri.parse(url);
         try {
           await launchUrl(uri, webOnlyWindowName: '_blank');
         } catch (_) {}
@@ -1148,16 +1147,18 @@ class _MessageBubbleState extends ConsumerState<_MessageBubble> {
   void _downloadFile(String url) {
     final cleanUrl = url.split('?').first;
     if (kIsWeb) {
-      // Read JWT synchronously from localStorage.
-      // flutter_secure_storage stores under 'flutter.{key}' on web.
-      final token = html.window.localStorage['flutter.adtu_token'] ?? '';
-      final encoded = Uri.encodeComponent(cleanUrl);
-      final proxyUrl =
-          '${AppConfig.apiUrl}/file-proxy?url=$encoded&token=${Uri.encodeComponent(token)}';
-      // window.open() called synchronously — preserves user gesture,
-      // bypasses popup blocker. Backend generates signed Cloudinary URL
-      // and 302-redirects, so no file bytes pass through our server.
-      html.window.open(proxyUrl, '_blank');
+      if (cleanUrl.contains('supabase.co')) {
+        // Supabase public bucket: ?download=true → Content-Disposition: attachment
+        html.window.open('$cleanUrl?download=true', '_blank');
+      } else {
+        // Legacy Cloudinary URL: route through backend proxy
+        final token = html.window.localStorage['flutter.adtu_token'] ?? '';
+        final encoded = Uri.encodeComponent(cleanUrl);
+        html.window.open(
+          '${AppConfig.apiUrl}/file-proxy?url=$encoded&token=${Uri.encodeComponent(token)}',
+          '_blank',
+        );
+      }
     } else {
       unawaited(launchUrl(Uri.parse(cleanUrl), webOnlyWindowName: '_blank'));
     }

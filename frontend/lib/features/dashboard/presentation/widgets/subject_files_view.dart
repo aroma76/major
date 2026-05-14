@@ -364,15 +364,22 @@ class _FileCardState extends State<_FileCard> {
   void _downloadFile() {
     final cleanUrl = widget.file.fileUrl.split('?').first;
     if (kIsWeb) {
-      final token = html.window.localStorage['flutter.adtu_token'] ?? '';
-      final encoded = Uri.encodeComponent(cleanUrl);
-      final proxyUrl =
-          '${AppConfig.apiUrl}/file-proxy?url=$encoded&token=${Uri.encodeComponent(token)}';
-      html.window.open(proxyUrl, '_blank');
+      if (cleanUrl.contains('supabase.co')) {
+        html.window.open('$cleanUrl?download=true', '_blank');
+      } else {
+        // Legacy Cloudinary URL: backend proxy
+        final token = html.window.localStorage['flutter.adtu_token'] ?? '';
+        final encoded = Uri.encodeComponent(cleanUrl);
+        html.window.open(
+          '${AppConfig.apiUrl}/file-proxy?url=$encoded&token=${Uri.encodeComponent(token)}',
+          '_blank',
+        );
+      }
     } else {
       unawaited(launchUrl(Uri.parse(cleanUrl), webOnlyWindowName: '_blank'));
     }
   }
+
 
 
   @override

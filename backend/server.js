@@ -12,6 +12,7 @@ const errorHandler  = require('./middleware/errorHandler');
 const socketHandler = require('./socket/socketHandler');
 const { setIO }     = require('./controllers/messageController');
 const compression   = require('compression');
+const { ensureBucket } = require('./config/supabase');
 
 const authRoutes         = require('./routes/authRoutes');
 const channelRoutes      = require('./routes/subjectRoutes');
@@ -71,15 +72,14 @@ app.use(express.urlencoded({ extended: true }));
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
-      defaultSrc: ["'self'"],
-      scriptSrc:  ["'self'"],
-      styleSrc:   ["'self'", "'unsafe-inline'"],
-      imgSrc:     ["'self'", 'data:', 'https://res.cloudinary.com'],
-      // [FIX] Allow browser to fetch/download files from Cloudinary (fl_attachment URLs)
-      connectSrc: ["'self'", process.env.CLIENT_URL, 'https://major-three-tau.vercel.app', 'https://res.cloudinary.com'].filter(Boolean),
-      // Allow Cloudinary URLs in iframes (PDF preview) and as media sources
-      frameSrc:   ["'self'", 'https://res.cloudinary.com'],
-      mediaSrc:   ["'self'", 'https://res.cloudinary.com'],
+      defaultSrc : ["'self'"],
+      scriptSrc  : ["'self'"],
+      styleSrc   : ["'self'", "'unsafe-inline'"],
+      imgSrc     : ["'self'", 'data:', 'https://res.cloudinary.com', '*.supabase.co'],
+      connectSrc : ["'self'", process.env.CLIENT_URL, 'https://major-three-tau.vercel.app',
+                    'https://res.cloudinary.com', '*.supabase.co'].filter(Boolean),
+      frameSrc   : ["'self'", 'https://docs.google.com', '*.supabase.co'],
+      mediaSrc   : ["'self'", 'https://res.cloudinary.com', '*.supabase.co'],
     },
   },
 }));
@@ -118,4 +118,7 @@ app.use((req, res) => res.status(404).json({ success: false, message: `Route ${r
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => console.log(`🚀 Server running on port ${PORT} in ${process.env.NODE_ENV || 'development'} mode`));
+server.listen(PORT, async () => {
+  console.log(`🚀 Server running on port ${PORT} in ${process.env.NODE_ENV || 'development'} mode`);
+  await ensureBucket(); // ensure Supabase 'files' bucket exists
+});

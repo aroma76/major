@@ -1,52 +1,66 @@
-const cloudinary = require('../config/cloudinary');
-const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const multer = require('multer');
+const { supabase, BUCKET } = require('../config/supabase');
+
+const FOLDER = 'adtu-collab';
 
 /**
- * Determines the correct Cloudinary resource_type for a file.
- * - 'image' → Images only (jpg, png, gif, etc.)
- * - 'raw'   → Everything else: PDFs, docx, pptx, zip, txt, etc.
+ * Custom multer storage engine that streams uploaded files directly to
+ * Supabase Storage and returns the public URL as req.file.path.
  *
- * PDFs must NOT use 'image' type — when fl_attachment is applied to an
- * image-delivery PDF URL, Cloudinary runs its image transformation pipeline
- * which returns a malformed HTTP response (ERR_INVALID_RESPONSE in Chrome).
- * With 'raw' type, fl_attachment works reliably.
+ * This maintains full backward-compatibility with existing controllers
+ * (they still read req.file.path for the file URL — no changes needed there).
  */
-const getResourceType = (ext) => {
-  const imageExts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg'];
-  if (imageExts.includes(ext)) return 'image';
-  return 'raw'; // PDFs, docs, pptx, zip, txt, code files, etc.
-};
+class SupabaseStorage {
+  async _handleFile(req, file, cb) {
+    const chunks = [];
+    file.stream.on('data', (chunk) => chunks.push(chunk));
+    file.stream.on('error', cb);
+    file.stream.on('end', async () => {
+      try {
+        const buffer = Buffer.concat(chunks);
+        // Sanitise filename: replace spaces and keep extension
+        const safeName = file.originalname.replace(/\s+/g, '_');
+        const storagePath = `${FOLDER}/${Date.now()}-${safeName}`;
 
-const storage = new CloudinaryStorage({
-  cloudinary,
-  params: async (req, file) => {
-    const ext = (file.originalname.split('.').pop() || '').toLowerCase();
-    return {
-      folder: 'adtu-collab',
-      allowed_formats: [
-        // Images
-        'jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg',
-        // Documents
-        'pdf', 'doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx',
-        // Code & text
-        'txt', 'md', 'py', 'js', 'ts', 'dart', 'java', 'c', 'cpp', 'cs', 'go', 'rb',
-        'json', 'xml', 'csv', 'yaml', 'yml', 'ipynb', 'sh',
-        // Archives
-        'zip', 'rar', '7z',
-      ],
-      resource_type: getResourceType(ext),
-      type: 'upload',   // Force public delivery — prevents 401 "Unauthorized" errors
-      public_id: `${Date.now()}-${file.originalname.replace(/\.[^.]+$/, '')}`,
-    };
-  },
-});
+        const { error } = await supabase.storage
+          .from(BUCKET)
+          .upload(storagePath, buffer, {
+            contentType: file.mimetype,
+            upsert: false,
+          });
+
+        if (error) return cb(error);
+
+        // Build public URL — Supabase format for public buckets:
+        // {SUPABASE_URL}/storage/v1/object/public/{bucket}/{path}
+        const { data } = supabase.storage
+          .from(BUCKET)
+          .getPublicUrl(storagePath);
+
+        cb(null, {
+          path        : data.publicUrl,   // ← used by controllers as file URL
+          filename    : file.originalname,
+          size        : buffer.length,
+          storagePath,                     // ← Supabase path (for deletion later)
+        });
+      } catch (err) {
+        cb(err);
+      }
+    });
+  }
+
+  _removeFile(req, file, cb) {
+    if (file.storagePath) {
+      supabase.storage.from(BUCKET).remove([file.storagePath]).catch(() => {});
+    }
+    cb(null);
+  }
+}
 
 const fileFilter = (req, file, cb) => {
-  // Block only genuine malware/executable types
   const blockedMimes = [
-    'application/x-msdownload', // .exe
-    'application/x-bat',        // .bat
+    'application/x-msdownload',
+    'application/x-bat',
     'application/x-msdos-program',
   ];
   if (blockedMimes.includes(file.mimetype)) {
@@ -56,9 +70,9 @@ const fileFilter = (req, file, cb) => {
 };
 
 const upload = multer({
-  storage,
+  storage  : new SupabaseStorage(),
   fileFilter,
-  limits: { fileSize: 50 * 1024 * 1024 },
+  limits   : { fileSize: 50 * 1024 * 1024 }, // 50 MB
 });
 
 module.exports = upload;

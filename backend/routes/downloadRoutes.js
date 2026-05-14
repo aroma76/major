@@ -1,22 +1,21 @@
-const express    = require('express');
-const router     = express.Router();
-const jwt        = require('jsonwebtoken');
-const cloudinary = require('../config/cloudinary');
+const express = require('express');
+const router  = express.Router();
+const jwt     = require('jsonwebtoken');
 
 /**
- * GET /api/file-proxy?url=<encoded_cloudinary_url>&token=<jwt>
+ * GET /api/file-proxy?url=<encoded_url>&token=<jwt>
  *
- * Accepts a JWT via query param (so window.open() can call it synchronously,
- * preserving the browser user-gesture and avoiding popup blockers).
+ * Simple download proxy:
+ *  - Supabase URLs  → redirect to `url?download=true` (public, no signing needed)
+ *  - Cloudinary URLs (legacy) → redirect as-is (user can save from browser)
  *
- * Generates a signed Cloudinary URL and 302-redirects to it — the browser
- * follows the redirect and downloads/displays the file directly from
- * Cloudinary, so no file bytes pass through our server.
+ * Token is accepted in query param so window.open() can call this
+ * synchronously (preserving user gesture, bypassing popup blockers).
  */
-router.get('/', async (req, res) => {
+router.get('/', (req, res) => {
   const { url, token } = req.query;
 
-  // ── Auth ────────────────────────────────────────────────────────────────
+  // ── Auth ──────────────────────────────────────────────────────────────────
   if (!token) return res.status(401).send('Unauthorized');
   try {
     jwt.verify(token, process.env.JWT_SECRET);
@@ -24,36 +23,17 @@ router.get('/', async (req, res) => {
     return res.status(401).send('Invalid token');
   }
 
-  // ── Validate URL ─────────────────────────────────────────────────────────
-  if (!url || !url.includes('res.cloudinary.com')) {
-    return res.status(400).send('Invalid URL');
+  if (!url) return res.status(400).send('Missing url');
+
+  // ── Route by storage provider ─────────────────────────────────────────────
+  if (url.includes('supabase.co')) {
+    // Supabase public bucket: ?download=true triggers Content-Disposition: attachment
+    const cleanUrl = url.split('?')[0];
+    return res.redirect(`${cleanUrl}?download=true`);
   }
 
-  // Parse resource_type and public_id from delivery URL.
-  // e.g. https://res.cloudinary.com/{cloud}/{type}/upload/[v{n}/]{public_id}
-  const match = url.match(
-    /res\.cloudinary\.com\/[^/]+\/(image|raw|video)\/upload\/(?:(?:v\d+)\/)?(.+?)(\?|$)/
-  );
-  if (!match) return res.redirect(url); // unknown format — pass through
-
-  const resourceType = match[1];
-  const publicId     = decodeURIComponent(match[2].replace(/\/$/, ''));
-
-  try {
-    const signedUrl = cloudinary.url(publicId, {
-      resource_type : resourceType,
-      type          : 'upload',
-      sign_url      : true,
-      expires_at    : Math.floor(Date.now() / 1000) + 300, // 5 min
-      // fl_attachment only for raw — image-type fl_attachment causes ERR_INVALID_RESPONSE
-      ...(resourceType === 'raw' ? { flags: 'attachment' } : {}),
-    });
-
-    return res.redirect(signedUrl);
-  } catch (err) {
-    // Fallback: redirect to original URL
-    return res.redirect(url);
-  }
+  // Legacy Cloudinary URL — open as-is (best-effort)
+  return res.redirect(url.split('?')[0]);
 });
 
 module.exports = router;
