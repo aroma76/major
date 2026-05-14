@@ -131,4 +131,5 @@ const getPinnedMessages = async (req, res) => {
   res.json({ success: true, messages: result.rows });
 };
 
-module.exports = { getMessages, sendMessage, pinMessage, deleteMessage, getPinnedMessages, setIO };
+module.exports = { getMessages, sendMessage, pinMessage, deleteMessage, getPinnedMessages, setIO, getIO: () => _io };
+

@@ -138,17 +138,4 @@ class ApiService {
   // ── Student-specific (recent activity) ────────────────────────────────
   Future<Response> getStudentRecentActivity() =>
       dio.get('/teacher/student-activity');
-
-  // ── Signed Cloudinary download URL ────────────────────────────────────────
-  /// Returns a short-lived signed Cloudinary URL for [fileUrl].
-  /// Bypasses HTTP 401 that occurs when the account restricts raw delivery.
-  Future<String?> getSignedDownloadUrl(String fileUrl) async {
-    try {
-      final resp = await dio.get('/signed-download',
-          queryParameters: {'fileUrl': fileUrl});
-      return (resp.data as Map<String, dynamic>)['url'] as String?;
-    } catch (_) {
-      return null; // fall back to opening original URL
-    }
-  }
 }

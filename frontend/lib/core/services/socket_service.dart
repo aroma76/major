@@ -94,6 +94,16 @@ class SocketService {
         (data) => callback(Map<String, dynamic>.from(data)));
   }
 
+  /// Listen for new announcement broadcasts from the backend.
+  /// The backend emits 'announcement:new' to all channel members when a
+  /// teacher posts, enabling instant dashboard updates without page refresh.
+  void onNewAnnouncement(void Function(Map<String, dynamic>) callback) {
+    _socket?.off('announcement:new');
+    _socket?.on('announcement:new',
+        (data) => callback(Map<String, dynamic>.from(data)));
+  }
+
+
   void off(String event) => _socket?.off(event);
 
   void disconnect() {

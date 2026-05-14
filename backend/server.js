@@ -75,14 +75,15 @@ app.use(helmet({
       defaultSrc : ["'self'"],
       scriptSrc  : ["'self'"],
       styleSrc   : ["'self'", "'unsafe-inline'"],
-      imgSrc     : ["'self'", 'data:', 'https://res.cloudinary.com', '*.supabase.co'],
+      imgSrc     : ["'self'", 'data:', 'https://res.cloudinary.com', 'https://*.supabase.co'],
       connectSrc : ["'self'", process.env.CLIENT_URL, 'https://major-three-tau.vercel.app',
-                    'https://res.cloudinary.com', '*.supabase.co'].filter(Boolean),
-      frameSrc   : ["'self'", 'https://docs.google.com', '*.supabase.co'],
-      mediaSrc   : ["'self'", 'https://res.cloudinary.com', '*.supabase.co'],
+                    'https://res.cloudinary.com', 'https://*.supabase.co'].filter(Boolean),
+      frameSrc   : ["'self'", 'https://docs.google.com', 'https://*.supabase.co'],
+      mediaSrc   : ["'self'", 'https://res.cloudinary.com', 'https://*.supabase.co'],
     },
   },
 }));
+
 
 // ── Health check (MUST be before rate limiter so cron pings are never throttled)
 app.get('/api/health', (req, res) =>

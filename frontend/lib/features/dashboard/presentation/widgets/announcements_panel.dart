@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/services/socket_service.dart';
 import '../../../../features/auth/auth_provider.dart';
 import '../providers/api_providers.dart';
 
@@ -18,14 +19,31 @@ class _AnnouncementsPanelState extends ConsumerState<AnnouncementsPanel> {
   @override
   void initState() {
     super.initState();
-    // Always re-fetch on mount so new announcements posted since last view appear.
-    // dashboardRecentActivityProvider uses keepAlive so it won't auto-refresh
-    // without an explicit invalidate here.
+
+    // Re-fetch on mount. Using whenData ensures we only invalidate once auth
+    // is confirmed — prevents the race condition where isFaculty defaults to
+    // false during auth loading, invalidating the wrong provider variant.
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      ref.read(authProvider).whenData((auth) {
+        ref.invalidate(dashboardRecentActivityProvider(auth.isFaculty));
+      });
+    });
+
+    // Listen for real-time announcement broadcasts from the backend.
+    // When a teacher posts, the backend emits 'announcement:new' to all
+    // channel members so they see it without refreshing.
+    SocketService().onNewAnnouncement((_) {
       if (!mounted) return;
       final isFaculty = ref.read(authProvider).value?.isFaculty ?? false;
       ref.invalidate(dashboardRecentActivityProvider(isFaculty));
     });
+  }
+
+  @override
+  void dispose() {
+    SocketService().off('announcement:new');
+    super.dispose();
   }
 
   @override
