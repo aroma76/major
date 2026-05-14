@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/services/api_service.dart';
 // ignore: avoid_web_libraries_in_flutter
 import 'dart:html' as html show window;
 import '../providers/saved_files_provider.dart';
@@ -359,22 +360,32 @@ class _FileCardState extends State<_FileCard> {
     }
   }
 
-  void _downloadFile() {
+  void _downloadFile() async {
     final url = widget.file.fileUrl;
-    String downloadUrl = url.split('?').first;
-    if (downloadUrl.contains('cloudinary.com')) {
-      if (downloadUrl.contains('/raw/upload/')) {
-        // raw-type: fl_attachment works correctly
-        downloadUrl = downloadUrl.replaceFirst(
-            '/raw/upload/', '/raw/upload/fl_attachment/');
+    final cleanUrl = url.split('?').first;
+
+    // Get a signed URL from backend to bypass Cloudinary 401 on raw delivery.
+    final signed = await ApiService().getSignedDownloadUrl(cleanUrl);
+    if (signed != null && signed.isNotEmpty) {
+      if (kIsWeb) {
+        html.window.open(signed, '_blank');
+      } else {
+        unawaited(launchUrl(Uri.parse(signed), webOnlyWindowName: '_blank'));
       }
-      // image-type: do NOT add fl_attachment — causes ERR_INVALID_RESPONSE
+      return;
+    }
+
+    // Fallback: only add fl_attachment for raw-type URLs.
+    String downloadUrl = cleanUrl;
+    if (downloadUrl.contains('cloudinary.com') &&
+        downloadUrl.contains('/raw/upload/')) {
+      downloadUrl = downloadUrl.replaceFirst(
+          '/raw/upload/', '/raw/upload/fl_attachment/');
     }
     if (kIsWeb) {
       html.window.open(downloadUrl, '_blank');
     } else {
-      unawaited(launchUrl(Uri.parse(downloadUrl),
-          webOnlyWindowName: '_blank'));
+      unawaited(launchUrl(Uri.parse(downloadUrl), webOnlyWindowName: '_blank'));
     }
   }
 

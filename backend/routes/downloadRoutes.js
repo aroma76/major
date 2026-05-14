@@ -40,9 +40,11 @@ router.get('/', protect, (req, res) => {
     const signedUrl = cloudinary.url(publicIdFull, {
       resource_type : resourceType,
       type          : 'upload',
-      sign_url      : true,       // adds auth signature — bypasses 401 restriction
+      sign_url      : true,
       expires_at    : expiresAt,
-      flags         : 'attachment', // force browser download
+      // Only raw-type resources get fl_attachment — applying it to image-type
+      // PDFs triggers Cloudinary's image pipeline and causes ERR_INVALID_RESPONSE.
+      ...(resourceType === 'raw' ? { flags: 'attachment' } : {}),
     });
 
     res.json({ success: true, url: signedUrl });
