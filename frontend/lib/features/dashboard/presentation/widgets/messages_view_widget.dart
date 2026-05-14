@@ -1177,78 +1177,92 @@ class _MessageBubbleState extends ConsumerState<_MessageBubble> {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (sheetCtx) => Container(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 28),
-        decoration: BoxDecoration(
-          color: isDark
-              ? AppColors.secondaryBackground
-              : AppColors.lightSecondaryBackground,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Drag handle
-            Container(
-              width: 36, height: 4,
-              margin: const EdgeInsets.only(bottom: 16),
-              decoration: BoxDecoration(
-                color: AppColors.getBorderColor(context),
-                borderRadius: BorderRadius.circular(2),
-              ),
+      isScrollControlled: true,
+      builder: (sheetCtx) => SafeArea(
+        child: Material(
+          color: Colors.transparent,
+          child: Container(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF161B22) : Colors.white,
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
             ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Drag handle
+                Container(
+                  width: 36, height: 4,
+                  margin: const EdgeInsets.only(bottom: 16),
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF30363D) : const Color(0xFFD0D7DE),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
 
-            // ── Emoji reaction row ───────────────────────────────────────────
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-              decoration: BoxDecoration(
-                color: AppColors.getSurfaceColor(context),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppColors.getBorderColor(context)),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: _emojis.map((e) {
-                  final isSelected = _myReaction == e;
-                  return GestureDetector(
-                    onTap: () { Navigator.pop(sheetCtx); _react(e); },
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 120),
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: isSelected
-                            ? AppColors.accent.withValues(alpha: 0.15)
-                            : Colors.transparent,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(e, style: const TextStyle(fontSize: 22)),
+                // ── Emoji reaction row ─────────────────────────────────────
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF0D1117) : const Color(0xFFF6F8FA),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: isDark ? const Color(0xFF30363D) : const Color(0xFFD0D7DE),
                     ),
-                  );
-                }).toList(),
-              ),
-            ),
-            const SizedBox(height: 8),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: _emojis.map((e) {
+                      final isSelected = _myReaction == e;
+                      return GestureDetector(
+                        onTap: () { Navigator.pop(sheetCtx); _react(e); },
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 120),
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? AppColors.accent.withValues(alpha: 0.15)
+                                : Colors.transparent,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(e, style: const TextStyle(fontSize: 22)),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+                const SizedBox(height: 4),
 
-            // ── Action tiles ─────────────────────────────────────────────────
-            if (hasText)
-              _ActionTile(
-                icon: FeatherIcons.copy,
-                label: 'Copy',
-                onTap: () { Navigator.pop(sheetCtx); _copyText(); },
-              ),
-            _ActionTile(
-              icon: FeatherIcons.cornerUpLeft,
-              label: 'Reply',
-              onTap: () { Navigator.pop(sheetCtx); widget.onReply(msg); },
+                // ── Action tiles ──────────────────────────────────────────
+                if (hasText)
+                  ListTile(
+                    leading: Icon(FeatherIcons.copy, size: 20,
+                        color: isDark ? Colors.white70 : Colors.black87),
+                    title: Text('Copy',
+                        style: GoogleFonts.outfit(
+                            color: isDark ? Colors.white : Colors.black87)),
+                    onTap: () { Navigator.pop(sheetCtx); _copyText(); },
+                  ),
+                ListTile(
+                  leading: Icon(FeatherIcons.cornerUpLeft, size: 20,
+                      color: isDark ? Colors.white70 : Colors.black87),
+                  title: Text('Reply',
+                      style: GoogleFonts.outfit(
+                          color: isDark ? Colors.white : Colors.black87)),
+                  onTap: () { Navigator.pop(sheetCtx); widget.onReply(msg); },
+                ),
+                if (canDelete)
+                  ListTile(
+                    leading: const Icon(FeatherIcons.trash2, size: 20,
+                        color: Colors.red),
+                    title: Text('Delete',
+                        style: GoogleFonts.outfit(color: Colors.red)),
+                    onTap: () { Navigator.pop(sheetCtx); _deleteMessage(context); },
+                  ),
+                const SizedBox(height: 8),
+              ],
             ),
-            if (canDelete)
-              _ActionTile(
-                icon: FeatherIcons.trash2,
-                label: 'Delete',
-                isDestructive: true,
-                onTap: () { Navigator.pop(sheetCtx); _deleteMessage(context); },
-              ),
-          ],
+          ),
         ),
       ),
     );
@@ -1368,9 +1382,10 @@ class _MessageBubbleState extends ConsumerState<_MessageBubble> {
                 ),
               ),
 
-            // Long press → action sheet (Copy / Reply / React / Delete)
+            // Long press / right-click → action sheet
             GestureDetector(
               onLongPress: () => _showActionSheet(context),
+              onSecondaryTap: () => _showActionSheet(context),
               child: Column(
                 crossAxisAlignment:
                     isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
