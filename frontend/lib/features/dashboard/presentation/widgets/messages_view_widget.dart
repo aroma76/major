@@ -502,7 +502,6 @@ class _WebDropZoneState extends State<_WebDropZone> {
 
     _onDragOver = (html.Event e) {
       e.preventDefault(); // required for drop to fire
-      (e as html.MouseEvent); // cast is safe; just ensures type
     };
 
     _onDragLeave = (html.Event e) {
@@ -519,9 +518,9 @@ class _WebDropZoneState extends State<_WebDropZone> {
       _dragCounter = 0;
       widget.onDragStateChanged(false);
 
-      final drag = e as html.MouseEvent;
-      final dt = (drag as dynamic).dataTransfer as html.DataTransfer?;
-      final htmlFiles = dt?.files;
+      // DragEvent (not MouseEvent) is the correct type — it has .dataTransfer
+      final drag = e as html.DragEvent;
+      final htmlFiles = drag.dataTransfer?.files;
       if (htmlFiles == null || htmlFiles.isEmpty) return;
 
       final result = <PlatformFile>[];
