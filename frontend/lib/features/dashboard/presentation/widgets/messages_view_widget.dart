@@ -1107,11 +1107,17 @@ class _MessageBubbleState extends ConsumerState<_MessageBubble> {
         ),
       );
     } else if (isPdf) {
-      // ── Desktop PDF: open in new browser tab ──────────────────────────────
+      // ── Desktop PDF: render via Google Docs Viewer ────────────────────────
+      // Cloudinary image-type PDF URLs sometimes fail Chrome's built-in viewer
+      // (returns image bytes instead of raw PDF). Google Docs Viewer is a
+      // reliable cross-browser fallback that needs no extra setup.
+      final encodedUrl = Uri.encodeComponent(url);
+      final viewerUrl =
+          'https://docs.google.com/viewer?url=$encodedUrl&embedded=true';
       if (kIsWeb) {
-        html.window.open(url, '_blank');
+        html.window.open(viewerUrl, '_blank');
       } else {
-        final uri = Uri.parse(url);
+        final uri = Uri.parse(url); // on native, the OS handles PDF natively
         try {
           await launchUrl(uri, webOnlyWindowName: '_blank');
         } catch (_) {}

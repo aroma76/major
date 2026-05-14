@@ -342,14 +342,20 @@ class _FileCardState extends State<_FileCard> {
   bool _hovered = false;
 
   void _openFile() {
-    // Use synchronous window.open on web to preserve user gesture context.
-    // async launchUrl loses the gesture and browsers block the popup.
+    final url = widget.file.fileUrl;
+    final ext = url.split('.').last.split('?').first.toLowerCase();
+    final isPdf = ext == 'pdf';
+
     if (kIsWeb) {
-      html.window.open(widget.file.fileUrl, '_blank');
+      // PDFs: use Google Docs Viewer to avoid Chrome's built-in viewer failing
+      // on Cloudinary image-type delivery URLs.
+      final openUrl = isPdf
+          ? 'https://docs.google.com/viewer?url=${Uri.encodeComponent(url)}&embedded=true'
+          : url;
+      html.window.open(openUrl, '_blank');
     } else {
       unawaited(
-          launchUrl(Uri.parse(widget.file.fileUrl),
-              webOnlyWindowName: '_blank'));
+          launchUrl(Uri.parse(url), webOnlyWindowName: '_blank'));
     }
   }
 
