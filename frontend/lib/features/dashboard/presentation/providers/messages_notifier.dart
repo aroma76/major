@@ -98,6 +98,15 @@ class MessagesNotifier extends Notifier<MessagesState> {
     state = state.copyWith(messages: [...state.messages, msg]);
   }
 
+  /// Optimistically removes a message by ID from local state.
+  /// Call this before the DELETE API request so the UI updates instantly.
+  void remove(int msgId) {
+    if (_disposed) return;
+    state = state.copyWith(
+      messages: state.messages.where((m) => m.id != msgId).toList(),
+    );
+  }
+
   Future<void> loadMore() async {
     if (!state.hasMore || state.isFetchingMore || state.messages.isEmpty) {
       return;

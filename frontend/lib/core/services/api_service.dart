@@ -138,4 +138,9 @@ class ApiService {
   // ── Student-specific (recent activity) ────────────────────────────────
   Future<Response> getStudentRecentActivity() =>
       dio.get('/teacher/student-activity');
+
+  // ── Messages ─────────────────────────────────────────────────────────
+  Future<Response> deleteMessage(int channelId, int msgId) =>
+      dio.delete('/channels/$channelId/messages/$msgId');
 }
+

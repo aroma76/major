@@ -2,6 +2,7 @@ import 'dart:async' show unawaited;
 import 'dart:typed_data' show ByteBuffer;
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show Clipboard, ClipboardData;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_feather_icons/flutter_feather_icons.dart';
 import 'package:file_picker/file_picker.dart';
@@ -794,16 +795,13 @@ class _ChatArea extends ConsumerWidget {
                           itemBuilder: (_, i) {
                             final msg = messages[i];
                             final isMe = msg.senderId.toString() == myId;
-                            return InkWell(
-                              onLongPress: () => onReply(msg),
-                              hoverColor: AppColors.getBorderColor(context)
-                                  .withValues(alpha: 0.1),
-                              child: _MessageBubble(
-                                msg: msg,
-                                isMe: isMe,
-                                channel: channel,
-                              ),
+                            return _MessageBubble(
+                              msg: msg,
+                              isMe: isMe,
+                              channel: channel,
+                              onReply: onReply,
                             );
+
                           },
                         ),
                       );
@@ -906,11 +904,13 @@ class _MessageBubble extends ConsumerStatefulWidget {
   final ApiMessageModel msg;
   final bool isMe;
   final ChannelModel channel;
+  final void Function(ApiMessageModel) onReply;
 
   const _MessageBubble({
     required this.msg,
     required this.isMe,
     required this.channel,
+    required this.onReply,
   });
 
   @override
@@ -1165,9 +1165,120 @@ class _MessageBubbleState extends ConsumerState<_MessageBubble> {
   }
 
 
+  // ── Action Sheet ─────────────────────────────────────────────────────────────
+  void _showActionSheet(BuildContext context) {
+    final msg = widget.msg;
+    final isMe = widget.isMe;
+    final userRole = AuthService().currentUser?['role'] as String? ?? '';
+    final canDelete = isMe || userRole == 'faculty' || userRole == 'admin';
+    final hasText = msg.content != null && msg.content!.isNotEmpty;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (sheetCtx) => Container(
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 28),
+        decoration: BoxDecoration(
+          color: isDark
+              ? AppColors.secondaryBackground
+              : AppColors.lightSecondaryBackground,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Drag handle
+            Container(
+              width: 36, height: 4,
+              margin: const EdgeInsets.only(bottom: 16),
+              decoration: BoxDecoration(
+                color: AppColors.getBorderColor(context),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+
+            // ── Emoji reaction row ───────────────────────────────────────────
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+              decoration: BoxDecoration(
+                color: AppColors.getSurfaceColor(context),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppColors.getBorderColor(context)),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: _emojis.map((e) {
+                  final isSelected = _myReaction == e;
+                  return GestureDetector(
+                    onTap: () { Navigator.pop(sheetCtx); _react(e); },
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 120),
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? AppColors.accent.withValues(alpha: 0.15)
+                            : Colors.transparent,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(e, style: const TextStyle(fontSize: 22)),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+            const SizedBox(height: 8),
+
+            // ── Action tiles ─────────────────────────────────────────────────
+            if (hasText)
+              _ActionTile(
+                icon: FeatherIcons.copy,
+                label: 'Copy',
+                onTap: () { Navigator.pop(sheetCtx); _copyText(); },
+              ),
+            _ActionTile(
+              icon: FeatherIcons.cornerUpLeft,
+              label: 'Reply',
+              onTap: () { Navigator.pop(sheetCtx); widget.onReply(msg); },
+            ),
+            if (canDelete)
+              _ActionTile(
+                icon: FeatherIcons.trash2,
+                label: 'Delete',
+                isDestructive: true,
+                onTap: () { Navigator.pop(sheetCtx); _deleteMessage(context); },
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _copyText() {
+    final text = widget.msg.content ?? '';
+    if (text.isEmpty) return;
+    Clipboard.setData(ClipboardData(text: text));
+  }
+
+  Future<void> _deleteMessage(BuildContext context) async {
+    final channelId = widget.channel.id;
+    final msgId = widget.msg.id;
+    // Optimistically remove from UI instantly
+    ref.read(messagesNotifierProvider(channelId).notifier).remove(msgId);
+    try {
+      await ApiService().deleteMessage(channelId, msgId);
+    } catch (_) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Could not delete message. Try again.')),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+
     final msg = widget.msg;
     final isMe = widget.isMe;
     final bubbleColor = isMe
@@ -1257,9 +1368,9 @@ class _MessageBubbleState extends ConsumerState<_MessageBubble> {
                 ),
               ),
 
-            // Long press for reactions
+            // Long press → action sheet (Copy / Reply / React / Delete)
             GestureDetector(
-              onLongPress: _togglePicker,
+              onLongPress: () => _showActionSheet(context),
               child: Column(
                 crossAxisAlignment:
                     isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
@@ -1807,6 +1918,54 @@ class _SaveFileBtn extends ConsumerWidget {
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(icon, size: 14, color: saved ? activeColor : textColor),
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Reusable action tile for the long-press bottom sheet
+class _ActionTile extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+  final bool isDestructive;
+
+  const _ActionTile({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+    this.isDestructive = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final color = isDestructive ? Colors.red : AppColors.getHeadingColor(context);
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: isDestructive
+                    ? Colors.red.withValues(alpha: 0.1)
+                    : AppColors.getBorderColor(context).withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(icon, size: 18, color: color),
+            ),
+            const SizedBox(width: 14),
+            Text(label,
+                style: GoogleFonts.outfit(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
+                    color: color)),
+          ],
         ),
       ),
     );
