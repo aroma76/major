@@ -481,10 +481,8 @@ class _WebDropZone extends StatefulWidget {
 }
 
 class _WebDropZoneState extends State<_WebDropZone> {
-  // Track enter/leave pairs so crossing child boundaries doesn't flicker.
   int _dragCounter = 0;
 
-  // We keep explicit listener references so we can remove them on dispose.
   late final void Function(html.Event) _onDragEnter;
   late final void Function(html.Event) _onDragOver;
   late final void Function(html.Event) _onDragLeave;
@@ -501,7 +499,7 @@ class _WebDropZoneState extends State<_WebDropZone> {
     };
 
     _onDragOver = (html.Event e) {
-      e.preventDefault(); // required for drop to fire
+      e.preventDefault(); // REQUIRED: without this browser won't fire drop
     };
 
     _onDragLeave = (html.Event e) {
@@ -518,43 +516,53 @@ class _WebDropZoneState extends State<_WebDropZone> {
       _dragCounter = 0;
       widget.onDragStateChanged(false);
 
-      // DragEvent (not MouseEvent) is the correct type — it has .dataTransfer
-      final drag = e as html.DragEvent;
-      final htmlFiles = drag.dataTransfer?.files;
-      if (htmlFiles == null || htmlFiles.isEmpty) return;
+      // Use dynamic access — dart2js in production can fail typed DragEvent
+      // casts when the event originates from Flutter's CanvasKit layer.
+      final dynamic drag = e;
+      final dynamic dataTransfer = drag.dataTransfer;
+      if (dataTransfer == null) return;
+
+      final dynamic fileList = dataTransfer.files;
+      if (fileList == null) return;
+
+      final int length = (fileList.length as num).toInt();
+      if (length == 0) return;
 
       final result = <PlatformFile>[];
-      for (final htmlFile in htmlFiles) {
+      for (int i = 0; i < length; i++) {
         try {
+          final dynamic jsFile = fileList.item(i);
+          if (jsFile == null) continue;
           final reader = html.FileReader();
-          reader.readAsArrayBuffer(htmlFile);
+          reader.readAsArrayBuffer(jsFile as html.Blob);
           await reader.onLoadEnd.first;
           final buf = reader.result as ByteBuffer;
           final bytes = buf.asUint8List();
           result.add(PlatformFile(
-            name: htmlFile.name,
+            name: jsFile.name as String,
             size: bytes.length,
             bytes: bytes,
           ));
-        } catch (_) {
-          // Skip unreadable files silently.
-        }
+        } catch (_) {}
       }
-      if (result.isNotEmpty) widget.onFilesDropped(result);
+
+      if (result.isNotEmpty && mounted) widget.onFilesDropped(result);
     };
 
-    html.document.addEventListener('dragenter', _onDragEnter);
-    html.document.addEventListener('dragover', _onDragOver);
-    html.document.addEventListener('dragleave', _onDragLeave);
-    html.document.addEventListener('drop', _onDrop);
+    // Use html.window + capture phase (true) so listeners fire BEFORE
+    // Flutter's CanvasKit glass-pane can absorb the native drag events.
+    html.window.addEventListener('dragenter', _onDragEnter, true);
+    html.window.addEventListener('dragover',  _onDragOver,  true);
+    html.window.addEventListener('dragleave', _onDragLeave, true);
+    html.window.addEventListener('drop',      _onDrop,      true);
   }
 
   @override
   void dispose() {
-    html.document.removeEventListener('dragenter', _onDragEnter);
-    html.document.removeEventListener('dragover', _onDragOver);
-    html.document.removeEventListener('dragleave', _onDragLeave);
-    html.document.removeEventListener('drop', _onDrop);
+    html.window.removeEventListener('dragenter', _onDragEnter, true);
+    html.window.removeEventListener('dragover',  _onDragOver,  true);
+    html.window.removeEventListener('dragleave', _onDragLeave, true);
+    html.window.removeEventListener('drop',      _onDrop,      true);
     super.dispose();
   }
 
@@ -563,6 +571,7 @@ class _WebDropZoneState extends State<_WebDropZone> {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+
 class _ChannelTile extends StatelessWidget {
   final ChannelModel channel;
   final bool isSelected;
