@@ -24,6 +24,7 @@ const projectRoutes      = require('./routes/projectRoutes');
 const academicEventRoutes = require('./routes/academicEventRoutes');
 const enrollmentRoutes   = require('./routes/enrollmentRoutes');
 const teacherRoutes      = require('./routes/teacherRoutes');
+const downloadRoutes     = require('./routes/downloadRoutes');
 
 const app = express();
 const server = http.createServer(app);
@@ -111,6 +112,7 @@ app.use('/api/projects',                   projectRoutes);
 app.use('/api/academic-events',            academicEventRoutes);
 app.use('/api/enrollments',               enrollmentRoutes);
 app.use('/api/teacher',                   teacherRoutes);
+app.use('/api/signed-download',           downloadRoutes);
 
 app.use((req, res) => res.status(404).json({ success: false, message: `Route ${req.originalUrl} not found` }));
 app.use(errorHandler);

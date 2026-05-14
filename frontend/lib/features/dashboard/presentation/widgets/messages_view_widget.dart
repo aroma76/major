@@ -1144,29 +1144,34 @@ class _MessageBubbleState extends ConsumerState<_MessageBubble> {
     }
   }
 
-  void _downloadFile(String url) {
-    // Strip query params first.
+  void _downloadFile(String url) async {
     String downloadUrl = url.split('?').first;
 
-    if (downloadUrl.contains('cloudinary.com')) {
-      if (downloadUrl.contains('/raw/upload/')) {
-        // raw-type resources: fl_attachment works correctly.
-        downloadUrl = downloadUrl.replaceFirst(
-            '/raw/upload/', '/raw/upload/fl_attachment/');
+    // Get a signed URL from the backend to bypass Cloudinary 401 restriction.
+    // The backend generates a 1-hour signed URL using the Cloudinary SDK.
+    final signed = await ApiService().getSignedDownloadUrl(downloadUrl);
+    if (signed != null && signed.isNotEmpty) {
+      if (kIsWeb) {
+        html.window.open(signed, '_blank');
+      } else {
+        unawaited(launchUrl(Uri.parse(signed), webOnlyWindowName: '_blank'));
       }
-      // image-type resources (legacy uploads, actual images):
-      // Do NOT add fl_attachment — Cloudinary's image pipeline transforms
-      // the file before serving, which returns ERR_INVALID_RESPONSE for PDFs.
-      // Opening the plain URL lets the browser display/download natively.
+      return;
     }
 
+    // Fallback: try fl_attachment on raw-type URLs, or open directly.
+    if (downloadUrl.contains('cloudinary.com') &&
+        downloadUrl.contains('/raw/upload/')) {
+      downloadUrl = downloadUrl.replaceFirst(
+          '/raw/upload/', '/raw/upload/fl_attachment/');
+    }
     if (kIsWeb) {
       html.window.open(downloadUrl, '_blank');
     } else {
-      unawaited(launchUrl(Uri.parse(downloadUrl),
-          webOnlyWindowName: '_blank'));
+      unawaited(launchUrl(Uri.parse(downloadUrl), webOnlyWindowName: '_blank'));
     }
   }
+
 
 
   @override
