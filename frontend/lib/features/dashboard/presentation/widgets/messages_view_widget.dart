@@ -630,10 +630,16 @@ class _ChannelTile extends StatelessWidget {
                 ],
               ),
             ),
-          ],
+              ],
+            ),
+          ),
         ),
-      ),
-    );
+        // Three-dot RIGHT of bubble for others messages
+        if (!isMe) ...[const SizedBox(width: 4), _buildMoreButton(context)],
+      ],
+    ),
+  ),
+);
   }
 }
 
@@ -922,6 +928,7 @@ class _MessageBubbleState extends ConsumerState<_MessageBubble> {
   final Map<String, int> _reactions = {};
   String? _myReaction;
   bool _showPicker = false;
+  bool _isHovered = false;
 
   void _togglePicker() => setState(() => _showPicker = !_showPicker);
 
@@ -1290,8 +1297,35 @@ class _MessageBubbleState extends ConsumerState<_MessageBubble> {
     }
   }
 
+  Widget _buildMoreButton(BuildContext context) {
+    return AnimatedOpacity(
+      opacity: _isHovered ? 1.0 : 0.0,
+      duration: const Duration(milliseconds: 150),
+      child: Tooltip(
+        message: 'More options',
+        child: InkWell(
+          onTap: () => _showActionSheet(context),
+          borderRadius: BorderRadius.circular(20),
+          child: Container(
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              color: AppColors.getBorderColor(context).withValues(alpha: 0.2),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.more_vert,
+              size: 16,
+              color: AppColors.getBodyColor(context),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+
 
     final msg = widget.msg;
     final isMe = widget.isMe;
@@ -1308,18 +1342,29 @@ class _MessageBubbleState extends ConsumerState<_MessageBubble> {
     final time = DateFormat('h:mm a').format(msg.createdAt.toLocal());
     final isFaculty = msg.senderRole == 'faculty';
 
-    return Align(
-      alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 18),
-        constraints: BoxConstraints(
-          maxWidth: MediaQuery.of(context).size.width < 700
-              ? MediaQuery.of(context).size.width * 0.82
-              : MediaQuery.of(context).size.width * 0.55,
-        ),
-        child: Column(
-          crossAxisAlignment:
-              isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 18),
+        child: Row(
+          mainAxisAlignment:
+              isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            // Three-dot LEFT of bubble for own messages
+            if (isMe) ...[_buildMoreButton(context), const SizedBox(width: 4)],
+            // The bubble content
+            Flexible(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxWidth: MediaQuery.of(context).size.width < 700
+                      ? MediaQuery.of(context).size.width * 0.82
+                      : MediaQuery.of(context).size.width * 0.55,
+                ),
+                child: Column(
+                  crossAxisAlignment:
+                      isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
           children: [
             if (!isMe)
               Padding(
