@@ -536,12 +536,13 @@ class _WebDropZoneState extends State<_WebDropZone> {
           final dynamic jsFile = fileList.item(i);
           if (jsFile == null) continue;
           final reader = html.FileReader();
-          reader.readAsArrayBuffer(jsFile as html.Blob);
+          final jsFileTyped = jsFile as html.File;
+          reader.readAsArrayBuffer(jsFileTyped);
           await reader.onLoadEnd.first;
           final buf = reader.result as ByteBuffer;
           final bytes = buf.asUint8List();
           result.add(PlatformFile(
-            name: jsFile.name as String,
+            name: jsFileTyped.name,
             size: bytes.length,
             bytes: bytes,
           ));
@@ -630,16 +631,10 @@ class _ChannelTile extends StatelessWidget {
                 ],
               ),
             ),
-              ],
-            ),
-          ),
+          ],
         ),
-        // Three-dot RIGHT of bubble for others messages
-        if (!isMe) ...[const SizedBox(width: 4), _buildMoreButton(context)],
-      ],
-    ),
-  ),
-);
+      ),
+    );
   }
 }
 
@@ -1637,10 +1632,16 @@ class _MessageBubbleState extends ConsumerState<_MessageBubble> {
                         fontSize: 10, color: AppColors.getBodyColor(context))),
               ],
             ),
-          ],
-        ),
-      ),
-    );
+          ],   // Column children (sender name, reply preview, bubble, timestamp)
+        ),     // Column
+      ),       // ConstrainedBox
+    ),         // Flexible
+    // Three-dot RIGHT of bubble for others' messages
+    if (!isMe) ...[const SizedBox(width: 4), _buildMoreButton(context)],
+  ],           // Row.children
+  ),           // Row
+),             // Padding
+);
   }
 }
 
