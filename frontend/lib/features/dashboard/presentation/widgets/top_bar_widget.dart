@@ -7,6 +7,7 @@ import 'notification_panel.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/task_provider.dart';
 import '../providers/api_providers.dart';
+import '../../../../core/utils/responsive.dart';
 
 class TopBarWidget extends ConsumerStatefulWidget {
   const TopBarWidget({super.key});
@@ -34,8 +35,8 @@ class _TopBarWidgetState extends ConsumerState<TopBarWidget> {
   }
 
   OverlayEntry _createOverlayEntry() {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isMobile = screenWidth < 850;
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final isMobile = screenWidth < Responsive.breakpoint;
     return OverlayEntry(
       builder: (context) => Stack(
         children: [
@@ -79,7 +80,7 @@ class _TopBarWidgetState extends ConsumerState<TopBarWidget> {
     // Auto-dismiss notification overlay when user switches tabs
     ref.listen(navigationProvider, (_, __) => _dismissOverlay());
 
-    final isMobile = MediaQuery.of(context).size.width < 850;
+    final isMobile = Responsive.isMobile(context);
     final isFaculty = ref.watch(authProvider).value?.isFaculty ?? false;
 
     final studentTitles = [

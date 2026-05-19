@@ -6,8 +6,6 @@ import '../widgets/top_bar_widget.dart';
 import '../widgets/announcements_panel.dart';
 import '../widgets/calendar_view_widget.dart';
 import '../widgets/subjects_view_widget.dart';
-// kept for potential future use
-
 import '../widgets/projects_view_widget.dart';
 import '../widgets/messages_view_widget.dart';
 import '../widgets/notes_view_widget.dart';
@@ -18,6 +16,7 @@ import '../widgets/teacher_overview_widget.dart';
 import '../providers/task_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../features/auth/auth_provider.dart';
+import '../../../../core/utils/responsive.dart';
 
 class MainDashboardScreen extends ConsumerStatefulWidget {
   const MainDashboardScreen({super.key});
@@ -33,7 +32,7 @@ class _MainDashboardScreenState extends ConsumerState<MainDashboardScreen> {
   @override
   Widget build(BuildContext context) {
     final selectedIndex = ref.watch(navigationProvider);
-    final isMobile = MediaQuery.of(context).size.width < 850;
+    final isMobile = Responsive.isMobile(context);
     final isFaculty = ref.read(authProvider).value?.isFaculty ?? false;
 
     // ── Student bottom nav items (indices match IndexedStack order) ──────────────
@@ -122,16 +121,18 @@ class _MainDashboardScreenState extends ConsumerState<MainDashboardScreen> {
         children: [
           // Desktop sidebar
           if (!isMobile)
-            const SizedBox(
-              width: 240,
-              child: SidebarWidget(),
+            const RepaintBoundary(
+              child: SizedBox(
+                width: 240,
+                child: SidebarWidget(),
+              ),
             ),
           Expanded(
             child: Column(
               children: [
-                const TopBarWidget(),
+                const RepaintBoundary(child: TopBarWidget()),
                 Expanded(
-                  child: IndexedStack(
+                  child: _LazyIndexedStack(
                     index: selectedIndex,
                     children: [
                       // 0 – Dashboard
@@ -179,6 +180,50 @@ class _MainDashboardScreenState extends ConsumerState<MainDashboardScreen> {
             ),
         ],
       ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+/// Lazy-loading IndexedStack: only builds a screen on its FIRST visit, then
+/// keeps it alive. Hidden screens that have never been visited are rendered as
+/// an empty [SizedBox], so they never fire API calls or build widgets.
+class _LazyIndexedStack extends StatefulWidget {
+  final int index;
+  final List<Widget> children;
+
+  const _LazyIndexedStack({required this.index, required this.children});
+
+  @override
+  State<_LazyIndexedStack> createState() => _LazyIndexedStackState();
+}
+
+class _LazyIndexedStackState extends State<_LazyIndexedStack> {
+  late final Set<int> _loaded;
+
+  @override
+  void initState() {
+    super.initState();
+    _loaded = {widget.index}; // only load the initial screen
+  }
+
+  @override
+  void didUpdateWidget(_LazyIndexedStack old) {
+    super.didUpdateWidget(old);
+    if (!_loaded.contains(widget.index)) {
+      setState(() => _loaded.add(widget.index)); // build on first visit
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return IndexedStack(
+      index: widget.index,
+      children: List.generate(widget.children.length, (i) {
+        // Screens not yet visited get a cheap placeholder
+        if (!_loaded.contains(i)) return const SizedBox.shrink();
+        return widget.children[i];
+      }),
     );
   }
 }

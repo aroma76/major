@@ -10,6 +10,7 @@ import '../../data/models/task_model.dart';
 import 'subject_color_manager.dart';
 import 'kanban_board_widget.dart';
 import 'announcements_panel.dart';
+import '../../../../core/utils/responsive.dart';
 
 class TodayOverviewWidget extends ConsumerStatefulWidget {
   const TodayOverviewWidget({super.key});
@@ -94,7 +95,7 @@ class _TodayOverviewWidgetState extends ConsumerState<TodayOverviewWidget>
     final tasks = ref.watch(taskProvider);
     final channelsAsync = ref.watch(channelsProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final isMobile = MediaQuery.of(context).size.width < 600;
+    final isMobile = Responsive.isMobile(context);
 
     final pendingCount = tasks.where((t) => t.status != TaskStatus.done).length;
     final urgentCount = tasks

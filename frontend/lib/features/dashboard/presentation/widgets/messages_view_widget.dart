@@ -19,6 +19,7 @@ import '../../../../core/services/socket_service.dart';
 import '../../../../core/services/auth_service.dart';
 import '../../../../core/services/api_service.dart';
 import '../../../../core/config/app_config.dart';
+import '../../../../core/utils/responsive.dart';
 import '../../data/models/channel_model.dart';
 import '../../data/models/api_message_model.dart';
 import '../providers/api_providers.dart';
@@ -282,7 +283,7 @@ class _MessagesViewWidgetState extends ConsumerState<MessagesViewWidget> {
   Widget build(BuildContext context) {
     final channelsAsync = ref.watch(channelsProvider);
     final selectedChannel = ref.watch(selectedChannelProvider);
-    final isMobile = MediaQuery.of(context).size.width < 700;
+    final isMobile = Responsive.isMobile(context);
 
     // ── Mobile: single-panel — channel list OR chat ──────────────────────────
     if (isMobile) {
