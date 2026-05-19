@@ -14,12 +14,18 @@ jobs:
     steps:
       - name: Ping health endpoint
         run: |
+          # Render free tier can take up to 60s to cold-start.
+          # --retry 2 retries on transient network errors (not HTTP errors).
+          # We never fail the job on non-200 — just warn, so CI stays green.
           STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
-            --max-time 35 \
-            https://major-gin9.onrender.com/api/health)
+            --max-time 60 \
+            --retry 2 \
+            --retry-delay 5 \
+            https://major-gin9.onrender.com/api/health) || STATUS="000"
           echo "Health check status: $STATUS"
-          if [ "$STATUS" != "200" ]; then
-            echo "⚠️  Backend returned $STATUS — may still be warming up"
-          else
+          if [ "$STATUS" = "200" ]; then
             echo "✅ Backend is warm"
+          else
+            echo "⚠️  Backend returned $STATUS — it may be cold-starting or temporarily down"
           fi
+          exit 0  # never fail the workflow; this is a best-effort ping
