@@ -7,7 +7,6 @@ DROP TABLE IF EXISTS notifications CASCADE;
 DROP TABLE IF EXISTS announcements CASCADE;
 DROP TABLE IF EXISTS assignment_submissions CASCADE;
 DROP TABLE IF EXISTS assignments CASCADE;
-DROP TABLE IF EXISTS files CASCADE;
 DROP TABLE IF EXISTS messages CASCADE;
 DROP TABLE IF EXISTS notes CASCADE;
 DROP TABLE IF EXISTS enrollments CASCADE;
@@ -90,17 +89,6 @@ CREATE TABLE messages (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE TABLE files (
-  id SERIAL PRIMARY KEY,
-  channel_id INT NOT NULL REFERENCES channels(id) ON DELETE CASCADE,
-  uploaded_by INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  file_name VARCHAR(255) NOT NULL,
-  file_url VARCHAR(500) NOT NULL,
-  file_type VARCHAR(100),
-  file_size INT,
-  description TEXT,
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
 
 CREATE TABLE notes (
   id SERIAL PRIMARY KEY,
@@ -160,7 +148,6 @@ CREATE TABLE notifications (
 -- Performance Indexes
 CREATE INDEX IF NOT EXISTS idx_messages_channel ON messages(channel_id);
 CREATE INDEX IF NOT EXISTS idx_notes_channel ON notes(channel_id);
-CREATE INDEX IF NOT EXISTS idx_files_channel ON files(channel_id);
 CREATE INDEX IF NOT EXISTS idx_assignments_channel ON assignments(channel_id);
 CREATE INDEX IF NOT EXISTS idx_submissions_assignment ON assignment_submissions(assignment_id);
 CREATE INDEX IF NOT EXISTS idx_announcements_channel ON announcements(channel_id);
