@@ -1294,8 +1294,10 @@ class _MessageBubbleState extends ConsumerState<_MessageBubble> {
   }
 
   Widget _buildMoreButton(BuildContext context) {
+    final isMobile = Responsive.isMobile(context);
     return AnimatedOpacity(
-      opacity: _isHovered ? 1.0 : 0.0,
+      // On desktop: fade in on hover. On mobile: always visible.
+      opacity: isMobile ? 1.0 : (_isHovered ? 1.0 : 0.0),
       duration: const Duration(milliseconds: 150),
       child: Tooltip(
         message: 'More options',

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_feather_icons/flutter_feather_icons.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/utils/responsive.dart';
 import '../../../../features/auth/auth_provider.dart';
 
 class SettingsViewWidget extends ConsumerWidget {
@@ -312,16 +313,18 @@ class SettingsViewWidget extends ConsumerWidget {
     final userEmail = authState?.user?['email'] as String? ?? '';
     final userRole = authState?.userRole ?? 'student';
 
+    final isMobile = Responsive.isMobile(context);
+
     return SingleChildScrollView(
       child: Padding(
-        padding: const EdgeInsets.all(40.0),
+        padding: EdgeInsets.all(isMobile ? 16.0 : 40.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               'Settings',
               style: TextStyle(
-                  fontSize: 32,
+                  fontSize: isMobile ? 22 : 32,
                   fontWeight: FontWeight.bold,
                   color: AppColors.getHeadingColor(context)),
             ),
@@ -329,68 +332,142 @@ class SettingsViewWidget extends ConsumerWidget {
             Text(
               'Manage your preferences and account settings',
               style: TextStyle(
-                  color: AppColors.getBodyColor(context), fontSize: 16),
+                  color: AppColors.getBodyColor(context),
+                  fontSize: isMobile ? 13 : 16),
             ),
-            const SizedBox(height: 48),
+            SizedBox(height: isMobile ? 24 : 48),
 
             // Profile Section
             _buildSectionHeader(context, 'Account Profile'),
             _buildSettingCard(
               context,
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    radius: 32,
-                    backgroundColor: AppColors.accent.withValues(alpha: 0.15),
-                    child: Text(
-                      userName.isNotEmpty ? userName[0].toUpperCase() : 'S',
-                      style: const TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.accent),
-                    ),
-                  ),
-                  const SizedBox(width: 24),
-                  Expanded(
-                    child: Column(
+              child: isMobile
+                  ? Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          userName,
-                          style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.getHeadingColor(context)),
+                        Row(
+                          children: [
+                            CircleAvatar(
+                              radius: 26,
+                              backgroundColor:
+                                  AppColors.accent.withValues(alpha: 0.15),
+                              child: Text(
+                                userName.isNotEmpty
+                                    ? userName[0].toUpperCase()
+                                    : 'S',
+                                style: const TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.accent),
+                              ),
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    userName,
+                                    style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color:
+                                            AppColors.getHeadingColor(context)),
+                                  ),
+                                  Text(
+                                    userRole[0].toUpperCase() +
+                                        userRole.substring(1),
+                                    style: TextStyle(
+                                        fontSize: 12,
+                                        color: AppColors.getBodyColor(context)),
+                                  ),
+                                  Text(
+                                    userEmail,
+                                    style: const TextStyle(
+                                        fontSize: 12, color: AppColors.accent),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
-                        Text(
-                          userRole[0].toUpperCase() + userRole.substring(1),
-                          style: TextStyle(
-                              fontSize: 14,
-                              color: AppColors.getBodyColor(context)),
+                        const SizedBox(height: 14),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: () => _showEditProfile(context, ref),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor:
+                                  AppColors.getBorderColor(context),
+                              foregroundColor:
+                                  AppColors.getHeadingColor(context),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10)),
+                            ),
+                            child: const Text('Edit Profile'),
+                          ),
                         ),
-                        Text(
-                          userEmail,
-                          style: const TextStyle(
-                              fontSize: 14, color: AppColors.accent),
+                      ],
+                    )
+                  : Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 32,
+                          backgroundColor:
+                              AppColors.accent.withValues(alpha: 0.15),
+                          child: Text(
+                            userName.isNotEmpty
+                                ? userName[0].toUpperCase()
+                                : 'S',
+                            style: const TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.accent),
+                          ),
+                        ),
+                        const SizedBox(width: 24),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                userName,
+                                style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.getHeadingColor(context)),
+                              ),
+                              Text(
+                                userRole[0].toUpperCase() +
+                                    userRole.substring(1),
+                                style: TextStyle(
+                                    fontSize: 14,
+                                    color: AppColors.getBodyColor(context)),
+                              ),
+                              Text(
+                                userEmail,
+                                style: const TextStyle(
+                                    fontSize: 14, color: AppColors.accent),
+                              ),
+                            ],
+                          ),
+                        ),
+                        ElevatedButton(
+                          onPressed: () => _showEditProfile(context, ref),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.getBorderColor(context),
+                            foregroundColor: AppColors.getHeadingColor(context),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10)),
+                          ),
+                          child: const Text('Edit Profile'),
                         ),
                       ],
                     ),
-                  ),
-                  ElevatedButton(
-                    onPressed: () => _showEditProfile(context, ref),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.getBorderColor(context),
-                      foregroundColor: AppColors.getHeadingColor(context),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10)),
-                    ),
-                    child: const Text('Edit Profile'),
-                  ),
-                ],
-              ),
             ),
 
-            const SizedBox(height: 40),
+            SizedBox(height: isMobile ? 24 : 40),
 
             // Preferences Section
             _buildSectionHeader(context, 'Preferences'),
@@ -434,7 +511,7 @@ class SettingsViewWidget extends ConsumerWidget {
               ),
             ),
 
-            const SizedBox(height: 40),
+            SizedBox(height: isMobile ? 24 : 40),
 
             // Security Section
             _buildSectionHeader(context, 'Security'),

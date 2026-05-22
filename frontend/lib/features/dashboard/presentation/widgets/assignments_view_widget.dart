@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/utils/responsive.dart';
 import '../providers/task_provider.dart';
 import '../../data/models/task_model.dart';
 import 'kanban_board_widget.dart';
@@ -26,7 +27,7 @@ class AssignmentsViewWidget extends ConsumerWidget {
       return matchesSubject && matchesPriority;
     }).toList();
 
-    final isMobile = MediaQuery.of(context).size.width < 600;
+    final isMobile = Responsive.isMobile(context);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -272,7 +273,7 @@ class AssignmentsViewWidget extends ConsumerWidget {
   }
 
   Widget _buildListView(BuildContext context, List<TaskModel> tasks) {
-    final isMobile = MediaQuery.of(context).size.width < 600;
+    final isMobile = Responsive.isMobile(context);
     if (tasks.isEmpty) {
       return Center(
         child: Column(

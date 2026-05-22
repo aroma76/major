@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/utils/responsive.dart';
 import '../../../../core/services/api_service.dart';
 import '../../../../core/config/app_config.dart';
 // ignore: avoid_web_libraries_in_flutter
@@ -69,7 +70,7 @@ class _SubjectFilesViewState extends ConsumerState<SubjectFilesView>
     // Re-build when provider state changes
     ref.watch(savedFilesProvider);
 
-    final isMobile = MediaQuery.of(context).size.width < 600;
+    final isMobile = Responsive.isMobile(context);
 
     return FadeTransition(
       opacity: _fade,
@@ -385,7 +386,7 @@ class _FileCardState extends State<_FileCard> {
   @override
   Widget build(BuildContext context) {
     final file = widget.file;
-    final isMobile = MediaQuery.of(context).size.width < 600;
+    final isMobile = Responsive.isMobile(context);
 
     return MouseRegion(
       onEnter: (_) => setState(() => _hovered = true),

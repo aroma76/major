@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_feather_icons/flutter_feather_icons.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/utils/responsive.dart';
 import '../../../../features/auth/auth_provider.dart';
 import '../providers/task_provider.dart';
 import '../providers/api_providers.dart';
@@ -147,7 +148,7 @@ class _TeacherOverviewWidgetState extends ConsumerState<TeacherOverviewWidget>
 
   @override
   Widget build(BuildContext context) {
-    final isMobile = MediaQuery.of(context).size.width < 600;
+    final isMobile = Responsive.isMobile(context);
     return FadeTransition(
       opacity: _fadeAnim,
       child: SlideTransition(
@@ -309,7 +310,7 @@ class _TeacherHeroBanner extends ConsumerWidget {
     final students = statsData?['totalStudents'] as int? ?? 0;
     final subjects = statsData?['totalSubjects'] as int? ?? 0;
     final pending = statsData?['pendingReviews'] as int? ?? 0;
-    final isMobile = MediaQuery.of(context).size.width < 600;
+    final isMobile = Responsive.isMobile(context);
 
     return Container(
       width: double.infinity,
@@ -472,7 +473,7 @@ class _StatGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isMobile = MediaQuery.of(context).size.width < 650;
+    final isMobile = Responsive.isMobile(context);
     return GridView.builder(
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: isMobile ? 2 : 4,

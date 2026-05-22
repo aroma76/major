@@ -4,6 +4,7 @@ import 'package:flutter_feather_icons/flutter_feather_icons.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/utils/responsive.dart';
 import '../providers/api_providers.dart';
 import '../screens/project_detail_screen.dart';
 import '../../data/models/project_model.dart';
@@ -24,59 +25,101 @@ class ProjectsViewWidget extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final projectsAsync = ref.watch(projectsProvider);
+    final isMobile = Responsive.isMobile(context);
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(isMobile ? 14 : 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // ── Header ────────────────────────────────────────────────────────
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Collaboration Projects',
-                    style: GoogleFonts.outfit(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.getHeadingColor(context),
-                    ),
-                  ),
-                  Text(
-                    'Track and manage your team projects',
-                    style: GoogleFonts.outfit(
-                      color: AppColors.getBodyColor(context),
-                      fontSize: 15,
-                    ),
-                  ),
-                ],
+          if (isMobile) ...[
+            // Mobile: title above, button below
+            Text(
+              'Collaboration Projects',
+              style: GoogleFonts.outfit(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: AppColors.getHeadingColor(context),
               ),
-              ElevatedButton.icon(
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Track and manage your team projects',
+              style: GoogleFonts.outfit(
+                color: AppColors.getBodyColor(context),
+                fontSize: 13,
+              ),
+            ),
+            const SizedBox(height: 14),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
                 onPressed: () {
                   showDialog(
                     context: context,
                     builder: (context) => const CreateProjectDialog(),
                   );
                 },
-                icon: const Icon(Icons.add, size: 18),
+                icon: const Icon(Icons.add, size: 16),
                 label: const Text('New Project'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.accent,
                   foregroundColor: Colors.white,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16, vertical: 12),
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12)),
                 ),
               ),
-            ],
-          ),
-          const SizedBox(height: 32),
+            ),
+          ] else ...[
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Collaboration Projects',
+                      style: GoogleFonts.outfit(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.getHeadingColor(context),
+                      ),
+                    ),
+                    Text(
+                      'Track and manage your team projects',
+                      style: GoogleFonts.outfit(
+                        color: AppColors.getBodyColor(context),
+                        fontSize: 15,
+                      ),
+                    ),
+                  ],
+                ),
+                ElevatedButton.icon(
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (context) => const CreateProjectDialog(),
+                    );
+                  },
+                  icon: const Icon(Icons.add, size: 18),
+                  label: const Text('New Project'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.accent,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 14),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                  ),
+                ),
+              ],
+            ),
+          ],
+          SizedBox(height: isMobile ? 20 : 32),
 
-          // ── Content ───────────────────────────────────────────────────────
           projectsAsync.when(
             loading: () => const Center(
               child: Padding(
@@ -134,6 +177,7 @@ class ProjectsViewWidget extends ConsumerWidget {
                         const SizedBox(height: 8),
                         Text(
                             'Click "New Project" to create your first collaboration project.',
+                            textAlign: TextAlign.center,
                             style: GoogleFonts.outfit(
                                 fontSize: 14,
                                 color: AppColors.getBodyColor(context))),
@@ -150,7 +194,8 @@ class ProjectsViewWidget extends ConsumerWidget {
                 itemBuilder: (context, index) {
                   final p = projects[index];
                   final color = _palette[index % _palette.length];
-                  return _ProjectCard(data: p, color: color);
+                  return _ProjectCard(
+                      data: p, color: color, isMobile: isMobile);
                 },
               );
             },
@@ -165,8 +210,10 @@ class ProjectsViewWidget extends ConsumerWidget {
 class _ProjectCard extends StatefulWidget {
   final Map<String, dynamic> data;
   final Color color;
+  final bool isMobile;
 
-  const _ProjectCard({required this.data, required this.color});
+  const _ProjectCard(
+      {required this.data, required this.color, this.isMobile = false});
 
   @override
   State<_ProjectCard> createState() => _ProjectCardState();
@@ -179,6 +226,7 @@ class _ProjectCardState extends State<_ProjectCard> {
   Widget build(BuildContext context) {
     final p = widget.data;
     final color = widget.color;
+    final m = widget.isMobile;
     final title = p['title'] as String? ?? 'Untitled';
     final description = p['description'] as String? ?? '';
     final progress = ((p['progress'] as num?) ?? 0) / 100.0;
@@ -212,8 +260,8 @@ class _ProjectCardState extends State<_ProjectCard> {
         ),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
-          margin: const EdgeInsets.only(bottom: 20),
-          padding: const EdgeInsets.all(24),
+          margin: const EdgeInsets.only(bottom: 16),
+          padding: EdgeInsets.all(m ? 14 : 24),
           decoration: BoxDecoration(
             color: _hovered
                 ? color.withValues(alpha: 0.05)
@@ -242,23 +290,23 @@ class _ProjectCardState extends State<_ProjectCard> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    width: 48,
-                    height: 48,
+                    width: m ? 36 : 48,
+                    height: m ? 36 : 48,
                     decoration: BoxDecoration(
                       color: color.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(m ? 10 : 14),
                     ),
                     child: Icon(Icons.folder_copy_outlined,
-                        color: color, size: 24),
+                        color: color, size: m ? 18 : 24),
                   ),
-                  const SizedBox(width: 16),
+                  const SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(title,
                             style: GoogleFonts.outfit(
-                                fontSize: 18,
+                                fontSize: m ? 14 : 18,
                                 fontWeight: FontWeight.bold,
                                 color: AppColors.getHeadingColor(context))),
                         if (description.isNotEmpty)
@@ -266,7 +314,7 @@ class _ProjectCardState extends State<_ProjectCard> {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: GoogleFonts.outfit(
-                                  fontSize: 13,
+                                  fontSize: m ? 11 : 13,
                                   color: AppColors.getBodyColor(context))),
                       ],
                     ),
@@ -279,9 +327,9 @@ class _ProjectCardState extends State<_ProjectCard> {
                             style: GoogleFonts.outfit(
                                 fontSize: 11,
                                 color: AppColors.getBodyColor(context))),
-                        Text(DateFormat('MMM d, y').format(deadline),
+                        Text(DateFormat(m ? 'MMM d' : 'MMM d, y').format(deadline),
                             style: GoogleFonts.outfit(
-                                fontSize: 13,
+                                fontSize: m ? 11 : 13,
                                 fontWeight: FontWeight.bold,
                                 color: deadline.isBefore(DateTime.now())
                                     ? Colors.red.shade400
@@ -290,7 +338,7 @@ class _ProjectCardState extends State<_ProjectCard> {
                     ),
                 ],
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: m ? 12 : 20),
 
               // ── Progress Bar ─────────────────────────────────────────────
               Row(
@@ -318,7 +366,7 @@ class _ProjectCardState extends State<_ProjectCard> {
                   minHeight: 7,
                 ),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: m ? 8 : 20),
 
               // ── Bottom Row ───────────────────────────────────────────────
               Row(
