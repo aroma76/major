@@ -30,7 +30,7 @@ const socketHandler = (io) => {
     socket.on('channel:join',  (channelId) => socket.join(`channel_${channelId}`));
     socket.on('channel:leave', (channelId) => socket.leave(`channel_${channelId}`));
 
-    // ── Text messages (files go via REST POST to upload Cloudinary first) ─
+    // ── Text messages (files go via REST POST to Supabase Storage first) ──
     socket.on('message:send', async (data) => {
       try {
         // SECURITY: always use authenticated user from JWT — never trust client senderId
