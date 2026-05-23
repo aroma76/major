@@ -926,8 +926,8 @@ class _MessageBubbleState extends ConsumerState<_MessageBubble> {
   final Map<String, int> _reactions = {};
   String? _myReaction;
   bool _showPicker = false;
+  bool _isHovered = false;
 
-  void _togglePicker() => setState(() => _showPicker = !_showPicker);
 
   void _react(String emoji) {
     setState(() {
@@ -1182,6 +1182,7 @@ class _MessageBubbleState extends ConsumerState<_MessageBubble> {
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
+      useRootNavigator: true,
       builder: (sheetCtx) => SafeArea(
         child: Material(
           color: Colors.transparent,
@@ -1239,29 +1240,22 @@ class _MessageBubbleState extends ConsumerState<_MessageBubble> {
 
                 // ── Action tiles ──────────────────────────────────────────
                 if (hasText)
-                  ListTile(
-                    leading: Icon(FeatherIcons.copy, size: 20,
-                        color: isDark ? Colors.white70 : Colors.black87),
-                    title: Text('Copy',
-                        style: GoogleFonts.outfit(
-                            color: isDark ? Colors.white : Colors.black87)),
+                  _ActionTile(
+                    icon: FeatherIcons.copy,
+                    label: 'Copy Text',
                     onTap: () { Navigator.pop(sheetCtx); _copyText(); },
                   ),
-                ListTile(
-                  leading: Icon(FeatherIcons.cornerUpLeft, size: 20,
-                      color: isDark ? Colors.white70 : Colors.black87),
-                  title: Text('Reply',
-                      style: GoogleFonts.outfit(
-                          color: isDark ? Colors.white : Colors.black87)),
+                _ActionTile(
+                  icon: FeatherIcons.cornerUpLeft,
+                  label: 'Reply',
                   onTap: () { Navigator.pop(sheetCtx); widget.onReply(msg); },
                 ),
                 if (canDelete)
-                  ListTile(
-                    leading: const Icon(FeatherIcons.trash2, size: 20,
-                        color: Colors.red),
-                    title: Text('Delete',
-                        style: GoogleFonts.outfit(color: Colors.red)),
+                  _ActionTile(
+                    icon: FeatherIcons.trash2,
+                    label: 'Delete',
                     onTap: () { Navigator.pop(sheetCtx); _deleteMessage(context); },
+                    isDestructive: true,
                   ),
                 const SizedBox(height: 8),
               ],
@@ -1312,21 +1306,52 @@ class _MessageBubbleState extends ConsumerState<_MessageBubble> {
     final time = DateFormat('h:mm a').format(msg.createdAt.toLocal());
     final isFaculty = msg.senderRole == 'faculty';
 
-    // Long press or right-click anywhere on the bubble to open the action menu.
-    return Padding(
+    // Long-press or right-click → action sheet (mobile).
+    // On desktop/web: hover the bubble to reveal the ⋯ button.
+    final optionsBtn = AnimatedOpacity(
+      opacity: _isHovered ? 1.0 : 0.0,
+      duration: const Duration(milliseconds: 160),
+      child: Tooltip(
+        message: 'Message options',
+        child: InkWell(
+          onTap: () => _showActionSheet(context),
+          borderRadius: BorderRadius.circular(8),
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 4),
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: AppColors.getBorderColor(context).withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(
+              FeatherIcons.moreHorizontal,
+              size: 16,
+              color: AppColors.getBodyColor(context),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: Padding(
         padding: EdgeInsets.only(bottom: isMobile ? 12 : 18),
         child: Row(
           mainAxisAlignment:
               isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
+            // ⋯ button on the LEFT for own messages
+            if (isMe) optionsBtn,
             // The bubble content
             Flexible(
               child: ConstrainedBox(
                 constraints: BoxConstraints(
                   maxWidth: isMobile
-                      ? MediaQuery.of(context).size.width * 0.88
-                      : MediaQuery.of(context).size.width * 0.60,
+                      ? MediaQuery.of(context).size.width * 0.82
+                      : MediaQuery.of(context).size.width * 0.55,
                 ),
                 child: Column(
                   crossAxisAlignment:
@@ -1622,9 +1647,12 @@ class _MessageBubbleState extends ConsumerState<_MessageBubble> {
         ),     // Column
       ),       // ConstrainedBox
     ),         // Flexible
+    // ⋯ button on the RIGHT for others' messages
+    if (!isMe) optionsBtn,
   ],           // Row.children
   ),           // Row
-);
+),             // Padding
+);             // MouseRegion
   }
 }
 
