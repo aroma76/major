@@ -708,6 +708,7 @@ class _ChatArea extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final messagesState = ref.watch(messagesNotifierProvider(channel.id));
     final myId = AuthService().currentUser?['id']?.toString();
+    final isMobile = Responsive.isMobile(context);
 
     return Stack(
       children: [
@@ -791,8 +792,9 @@ class _ChatArea extends ConsumerWidget {
                         },
                         child: ListView.builder(
                           controller: scrollCtrl,
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 24, vertical: 20),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: isMobile ? 12 : 24,
+                              vertical: isMobile ? 12 : 20),
                           itemCount: messages.length,
                           itemBuilder: (_, i) {
                             final msg = messages[i];
@@ -1295,24 +1297,26 @@ class _MessageBubbleState extends ConsumerState<_MessageBubble> {
 
   Widget _buildMoreButton(BuildContext context) {
     final isMobile = Responsive.isMobile(context);
+    // Mobile: always fully opaque
+    // Desktop: dimmed (35%) when not hovered, fully opaque on hover
+    final opacity = isMobile ? 1.0 : (_isHovered ? 1.0 : 0.35);
     return AnimatedOpacity(
-      // On desktop: fade in on hover. On mobile: always visible.
-      opacity: isMobile ? 1.0 : (_isHovered ? 1.0 : 0.0),
+      opacity: opacity,
       duration: const Duration(milliseconds: 150),
       child: Tooltip(
         message: 'More options',
-        child: InkWell(
+        child: GestureDetector(
           onTap: () => _showActionSheet(context),
-          borderRadius: BorderRadius.circular(20),
           child: Container(
-            padding: const EdgeInsets.all(4),
+            padding: EdgeInsets.all(isMobile ? 8 : 6),
             decoration: BoxDecoration(
-              color: AppColors.getBorderColor(context).withValues(alpha: 0.2),
+              color: AppColors.getBorderColor(context)
+                  .withValues(alpha: _isHovered ? 0.35 : 0.18),
               shape: BoxShape.circle,
             ),
             child: Icon(
               Icons.more_vert,
-              size: 16,
+              size: isMobile ? 18 : 17,
               color: AppColors.getBodyColor(context),
             ),
           ),
@@ -1323,10 +1327,9 @@ class _MessageBubbleState extends ConsumerState<_MessageBubble> {
 
   @override
   Widget build(BuildContext context) {
-
-
     final msg = widget.msg;
     final isMe = widget.isMe;
+    final isMobile = Responsive.isMobile(context);
     final bubbleColor = isMe
         ? AppColors.accent
         : AppColors.getBorderColor(context).withValues(alpha: 0.15);
@@ -1344,7 +1347,7 @@ class _MessageBubbleState extends ConsumerState<_MessageBubble> {
       onEnter: (_) => setState(() => _isHovered = true),
       onExit: (_) => setState(() => _isHovered = false),
       child: Padding(
-        padding: const EdgeInsets.only(bottom: 18),
+        padding: EdgeInsets.only(bottom: isMobile ? 12 : 18),
         child: Row(
           mainAxisAlignment:
               isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
@@ -1356,8 +1359,8 @@ class _MessageBubbleState extends ConsumerState<_MessageBubble> {
             Flexible(
               child: ConstrainedBox(
                 constraints: BoxConstraints(
-                  maxWidth: MediaQuery.of(context).size.width < 700
-                      ? MediaQuery.of(context).size.width * 0.82
+                  maxWidth: isMobile
+                      ? MediaQuery.of(context).size.width * 0.78
                       : MediaQuery.of(context).size.width * 0.55,
                 ),
                 child: Column(
@@ -1426,6 +1429,9 @@ class _MessageBubbleState extends ConsumerState<_MessageBubble> {
               ),
 
             // Long press / right-click → action sheet
+            // Note: GestureDetector wraps the whole column but we also
+            // add onLongPress directly to each bubble container so the
+            // inner file-tap GestureDetector doesn't swallow it.
             GestureDetector(
               onLongPress: () => _showActionSheet(context),
               onSecondaryTap: () => _showActionSheet(context),
@@ -1435,101 +1441,113 @@ class _MessageBubbleState extends ConsumerState<_MessageBubble> {
                 children: [
                   // File or Text Content
                   if (msg.fileUrl != null && msg.fileUrl!.isNotEmpty)
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 10),
-                      decoration: BoxDecoration(
-                          color: bubbleColor, borderRadius: radius),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          // ── Tap area: view file ──
-                          GestureDetector(
-                            onTap: () => _showFileViewer(
-                                context, msg.fileUrl!, msg.fileName),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(_fileIcon(msg.fileName),
-                                    color: textColor, size: 22),
-                                const SizedBox(width: 10),
-                                ConstrainedBox(
-                                  constraints:
-                                      const BoxConstraints(maxWidth: 140),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(msg.fileName ?? 'attachment',
-                                          style: GoogleFonts.outfit(
-                                              color: textColor,
-                                              fontSize: 13,
-                                              fontWeight: FontWeight.w600),
-                                          overflow: TextOverflow.ellipsis),
-                                      const SizedBox(height: 2),
-                                      Text('Tap to view',
-                                          style: GoogleFonts.outfit(
-                                              color: textColor.withValues(
-                                                  alpha: 0.7),
-                                              fontSize: 10)),
-                                    ],
+                    GestureDetector(
+                      // Long press on the file bubble itself
+                      onLongPress: () => _showActionSheet(context),
+                      onSecondaryTap: () => _showActionSheet(context),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 10),
+                        decoration: BoxDecoration(
+                            color: bubbleColor, borderRadius: radius),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            // ── Tap area: view file ──
+                            GestureDetector(
+                              onTap: () => _showFileViewer(
+                                  context, msg.fileUrl!, msg.fileName),
+                              // Also pass through long press
+                              onLongPress: () => _showActionSheet(context),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(_fileIcon(msg.fileName),
+                                      color: textColor, size: 22),
+                                  const SizedBox(width: 10),
+                                  ConstrainedBox(
+                                    constraints:
+                                        const BoxConstraints(maxWidth: 140),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(msg.fileName ?? 'attachment',
+                                            style: GoogleFonts.outfit(
+                                                color: textColor,
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.w600),
+                                            overflow: TextOverflow.ellipsis),
+                                        const SizedBox(height: 2),
+                                        Text('Hold to options · Tap to view',
+                                            style: GoogleFonts.outfit(
+                                                color: textColor.withValues(
+                                                    alpha: 0.7),
+                                                fontSize: 10)),
+                                      ],
+                                    ),
                                   ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          // ── Download button ──
-                          Tooltip(
-                            message: 'Download',
-                            child: InkWell(
-                              onTap: () => _downloadFile(msg.fileUrl!),
-                              borderRadius: BorderRadius.circular(8),
-                              child: Container(
-                                padding: const EdgeInsets.all(6),
-                                decoration: BoxDecoration(
-                                  color: textColor.withValues(alpha: 0.15),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Icon(FeatherIcons.download,
-                                    color: textColor, size: 14),
+                                ],
                               ),
                             ),
-                          ),
-                          const SizedBox(width: 6),
-                          // ── Save as Note ──
-                          _SaveFileBtn(
-                            msg: msg,
-                            channel: widget.channel,
-                            fileType: SavedFileType.note,
-                            tooltip: 'Save as Note',
-                            icon: FeatherIcons.bookOpen,
-                            activeColor: const Color(0xFF58A6FF),
-                            textColor: textColor,
-                          ),
-                          const SizedBox(width: 6),
-                          // ── Save as Question Paper ──
-                          _SaveFileBtn(
-                            msg: msg,
-                            channel: widget.channel,
-                            fileType: SavedFileType.questionPaper,
-                            tooltip: 'Save as Question Paper',
-                            icon: FeatherIcons.fileMinus,
-                            activeColor: const Color(0xFF238636),
-                            textColor: textColor,
-                          ),
-                        ],
+                            const SizedBox(width: 8),
+                            // ── Download button ──
+                            Tooltip(
+                              message: 'Download',
+                              child: InkWell(
+                                onTap: () => _downloadFile(msg.fileUrl!),
+                                borderRadius: BorderRadius.circular(8),
+                                child: Container(
+                                  padding: const EdgeInsets.all(6),
+                                  decoration: BoxDecoration(
+                                    color: textColor.withValues(alpha: 0.15),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Icon(FeatherIcons.download,
+                                      color: textColor, size: 14),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            // ── Save as Note ──
+                            _SaveFileBtn(
+                              msg: msg,
+                              channel: widget.channel,
+                              fileType: SavedFileType.note,
+                              tooltip: 'Save as Note',
+                              icon: FeatherIcons.bookOpen,
+                              activeColor: const Color(0xFF58A6FF),
+                              textColor: textColor,
+                            ),
+                            const SizedBox(width: 6),
+                            // ── Save as Question Paper ──
+                            _SaveFileBtn(
+                              msg: msg,
+                              channel: widget.channel,
+                              fileType: SavedFileType.questionPaper,
+                              tooltip: 'Save as Question Paper',
+                              icon: FeatherIcons.fileMinus,
+                              activeColor: const Color(0xFF238636),
+                              textColor: textColor,
+                            ),
+                          ],
+                        ),
                       ),
                     )
                   else
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 12),
-                      decoration: BoxDecoration(
-                          color: bubbleColor, borderRadius: radius),
-                      child: Text(msg.content ?? '',
-                          style: GoogleFonts.outfit(
-                              color: textColor, fontSize: 14)),
+                    GestureDetector(
+                      // Long press directly on the text bubble
+                      onLongPress: () => _showActionSheet(context),
+                      onSecondaryTap: () => _showActionSheet(context),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 12),
+                        decoration: BoxDecoration(
+                            color: bubbleColor, borderRadius: radius),
+                        child: Text(msg.content ?? '',
+                            style: GoogleFonts.outfit(
+                                color: textColor, fontSize: 14)),
+                      ),
                     ),
 
                   // Emoji Picker popup
