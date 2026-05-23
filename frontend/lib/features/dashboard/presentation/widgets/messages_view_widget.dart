@@ -926,7 +926,6 @@ class _MessageBubbleState extends ConsumerState<_MessageBubble> {
   final Map<String, int> _reactions = {};
   String? _myReaction;
   bool _showPicker = false;
-  bool _isHovered = false;
 
   void _togglePicker() => setState(() => _showPicker = !_showPicker);
 
@@ -1295,36 +1294,6 @@ class _MessageBubbleState extends ConsumerState<_MessageBubble> {
     }
   }
 
-  Widget _buildMoreButton(BuildContext context) {
-    final isMobile = Responsive.isMobile(context);
-    // Mobile: always fully opaque
-    // Desktop: dimmed (35%) when not hovered, fully opaque on hover
-    final opacity = isMobile ? 1.0 : (_isHovered ? 1.0 : 0.35);
-    return AnimatedOpacity(
-      opacity: opacity,
-      duration: const Duration(milliseconds: 150),
-      child: Tooltip(
-        message: 'More options',
-        child: GestureDetector(
-          onTap: () => _showActionSheet(context),
-          child: Container(
-            padding: EdgeInsets.all(isMobile ? 8 : 6),
-            decoration: BoxDecoration(
-              color: AppColors.getBorderColor(context)
-                  .withValues(alpha: _isHovered ? 0.35 : 0.18),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              Icons.more_vert,
-              size: isMobile ? 18 : 17,
-              color: AppColors.getBodyColor(context),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final msg = widget.msg;
@@ -1343,25 +1312,21 @@ class _MessageBubbleState extends ConsumerState<_MessageBubble> {
     final time = DateFormat('h:mm a').format(msg.createdAt.toLocal());
     final isFaculty = msg.senderRole == 'faculty';
 
-    return MouseRegion(
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
-      child: Padding(
+    // Long press or right-click anywhere on the bubble to open the action menu.
+    return Padding(
         padding: EdgeInsets.only(bottom: isMobile ? 12 : 18),
         child: Row(
           mainAxisAlignment:
               isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // Three-dot LEFT of bubble for own messages
-            if (isMe) ...[_buildMoreButton(context), const SizedBox(width: 4)],
             // The bubble content
             Flexible(
               child: ConstrainedBox(
                 constraints: BoxConstraints(
                   maxWidth: isMobile
-                      ? MediaQuery.of(context).size.width * 0.78
-                      : MediaQuery.of(context).size.width * 0.55,
+                      ? MediaQuery.of(context).size.width * 0.88
+                      : MediaQuery.of(context).size.width * 0.60,
                 ),
                 child: Column(
                   crossAxisAlignment:
@@ -1657,11 +1622,8 @@ class _MessageBubbleState extends ConsumerState<_MessageBubble> {
         ),     // Column
       ),       // ConstrainedBox
     ),         // Flexible
-    // Three-dot RIGHT of bubble for others' messages
-    if (!isMe) ...[const SizedBox(width: 4), _buildMoreButton(context)],
   ],           // Row.children
   ),           // Row
-),             // Padding
 );
   }
 }
