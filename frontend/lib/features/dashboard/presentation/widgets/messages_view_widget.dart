@@ -922,30 +922,7 @@ class _MessageBubble extends ConsumerStatefulWidget {
 }
 
 class _MessageBubbleState extends ConsumerState<_MessageBubble> {
-  static const _emojis = ['👍', '❤️', '😂', '🔥', '👀'];
-  final Map<String, int> _reactions = {};
-  String? _myReaction;
-  bool _showPicker = false;
   bool _isHovered = false;
-
-
-  void _react(String emoji) {
-    setState(() {
-      if (_myReaction == emoji) {
-        _reactions[emoji] = (_reactions[emoji] ?? 1) - 1;
-        if (_reactions[emoji]! <= 0) _reactions.remove(emoji);
-        _myReaction = null;
-      } else {
-        if (_myReaction != null) {
-          _reactions[_myReaction!] = (_reactions[_myReaction!] ?? 1) - 1;
-          if (_reactions[_myReaction!]! <= 0) _reactions.remove(_myReaction!);
-        }
-        _myReaction = emoji;
-        _reactions[emoji] = (_reactions[emoji] ?? 0) + 1;
-      }
-      _showPicker = false;
-    });
-  }
 
   static IconData _fileIcon(String? name) {
     final ext = name?.split('.').last.toLowerCase() ?? '';
@@ -1205,38 +1182,6 @@ class _MessageBubbleState extends ConsumerState<_MessageBubble> {
                   ),
                 ),
 
-                // ── Emoji reaction row ─────────────────────────────────────
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF0D1117) : const Color(0xFFF6F8FA),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: isDark ? const Color(0xFF30363D) : const Color(0xFFD0D7DE),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: _emojis.map((e) {
-                      final isSelected = _myReaction == e;
-                      return GestureDetector(
-                        onTap: () { Navigator.pop(sheetCtx); _react(e); },
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 120),
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: isSelected
-                                ? AppColors.accent.withValues(alpha: 0.15)
-                                : Colors.transparent,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(e, style: const TextStyle(fontSize: 22)),
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                ),
-                const SizedBox(height: 4),
 
                 // ── Action tiles ──────────────────────────────────────────
                 if (hasText)
@@ -1540,92 +1485,6 @@ class _MessageBubbleState extends ConsumerState<_MessageBubble> {
                       ),
                     ),
 
-                  // Emoji Picker popup
-                  if (_showPicker)
-                    Container(
-                      margin: const EdgeInsets.only(top: 4),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 6, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: AppColors.getSurfaceColor(context),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                            color: AppColors.getBorderColor(context)),
-                        boxShadow: [
-                          BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.1),
-                              blurRadius: 12,
-                              offset: const Offset(0, 4)),
-                        ],
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: _emojis.map((e) {
-                          final isSelected = _myReaction == e;
-                          return GestureDetector(
-                            onTap: () => _react(e),
-                            child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 120),
-                              margin: const EdgeInsets.symmetric(horizontal: 2),
-                              padding: const EdgeInsets.all(6),
-                              decoration: BoxDecoration(
-                                color: isSelected
-                                    ? AppColors.accent.withValues(alpha: 0.15)
-                                    : Colors.transparent,
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child:
-                                  Text(e, style: const TextStyle(fontSize: 18)),
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                    ),
-
-                  // Reaction pills
-                  if (_reactions.isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 4),
-                      child: Wrap(
-                        spacing: 4,
-                        children: _reactions.entries.map((entry) {
-                          final isSelected = _myReaction == entry.key;
-                          return GestureDetector(
-                            onTap: () => _react(entry.key),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 8, vertical: 3),
-                              decoration: BoxDecoration(
-                                color: isSelected
-                                    ? AppColors.accent.withValues(alpha: 0.15)
-                                    : AppColors.getSurfaceColor(context),
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                  color: isSelected
-                                      ? AppColors.accent.withValues(alpha: 0.4)
-                                      : AppColors.getBorderColor(context),
-                                ),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(entry.key,
-                                      style: const TextStyle(fontSize: 12)),
-                                  const SizedBox(width: 4),
-                                  Text('${entry.value}',
-                                      style: TextStyle(
-                                          fontSize: 11,
-                                          color: isSelected
-                                              ? AppColors.accent
-                                              : AppColors.getBodyColor(context),
-                                          fontWeight: FontWeight.w600)),
-                                ],
-                              ),
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                    ),
                 ],
               ),
             ),
