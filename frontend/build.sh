@@ -36,6 +36,9 @@ else
   echo "Flutter SDK already present, skipping download."
 fi
 
+# ── Fix git safe.directory (Vercel runs as root — git rejects extracted dirs) ─
+git config --global --add safe.directory "$(pwd)/flutter"
+
 # ── Setup ─────────────────────────────────────────────────────────────────────
 export PATH="$PATH:$(pwd)/flutter/bin"
 flutter config --no-analytics
