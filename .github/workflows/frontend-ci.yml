@@ -21,14 +21,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # ── 2. Setup Flutter (direct install — no third-party actions, no warnings)
-      # Downloads the latest stable Flutter SDK directly from the official source.
+      # ── 2. Setup Flutter — pinned to 3.41.9 (3.44.0 breaks flutter_feather_icons) ──
       - name: Setup Flutter
         run: |
-          curl -sS https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_3.38.9-stable.tar.xz -o flutter.tar.xz \
-            || curl -sS https://storage.googleapis.com/flutter_infra_release/releases/releases_linux.json \
-              | grep -o '"archive":"[^"]*stable[^"]*"' | head -1 \
-              | sed 's/"archive":"//;s/"//' | xargs -I{} curl -sS "https://storage.googleapis.com/flutter_infra_release/releases/{}" -o flutter.tar.xz
+          curl -sS https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_3.41.9-stable.tar.xz -o flutter.tar.xz
           tar xf flutter.tar.xz
           echo "$PWD/flutter/bin" >> $GITHUB_PATH
 
