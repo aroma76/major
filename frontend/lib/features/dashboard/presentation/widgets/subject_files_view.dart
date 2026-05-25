@@ -8,7 +8,6 @@ import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/responsive.dart';
-import '../../../../core/services/api_service.dart';
 import '../../../../core/config/app_config.dart';
 // ignore: avoid_web_libraries_in_flutter
 import 'dart:html' as html show window;

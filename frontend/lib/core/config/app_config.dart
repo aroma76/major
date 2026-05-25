@@ -1,10 +1,13 @@
 class AppConfig {
   // ── Backend URLs ──
-  // Development:  'http://localhost:5000'
-  // Production:   'https://major-gin9.onrender.com'
   static const String _productionUrl = 'https://major-gin9.onrender.com';
   static const String _devUrl        = 'http://localhost:5000';
-  static String get baseUrl => _productionUrl; // ← switch to _devUrl for local dev
+
+  /// Set to true when running the backend locally.
+  /// Flip this back to false before pushing to production.
+  static const bool _devMode = false;
+
+  static String get baseUrl => _devMode ? _devUrl : _productionUrl;
 
   static String get apiUrl => '$baseUrl/api';
 
