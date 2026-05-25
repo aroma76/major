@@ -1,32 +1,31 @@
 #!/bin/bash
+set -e
 
 echo "Starting Flutter Web build for Vercel..."
 
-# Check if Flutter SDK exists, clone if not
-if [ ! -d "flutter" ]; then
-  echo "Cloning Flutter SDK..."
-  git clone https://github.com/flutter/flutter.git -b stable
+# ── Download Flutter SDK (tarball — much faster than git clone) ──────────────
+if [ ! -d "flutter/bin" ]; then
+  echo "Downloading Flutter SDK..."
+  FLUTTER_JSON=$(curl -sS https://storage.googleapis.com/flutter_infra_release/releases/releases_linux.json)
+  FLUTTER_ARCHIVE=$(echo "$FLUTTER_JSON" \
+    | grep -o '"archive":"[^"]*stable[^"]*\.tar\.xz"' \
+    | head -1 \
+    | sed 's/"archive":"//;s/"//')
+  curl -sS "https://storage.googleapis.com/flutter_infra_release/releases/$FLUTTER_ARCHIVE" -o flutter.tar.xz
+  tar xf flutter.tar.xz
+  rm flutter.tar.xz
+  echo "Flutter SDK downloaded."
 else
-  echo "Flutter SDK already exists."
+  echo "Flutter SDK already exists, skipping download."
 fi
 
-# Add Flutter to the PATH
-export PATH="$PATH:`pwd`/flutter/bin"
+# ── Add Flutter to PATH ───────────────────────────────────────────────────────
+export PATH="$PATH:$(pwd)/flutter/bin"
 
-# Precache flutter to speed up builds
-flutter precache
-
-# Get dependencies
+# ── Get dependencies ──────────────────────────────────────────────────────────
 flutter pub get
 
-# Build the web app
-flutter build web --release
+# ── Build Flutter Web ─────────────────────────────────────────────────────────
+flutter build web --release --no-tree-shake-icons
 
-# Move the built files to a 'public' directory
-# Vercel automatically serves the 'public' directory if Output Directory is not set!
-echo "Copying build/web to public directory for Vercel..."
-rm -rf public
-mkdir -p public
-cp -r build/web/* public/
-
-echo "Build and copy completed successfully!"
+echo "Build completed successfully!"
