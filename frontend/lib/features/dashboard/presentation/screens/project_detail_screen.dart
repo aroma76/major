@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_feather_icons/flutter_feather_icons.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -17,9 +16,6 @@ class ProjectDetailScreen extends StatefulWidget {
 }
 
 class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
-  final List<PlatformFile> _uploadedFiles = [];
-  bool _isPicking = false;
-
   // Real tasks from backend
   final _projectRepo = ProjectRepository();
   List<Map<String, dynamic>> _tasks = [];
@@ -491,63 +487,6 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
     }
   }
 
-  Future<void> _pickFiles() async {
-    setState(() => _isPicking = true);
-    try {
-      final result = await FilePicker.platform.pickFiles(
-        type: FileType.custom,
-        allowedExtensions: [
-          'pdf', 'zip', 'png', 'jpg', 'jpeg', 'doc', 'docx',
-          'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'md', 'mp4', 'rar', '7z'
-        ],
-        withData: true,
-        allowMultiple: true,
-      );
-      if (result != null && result.files.isNotEmpty) {
-        setState(() => _uploadedFiles.addAll(result.files));
-      }
-    } finally {
-      setState(() => _isPicking = false);
-    }
-  }
-
-  void _removeFile(int index) => setState(() => _uploadedFiles.removeAt(index));
-
-  String _formatSize(int bytes) {
-    if (bytes < 1024) return '${bytes}B';
-    if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)}KB';
-    return '${(bytes / (1024 * 1024)).toStringAsFixed(1)}MB';
-  }
-
-  IconData _iconForExt(String? ext) {
-    switch (ext?.toLowerCase()) {
-      case 'pdf':
-        return FeatherIcons.fileText;
-      case 'zip':
-      case 'rar':
-      case '7z':
-        return FeatherIcons.archive;
-      case 'png':
-      case 'jpg':
-      case 'jpeg':
-        return FeatherIcons.image;
-      case 'doc':
-      case 'docx':
-      case 'txt':
-      case 'md':
-        return FeatherIcons.file;
-      case 'xls':
-      case 'xlsx':
-        return FeatherIcons.grid;
-      case 'ppt':
-      case 'pptx':
-        return FeatherIcons.monitor;
-      case 'mp4':
-        return FeatherIcons.video;
-      default:
-        return FeatherIcons.paperclip;
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -578,8 +517,6 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
             _buildTeamSection(context),
             const SizedBox(height: 32),
             _buildMilestonesSection(context),
-            const SizedBox(height: 32),
-            _buildFilesSection(context),
           ],
         ),
       ),
@@ -1178,162 +1115,4 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
     );
   }
 
-  Widget _buildFilesSection(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // ── Header ────────────────────────────────────────────────────────────
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'File Uploads',
-              style: GoogleFonts.outfit(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.getHeadingColor(context)),
-            ),
-            TextButton.icon(
-              onPressed: _isPicking ? null : _pickFiles,
-              icon: _isPicking
-                  ? const SizedBox(
-                      width: 14,
-                      height: 14,
-                      child: CircularProgressIndicator(
-                          strokeWidth: 2, color: AppColors.accent))
-                  : const Icon(FeatherIcons.upload, size: 16,
-                      color: AppColors.accent),
-              label: Text(
-                _isPicking ? 'Picking...' : 'Upload',
-                style: GoogleFonts.outfit(
-                    color: AppColors.accent, fontWeight: FontWeight.w600),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
-
-        // ── Drop zone / file list ─────────────────────────────────────────────
-        if (_uploadedFiles.isEmpty)
-          GestureDetector(
-            onTap: _isPicking ? null : _pickFiles,
-            child: Container(
-              padding: const EdgeInsets.all(32),
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: AppColors.getSurfaceColor(context),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppColors.getBorderColor(context)),
-              ),
-              child: Column(
-                children: [
-                  Icon(FeatherIcons.uploadCloud,
-                      size: 40,
-                      color: AppColors.getBodyColor(context)
-                          .withValues(alpha: 0.4)),
-                  const SizedBox(height: 14),
-                  Text(
-                    'Click "Upload" or tap here to pick files',
-                    style: GoogleFonts.outfit(
-                        color: AppColors.getBodyColor(context),
-                        fontWeight: FontWeight.w500),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    'PDF, ZIP, PNG, DOC, XLSX, PPT, MP4 (Max 50MB)',
-                    style: GoogleFonts.outfit(
-                        color: AppColors.getBodyColor(context)
-                            .withValues(alpha: 0.5),
-                        fontSize: 12),
-                  ),
-                ],
-              ),
-            ),
-          )
-        else
-          Column(
-            children: [
-              // file list
-              ..._uploadedFiles.asMap().entries.map((entry) {
-                final i = entry.key;
-                final file = entry.value;
-                return Container(
-                  margin: const EdgeInsets.only(bottom: 10),
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 16, vertical: 12),
-                  decoration: BoxDecoration(
-                    color: AppColors.getSurfaceColor(context),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                        color: AppColors.getBorderColor(context)),
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color:
-                              AppColors.accent.withValues(alpha: 0.12),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Icon(_iconForExt(file.extension),
-                            size: 16, color: AppColors.accent),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              file.name,
-                              style: GoogleFonts.outfit(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                  color:
-                                      AppColors.getHeadingColor(context)),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            Text(
-                              _formatSize(file.size),
-                              style: GoogleFonts.outfit(
-                                  fontSize: 11,
-                                  color:
-                                      AppColors.getBodyColor(context)),
-                            ),
-                          ],
-                        ),
-                      ),
-                      IconButton(
-                        icon: Icon(FeatherIcons.x,
-                            size: 16,
-                            color: AppColors.getBodyColor(context)),
-                        onPressed: () => _removeFile(i),
-                        tooltip: 'Remove',
-                      ),
-                    ],
-                  ),
-                );
-              }),
-              // add more button
-              const SizedBox(height: 4),
-              OutlinedButton.icon(
-                onPressed: _isPicking ? null : _pickFiles,
-                icon: const Icon(FeatherIcons.plus,
-                    size: 14, color: AppColors.accent),
-                label: Text('Add More Files',
-                    style: GoogleFonts.outfit(
-                        color: AppColors.accent,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 13)),
-                style: OutlinedButton.styleFrom(
-                  side: BorderSide(color: AppColors.accent.withValues(alpha: 0.4)),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10)),
-                ),
-              ),
-            ],
-          ),
-      ],
-    );
-  }
 }

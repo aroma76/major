@@ -38,6 +38,13 @@ class ProjectRepository {
     await _api.createProjectTask(projectId, data);
   }
 
+  /// Fully updates [taskId] inside [projectId] (title, description, priority,
+  /// due_date, assigned_to_name). Pass null for assigned_to_name to clear.
+  Future<void> updateTask(
+      int projectId, int taskId, Map<String, dynamic> data) async {
+    await _api.updateProjectTask(projectId, taskId, data);
+  }
+
   /// Updates the status of [taskId] inside [projectId].
   /// [status] must be one of: 'todo', 'in_progress', 'done'.
   Future<void> updateTaskStatus(

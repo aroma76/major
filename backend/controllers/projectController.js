@@ -226,6 +226,31 @@ const updateTaskStatus = async (req, res) => {
 };
 
 /**
+ * PATCH /api/projects/:id/tasks/:taskId
+ * Full edit of a task: title, description, priority, due_date, assigned_to_name.
+ * Pass assigned_to_name as null/empty string to clear the assignment.
+ */
+const updateTask = async (req, res) => {
+  const { title, description, priority, due_date, assigned_to_name } = req.body;
+  if (!title)
+    return res.status(400).json({ success: false, message: 'title required' });
+
+  const result = await pool.query(
+    `UPDATE project_tasks
+     SET title = $1, description = $2, priority = $3, due_date = $4, assigned_to_name = $5
+     WHERE id = $6 AND project_id = $7
+     RETURNING *`,
+    [title, description || null, priority || 'medium',
+     due_date || null, assigned_to_name || null,
+     req.params.taskId, req.params.id]
+  );
+  if (!result.rows.length)
+    return res.status(404).json({ success: false, message: 'Task not found' });
+
+  res.json({ success: true, task: result.rows[0] });
+};
+
+/**
  * DELETE /api/projects/:id/tasks/:taskId
  * Permanently deletes a task. Recalculates project progress.
  */
@@ -248,8 +273,7 @@ const deleteTask = async (req, res) => {
 
   res.json({ success: true, message: 'Task deleted', progress });
 };
-
 module.exports = {
   getProjects, getProject, createProject, updateProgress, updateMembers,
-  deleteProject, createTask, updateTaskStatus, deleteTask
+  deleteProject, createTask, updateTask, updateTaskStatus, deleteTask,
 };

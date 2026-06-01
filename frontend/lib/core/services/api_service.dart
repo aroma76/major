@@ -133,6 +133,10 @@ class ApiService {
           int projectId, Map<String, dynamic> data) =>
       dio.post('/projects/$projectId/tasks', data: data);
 
+  Future<Response> updateProjectTask(
+          int projectId, int taskId, Map<String, dynamic> data) =>
+      dio.patch('/projects/$projectId/tasks/$taskId', data: data);
+
   Future<Response> updateProjectTaskStatus(
           int projectId, int taskId, String status) =>
       dio.patch('/projects/$projectId/tasks/$taskId/status',
@@ -140,6 +144,7 @@ class ApiService {
 
   Future<Response> deleteProjectTask(int projectId, int taskId) =>
       dio.delete('/projects/$projectId/tasks/$taskId');
+
 
   // ── Teacher-specific (stats + recent activity) ────────────────────────────
   Future<Response> getTeacherStats() => dio.get('/teacher/stats');
