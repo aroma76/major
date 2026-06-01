@@ -38,17 +38,26 @@ class _TeacherCreateAssignmentDialogState
 
   Future<void> _pickDate() async {
     final now = DateTime.now();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final picked = await showDatePicker(
       context: context,
-      initialDate: now.add(const Duration(days: 7)),
+      initialDate: _dueDate ?? now.add(const Duration(days: 7)),
       firstDate: now,
       lastDate: now.add(const Duration(days: 365)),
       builder: (ctx, child) => Theme(
         data: Theme.of(ctx).copyWith(
-          colorScheme: ColorScheme.dark(
-            primary: AppColors.accent,
-            surface: AppColors.surface,
-          ),
+          colorScheme: isDark
+              ? ColorScheme.dark(
+                  primary: AppColors.accent,
+                  onPrimary: Colors.white,
+                  surface: AppColors.surface,
+                  onSurface: Colors.white,
+                )
+              : ColorScheme.light(
+                  primary: AppColors.accent,
+                  onPrimary: Colors.white,
+                  onSurface: Colors.black87,
+                ),
         ),
         child: child!,
       ),

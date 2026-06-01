@@ -54,6 +54,7 @@ class _CreateTaskDialogState extends ConsumerState<CreateTaskDialog>
   }
 
   Future<void> _pickDate() async {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final picked = await showDatePicker(
       context: context,
       initialDate: _dueDate,
@@ -61,12 +62,18 @@ class _CreateTaskDialogState extends ConsumerState<CreateTaskDialog>
       lastDate: DateTime.now().add(const Duration(days: 365)),
       builder: (ctx, child) => Theme(
         data: Theme.of(ctx).copyWith(
-          colorScheme: ColorScheme.dark(
-            primary: AppColors.accent,
-            onPrimary: Colors.white,
-            surface: AppColors.surface,
-            onSurface: Colors.white,
-          ),
+          colorScheme: isDark
+              ? ColorScheme.dark(
+                  primary: AppColors.accent,
+                  onPrimary: Colors.white,
+                  surface: AppColors.surface,
+                  onSurface: Colors.white,
+                )
+              : ColorScheme.light(
+                  primary: AppColors.accent,
+                  onPrimary: Colors.white,
+                  onSurface: Colors.black87,
+                ),
         ),
         child: child!,
       ),
@@ -75,17 +82,24 @@ class _CreateTaskDialogState extends ConsumerState<CreateTaskDialog>
   }
 
   Future<void> _pickTime() async {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final picked = await showTimePicker(
       context: context,
       initialTime: _dueTime,
       builder: (ctx, child) => Theme(
         data: Theme.of(ctx).copyWith(
-          colorScheme: ColorScheme.dark(
-            primary: AppColors.accent,
-            onPrimary: Colors.white,
-            surface: AppColors.surface,
-            onSurface: Colors.white,
-          ),
+          colorScheme: isDark
+              ? ColorScheme.dark(
+                  primary: AppColors.accent,
+                  onPrimary: Colors.white,
+                  surface: AppColors.surface,
+                  onSurface: Colors.white,
+                )
+              : ColorScheme.light(
+                  primary: AppColors.accent,
+                  onPrimary: Colors.white,
+                  onSurface: Colors.black87,
+                ),
         ),
         child: child!,
       ),
