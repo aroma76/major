@@ -8,7 +8,10 @@ import '../../../../core/utils/responsive.dart';
 import '../providers/api_providers.dart';
 import '../screens/project_detail_screen.dart';
 import '../../data/models/project_model.dart';
+import '../../data/repositories/project_repository.dart';
 import 'create_project_dialog.dart';
+
+final _projectRepo = ProjectRepository();
 
 class ProjectsViewWidget extends ConsumerWidget {
   const ProjectsViewWidget({super.key});
@@ -55,11 +58,35 @@ class ProjectsViewWidget extends ConsumerWidget {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
-                onPressed: () {
-                  showDialog(
+                onPressed: () async {
+                  final result = await showDialog<Map<String, dynamic>>(
                     context: context,
                     builder: (context) => const CreateProjectDialog(),
                   );
+                  if (result == null) return;
+                  try {
+                    await _projectRepo.createProject(result);
+                    ref.invalidate(projectsProvider);
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Project "${result['name']}" created!'),
+                          backgroundColor: Colors.green.shade700,
+                          behavior: SnackBarBehavior.floating,
+                        ),
+                      );
+                    }
+                  } catch (e) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Failed to create project: $e'),
+                          backgroundColor: Colors.red.shade700,
+                          behavior: SnackBarBehavior.floating,
+                        ),
+                      );
+                    }
+                  }
                 },
                 icon: const Icon(Icons.add, size: 16),
                 label: const Text('New Project'),
@@ -98,11 +125,35 @@ class ProjectsViewWidget extends ConsumerWidget {
                   ],
                 ),
                 ElevatedButton.icon(
-                  onPressed: () {
-                    showDialog(
+                  onPressed: () async {
+                    final result = await showDialog<Map<String, dynamic>>(
                       context: context,
                       builder: (context) => const CreateProjectDialog(),
                     );
+                    if (result == null) return;
+                    try {
+                      await _projectRepo.createProject(result);
+                      ref.invalidate(projectsProvider);
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Project "${result['name']}" created!'),
+                            backgroundColor: Colors.green.shade700,
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                      }
+                    } catch (e) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Failed to create project: $e'),
+                            backgroundColor: Colors.red.shade700,
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                      }
+                    }
                   },
                   icon: const Icon(Icons.add, size: 18),
                   label: const Text('New Project'),
