@@ -65,7 +65,13 @@ class ProjectsViewWidget extends ConsumerWidget {
                   );
                   if (result == null) return;
                   try {
-                    await _projectRepo.createProject(result);
+                    await _projectRepo.createProject({
+                      'title': result['name'],
+                      'description': result['description'],
+                      'deadline': result['deadline'],
+                      // team is a comma-separated string — backend uses member_ids (user IDs)
+                      // for now we skip member_ids; the creator is auto-added by the backend
+                    });
                     ref.invalidate(projectsProvider);
                     if (context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -132,7 +138,11 @@ class ProjectsViewWidget extends ConsumerWidget {
                     );
                     if (result == null) return;
                     try {
-                      await _projectRepo.createProject(result);
+                      await _projectRepo.createProject({
+                        'title': result['name'],
+                        'description': result['description'],
+                        'deadline': result['deadline'],
+                      });
                       ref.invalidate(projectsProvider);
                       if (context.mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
