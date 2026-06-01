@@ -128,7 +128,7 @@ const createProject = async (req, res) => {
 const getClassroomStudents = async (req, res) => {
   // Find the project and creator info
   const proj = await pool.query(
-    `SELECT p.created_by, u.programme_id, u.current_semester
+    `SELECT p.created_by, u.role, u.programme_id, u.current_semester
      FROM projects p
      JOIN users u ON p.created_by = u.id
      WHERE p.id = $1`,
@@ -137,45 +137,87 @@ const getClassroomStudents = async (req, res) => {
   if (!proj.rows.length)
     return res.status(404).json({ success: false, message: 'Project not found' });
 
-  const { created_by: creatorId, programme_id, current_semester } = proj.rows[0];
+  const { created_by: creatorId, role: creatorRole, programme_id, current_semester } = proj.rows[0];
 
-  // Priority 1: same enrolled channels
-  const byEnrollment = await pool.query(
-    `SELECT DISTINCT u.id, u.name, u.roll_number
-     FROM users u
-     JOIN enrollments e ON e.user_id = u.id
-     WHERE u.role = 'student'
-       AND e.channel_id IN (
-         SELECT channel_id FROM enrollments WHERE user_id = $1
-       )
-       AND u.id NOT IN (
-         SELECT user_id FROM project_members WHERE project_id = $2
-       )
-       AND u.id != $1
-     ORDER BY u.name`,
-    [creatorId, req.params.id]
-  );
+  let students = [];
 
-  if (byEnrollment.rows.length > 0) {
-    return res.json({ success: true, students: byEnrollment.rows });
+  if (creatorRole === 'faculty') {
+    // Creator is faculty: find students enrolled in channels taught by this faculty, or in batches/programmes of those channels
+    const byFaculty = await pool.query(
+      `SELECT DISTINCT u.id, u.name, u.roll_number
+       FROM users u
+       LEFT JOIN enrollments e ON e.user_id = u.id
+       LEFT JOIN channels c ON e.channel_id = c.id
+       WHERE (u.role = 'student' OR u.role = 'class_representative')
+         AND (
+           c.teacher_id = $1
+           OR u.programme_id IN (
+             SELECT b.programme_id FROM channels ch JOIN batches b ON ch.batch_id = b.id WHERE ch.teacher_id = $1
+           )
+         )
+         AND u.id NOT IN (
+           SELECT user_id FROM project_members WHERE project_id = $2
+         )
+       ORDER BY u.name`,
+      [creatorId, req.params.id]
+    );
+    students = byFaculty.rows;
+  } else {
+    // Creator is a student or class representative
+    // Priority 1: same enrolled channels
+    const byEnrollment = await pool.query(
+      `SELECT DISTINCT u.id, u.name, u.roll_number
+       FROM users u
+       JOIN enrollments e ON e.user_id = u.id
+       WHERE (u.role = 'student' OR u.role = 'class_representative')
+         AND e.channel_id IN (
+           SELECT channel_id FROM enrollments WHERE user_id = $1
+         )
+         AND u.id NOT IN (
+           SELECT user_id FROM project_members WHERE project_id = $2
+         )
+         AND u.id != $1
+       ORDER BY u.name`,
+      [creatorId, req.params.id]
+    );
+    students = byEnrollment.rows;
+
+    if (students.length === 0 && programme_id && current_semester) {
+      // Fallback: same programme + semester
+      const byCohort = await pool.query(
+        `SELECT id, name, roll_number
+         FROM users
+         WHERE (role = 'student' OR role = 'class_representative')
+           AND programme_id = $1
+           AND current_semester = $2
+           AND id != $3
+           AND id NOT IN (
+             SELECT user_id FROM project_members WHERE project_id = $4
+           )
+         ORDER BY name`,
+        [programme_id, current_semester, creatorId, req.params.id]
+      );
+      students = byCohort.rows;
+    }
   }
 
-  // Fallback: same programme + semester (even if not enrolled in any channel yet)
-  const byCohort = await pool.query(
-    `SELECT id, name, roll_number
-     FROM users
-     WHERE role = 'student'
-       AND programme_id = $1
-       AND current_semester = $2
-       AND id != $3
-       AND id NOT IN (
-         SELECT user_id FROM project_members WHERE project_id = $4
-       )
-     ORDER BY name`,
-    [programme_id, current_semester, creatorId, req.params.id]
-  );
+  // Final Bulletproof Fallback: if list is still empty, return ALL students and class representatives in the database
+  if (students.length === 0) {
+    const allStudents = await pool.query(
+      `SELECT id, name, roll_number
+       FROM users
+       WHERE (role = 'student' OR role = 'class_representative')
+         AND id != $1
+         AND id NOT IN (
+           SELECT user_id FROM project_members WHERE project_id = $2
+         )
+       ORDER BY name`,
+      [creatorId, req.params.id]
+    );
+    students = allStudents.rows;
+  }
 
-  res.json({ success: true, students: byCohort.rows });
+  res.json({ success: true, students });
 };
 
 /**
