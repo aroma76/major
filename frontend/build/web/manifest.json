@@ -1,11 +1,11 @@
 {
-    "name": "student_teacher_dashboard",
-    "short_name": "student_teacher_dashboard",
+    "name": "EduSync",
+    "short_name": "EduSync",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "EduSync — Academic Workspace & Collaboration Portal for students and faculty.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
