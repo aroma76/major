@@ -1,5 +1,5 @@
 {
-  "buildCommand": "bash build.sh",
+  "buildCommand": "echo 'Using pre-built Flutter web output'",
   "outputDirectory": "build/web",
   "installCommand": "echo skip"
 }
