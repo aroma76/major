@@ -5,13 +5,14 @@ const { register, login, getMe, updateProfile, changePassword } = require('../co
 const { protect } = require('../middleware/auth');
 const upload     = require('../middleware/upload');
 
-// Brute-force protection: max 10 login attempts per 15 minutes per IP
+// Brute-force protection: max 50 login attempts per 15 minutes per IP
 const loginLimiter = rateLimit({
   windowMs      : 15 * 60 * 1000,
-  max           : 10,
-  message       : { success: false, message: 'Too many login attempts. Try again in 15 minutes.' },
+  max           : 50,
+  message       : { success: false, message: 'Too many login attempts. Please wait 15 minutes and try again.' },
   standardHeaders: true,
   legacyHeaders  : false,
+  skipSuccessfulRequests: true,  // successful logins don’t count toward the limit
 });
 
 router.post('/register', register);
