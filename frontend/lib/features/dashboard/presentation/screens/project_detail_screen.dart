@@ -49,6 +49,333 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
     }
   }
 
+  Future<void> _addTask() async {
+    final projectId = int.tryParse(widget.project.id);
+    if (projectId == null) return;
+
+    final titleCtrl = TextEditingController();
+    final descCtrl  = TextEditingController();
+    String priority = 'medium';
+    DateTime? dueDate;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setS) {
+          final isDark = Theme.of(ctx).brightness == Brightness.dark;
+          return Dialog(
+            backgroundColor: AppColors.getSurfaceColor(ctx),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 480),
+              child: Padding(
+                padding: const EdgeInsets.all(28),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Header
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: AppColors.accent.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Icon(FeatherIcons.checkSquare,
+                              color: AppColors.accent, size: 18),
+                        ),
+                        const SizedBox(width: 12),
+                        Text('Add Task',
+                            style: GoogleFonts.outfit(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.getHeadingColor(ctx))),
+                        const Spacer(),
+                        IconButton(
+                          icon: Icon(FeatherIcons.x,
+                              size: 18, color: AppColors.getBodyColor(ctx)),
+                          onPressed: () => Navigator.pop(ctx, false),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+
+                    // Task title
+                    Text('Task Title *',
+                        style: GoogleFonts.outfit(
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.getHeadingColor(ctx))),
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: titleCtrl,
+                      style: GoogleFonts.outfit(
+                          color: AppColors.getHeadingColor(ctx), fontSize: 14),
+                      decoration: InputDecoration(
+                        hintText: 'e.g. Design login page',
+                        hintStyle: GoogleFonts.outfit(
+                            color: AppColors.getBodyColor(ctx)),
+                        filled: true,
+                        fillColor: isDark
+                            ? Colors.white.withValues(alpha: 0.04)
+                            : Colors.black.withValues(alpha: 0.03),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(
+                                color: AppColors.getBorderColor(ctx))),
+                        enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(
+                                color: AppColors.getBorderColor(ctx))),
+                        focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                                color: AppColors.accent, width: 2)),
+                        contentPadding: const EdgeInsets.all(14),
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+
+                    // Description
+                    Text('Description (optional)',
+                        style: GoogleFonts.outfit(
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.getHeadingColor(ctx))),
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: descCtrl,
+                      maxLines: 2,
+                      style: GoogleFonts.outfit(
+                          color: AppColors.getHeadingColor(ctx), fontSize: 14),
+                      decoration: InputDecoration(
+                        hintText: 'Brief description...',
+                        hintStyle: GoogleFonts.outfit(
+                            color: AppColors.getBodyColor(ctx)),
+                        filled: true,
+                        fillColor: isDark
+                            ? Colors.white.withValues(alpha: 0.04)
+                            : Colors.black.withValues(alpha: 0.03),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(
+                                color: AppColors.getBorderColor(ctx))),
+                        enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(
+                                color: AppColors.getBorderColor(ctx))),
+                        focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                                color: AppColors.accent, width: 2)),
+                        contentPadding: const EdgeInsets.all(14),
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+
+                    // Priority + Due Date row
+                    Row(
+                      children: [
+                        // Priority chips
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('Priority',
+                                  style: GoogleFonts.outfit(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.bold,
+                                      color: AppColors.getHeadingColor(ctx))),
+                              const SizedBox(height: 8),
+                              Wrap(
+                                spacing: 8,
+                                children: ['low', 'medium', 'high'].map((p) {
+                                  final colors = {
+                                    'low': AppColors.priorityLow,
+                                    'medium': AppColors.priorityMedium,
+                                    'high': AppColors.priorityHigh,
+                                  };
+                                  final c = colors[p]!;
+                                  final selected = priority == p;
+                                  return GestureDetector(
+                                    onTap: () => setS(() => priority = p),
+                                    child: AnimatedContainer(
+                                      duration:
+                                          const Duration(milliseconds: 150),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 12, vertical: 6),
+                                      decoration: BoxDecoration(
+                                        color: selected
+                                            ? c.withValues(alpha: 0.18)
+                                            : Colors.transparent,
+                                        borderRadius:
+                                            BorderRadius.circular(8),
+                                        border: Border.all(
+                                            color: selected
+                                                ? c
+                                                : AppColors
+                                                    .getBorderColor(ctx)),
+                                      ),
+                                      child: Text(p.toUpperCase(),
+                                          style: GoogleFonts.outfit(
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.bold,
+                                              color: selected
+                                                  ? c
+                                                  : AppColors
+                                                      .getBodyColor(ctx))),
+                                    ),
+                                  );
+                                }).toList(),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        // Due date picker
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Due Date',
+                                style: GoogleFonts.outfit(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.getHeadingColor(ctx))),
+                            const SizedBox(height: 8),
+                            GestureDetector(
+                              onTap: () async {
+                                final picked = await showDatePicker(
+                                  context: ctx,
+                                  initialDate: DateTime.now()
+                                      .add(const Duration(days: 7)),
+                                  firstDate: DateTime.now(),
+                                  lastDate: DateTime.now()
+                                      .add(const Duration(days: 365)),
+                                );
+                                if (picked != null) {
+                                  setS(() => dueDate = picked);
+                                }
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 10),
+                                decoration: BoxDecoration(
+                                  color: dueDate != null
+                                      ? AppColors.accent
+                                          .withValues(alpha: 0.08)
+                                      : Colors.transparent,
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(
+                                      color: dueDate != null
+                                          ? AppColors.accent
+                                          : AppColors.getBorderColor(ctx)),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(FeatherIcons.calendar,
+                                        size: 14,
+                                        color: dueDate != null
+                                            ? AppColors.accent
+                                            : AppColors.getBodyColor(ctx)),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      dueDate == null
+                                          ? 'Pick date'
+                                          : DateFormat('MMM d, y')
+                                              .format(dueDate!),
+                                      style: GoogleFonts.outfit(
+                                          fontSize: 12,
+                                          color: dueDate != null
+                                              ? AppColors.accent
+                                              : AppColors.getBodyColor(ctx),
+                                          fontWeight: dueDate != null
+                                              ? FontWeight.w600
+                                              : FontWeight.normal),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Actions
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(ctx, false),
+                          child: Text('Cancel',
+                              style: GoogleFonts.outfit(
+                                  color: AppColors.getBodyColor(ctx))),
+                        ),
+                        const SizedBox(width: 12),
+                        ElevatedButton.icon(
+                          icon: const Icon(FeatherIcons.plus,
+                              size: 16, color: Colors.white),
+                          label: Text('Add Task',
+                              style: GoogleFonts.outfit(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold)),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.accent,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12)),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 20, vertical: 12),
+                            elevation: 0,
+                          ),
+                          onPressed: () {
+                            if (titleCtrl.text.trim().isEmpty) return;
+                            Navigator.pop(ctx, true);
+                          },
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+
+    if (confirmed != true) return;
+    if (titleCtrl.text.trim().isEmpty) return;
+
+    try {
+      await _projectRepo.createTask(projectId, {
+        'title': titleCtrl.text.trim(),
+        if (descCtrl.text.trim().isNotEmpty) 'description': descCtrl.text.trim(),
+        'priority': priority,
+        if (dueDate != null) 'due_date': dueDate!.toIso8601String(),
+      });
+      await _fetchTasks(); // refresh the list
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Task "${titleCtrl.text.trim()}" added!'),
+          backgroundColor: Colors.green.shade700,
+          behavior: SnackBarBehavior.floating,
+        ));
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Failed to add task: $e'),
+          backgroundColor: Colors.red.shade700,
+          behavior: SnackBarBehavior.floating,
+        ));
+      }
+    }
+  }
+
   Future<void> _pickFiles() async {
     setState(() => _isPicking = true);
     try {
@@ -300,14 +627,28 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Tasks',
-          style: GoogleFonts.outfit(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: AppColors.getHeadingColor(context)),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Tasks',
+              style: GoogleFonts.outfit(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.getHeadingColor(context)),
+            ),
+            TextButton.icon(
+              onPressed: _addTask,
+              icon: const Icon(FeatherIcons.plus,
+                  size: 16, color: AppColors.accent),
+              label: Text('Add Task',
+                  style: GoogleFonts.outfit(
+                      color: AppColors.accent,
+                      fontWeight: FontWeight.w600)),
+            ),
+          ],
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 12),
         if (_loadingTasks)
           const Center(child: CircularProgressIndicator(color: AppColors.accent))
         else if (_tasks.isEmpty)
