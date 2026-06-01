@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../data/models/project_model.dart';
+import '../../data/repositories/project_repository.dart';
 
 class ProjectDetailScreen extends StatefulWidget {
   final ProjectModel project;
@@ -18,6 +19,35 @@ class ProjectDetailScreen extends StatefulWidget {
 class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
   final List<PlatformFile> _uploadedFiles = [];
   bool _isPicking = false;
+
+  // Real tasks from backend
+  final _projectRepo = ProjectRepository();
+  List<Map<String, dynamic>> _tasks = [];
+  bool _loadingTasks = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchTasks();
+  }
+
+  Future<void> _fetchTasks() async {
+    final id = int.tryParse(widget.project.id);
+    if (id == null) {
+      setState(() => _loadingTasks = false);
+      return;
+    }
+    try {
+      final data = await _projectRepo.getProject(id);
+      final tasks = (data['project']?['tasks'] as List<dynamic>? ??
+              data['tasks'] as List<dynamic>? ??
+              [])
+          .cast<Map<String, dynamic>>();
+      if (mounted) setState(() { _tasks = tasks; _loadingTasks = false; });
+    } catch (_) {
+      if (mounted) setState(() => _loadingTasks = false);
+    }
+  }
 
   Future<void> _pickFiles() async {
     setState(() => _isPicking = true);
@@ -271,22 +301,118 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Milestones',
+          'Tasks',
           style: GoogleFonts.outfit(
               fontSize: 20,
               fontWeight: FontWeight.bold,
               color: AppColors.getHeadingColor(context)),
         ),
         const SizedBox(height: 16),
-        _buildMilestoneItem(context, 'Project Planning', true),
-        _buildMilestoneItem(context, 'UI/UX Design', true),
-        _buildMilestoneItem(context, 'Backend Integration', true),
-        _buildMilestoneItem(context, 'Final Testing', false),
+        if (_loadingTasks)
+          const Center(child: CircularProgressIndicator(color: AppColors.accent))
+        else if (_tasks.isEmpty)
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: AppColors.getSurfaceColor(context),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: AppColors.getBorderColor(context)),
+            ),
+            child: Row(
+              children: [
+                Icon(FeatherIcons.checkSquare,
+                    size: 20,
+                    color: AppColors.getBodyColor(context).withValues(alpha: 0.4)),
+                const SizedBox(width: 12),
+                Text(
+                  'No tasks yet for this project.',
+                  style: GoogleFonts.outfit(
+                      color: AppColors.getBodyColor(context), fontSize: 14),
+                ),
+              ],
+            ),
+          )
+        else
+          ..._tasks.map((task) => _buildTaskItem(context, task)),
       ],
     );
   }
 
-  Widget _buildMilestoneItem(
+  Widget _buildTaskItem(BuildContext context, Map<String, dynamic> task) {
+    final status = task['status'] as String? ?? 'todo';
+    final title = task['title'] as String? ?? 'Untitled';
+    final priority = task['priority'] as String? ?? 'medium';
+    final isDone = status == 'done';
+    final isInProgress = status == 'in_progress';
+
+    Color statusColor;
+    IconData statusIcon;
+    if (isDone) {
+      statusColor = AppColors.doneColor;
+      statusIcon = Icons.check_circle;
+    } else if (isInProgress) {
+      statusColor = AppColors.inProgressColor;
+      statusIcon = Icons.pending_actions;
+    } else {
+      statusColor = AppColors.todoColor;
+      statusIcon = Icons.radio_button_unchecked;
+    }
+
+    Color priorityColor;
+    switch (priority) {
+      case 'high': priorityColor = AppColors.priorityHigh; break;
+      case 'low':  priorityColor = AppColors.priorityLow;  break;
+      default:     priorityColor = AppColors.priorityMedium;
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: AppColors.getSurfaceColor(context),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppColors.getBorderColor(context)),
+        ),
+        child: Row(
+          children: [
+            Icon(statusIcon, color: statusColor, size: 20),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Text(
+                title,
+                style: GoogleFonts.outfit(
+                  color: isDone
+                      ? AppColors.getBodyColor(context)
+                      : AppColors.getHeadingColor(context),
+                  fontWeight: FontWeight.w500,
+                  decoration: isDone ? TextDecoration.lineThrough : null,
+                  decorationColor: AppColors.getBodyColor(context),
+                ),
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              decoration: BoxDecoration(
+                color: priorityColor.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Text(
+                priority.toUpperCase(),
+                style: GoogleFonts.outfit(
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    color: priorityColor),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // kept for compile safety — no longer called
+  Widget _buildMilestoneItemOld(
       BuildContext context, String title, bool isCompleted) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
