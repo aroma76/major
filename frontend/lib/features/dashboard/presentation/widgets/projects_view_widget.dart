@@ -69,8 +69,8 @@ class ProjectsViewWidget extends ConsumerWidget {
                       'title': result['name'],
                       'description': result['description'],
                       'deadline': result['deadline'],
-                      // team is a comma-separated string — backend uses member_ids (user IDs)
-                      // for now we skip member_ids; the creator is auto-added by the backend
+                      if ((result['member_ids'] as List?)?.isNotEmpty == true)
+                        'member_ids': result['member_ids'],
                     });
                     ref.invalidate(projectsProvider);
                     if (context.mounted) {
@@ -142,6 +142,8 @@ class ProjectsViewWidget extends ConsumerWidget {
                         'title': result['name'],
                         'description': result['description'],
                         'deadline': result['deadline'],
+                        if ((result['member_ids'] as List?)?.isNotEmpty == true)
+                          'member_ids': result['member_ids'],
                       });
                       ref.invalidate(projectsProvider);
                       if (context.mounted) {

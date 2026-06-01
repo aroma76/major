@@ -171,4 +171,24 @@ const changePassword = async (req, res) => {
   res.json({ success: true, message: 'Password updated successfully' });
 };
 
-module.exports = { register, login, getMe, updateProfile, changePassword };
+/**
+ * GET /api/auth/users/search?q=query
+ * Searches for users by name or roll number.
+ * Returns id, name, roll_number, avatar_initials for matching users.
+ */
+const searchUsers = async (req, res) => {
+  const q = (req.query.q || '').trim();
+  if (q.length < 2) return res.json({ success: true, users: [] });
+
+  const result = await pool.query(
+    `SELECT id, name, roll_number, avatar_initials
+     FROM users
+     WHERE id != $1
+       AND (LOWER(name) LIKE LOWER($2) OR LOWER(roll_number::text) LIKE LOWER($2))
+     LIMIT 10`,
+    [req.user.id, `%${q}%`]
+  );
+  res.json({ success: true, users: result.rows });
+};
+
+module.exports = { register, login, getMe, updateProfile, changePassword, searchUsers };

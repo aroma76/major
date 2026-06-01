@@ -112,6 +112,9 @@ class ApiService {
 
   Future<Response> getProject(int id) => dio.get('/projects/$id');
 
+  Future<Response> searchUsers(String query) =>
+      dio.get('/auth/users/search', queryParameters: {'q': query});
+
   Future<Response> createProject(Map<String, dynamic> data) =>
       dio.post('/projects', data: data);
 
