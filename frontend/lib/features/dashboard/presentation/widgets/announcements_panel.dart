@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/services/socket_service.dart';
 import '../../../../features/auth/auth_provider.dart';
+import '../../data/repositories/announcement_repository.dart';
 import '../providers/api_providers.dart';
 
 class AnnouncementsPanel extends ConsumerStatefulWidget {
@@ -98,7 +99,12 @@ class _AnnouncementsPanelState extends ConsumerState<AnnouncementsPanel> {
               children: announcements
                   .map((ann) => Padding(
                         padding: const EdgeInsets.only(bottom: 10),
-                        child: _AnnouncementItem(data: ann),
+                        child: _AnnouncementItem(
+                          data: ann,
+                          isFaculty: isFaculty,
+                          onDeleted: () => ref.invalidate(
+                              dashboardRecentActivityProvider(isFaculty)),
+                        ),
                       ))
                   .toList(),
             );
@@ -110,9 +116,18 @@ class _AnnouncementsPanelState extends ConsumerState<AnnouncementsPanel> {
 }
 
 // ── Announcement Item ──────────────────────────────────────────────────────────
-class _AnnouncementItem extends StatelessWidget {
+class _AnnouncementItem extends ConsumerWidget {
   final Map<String, dynamic> data;
-  const _AnnouncementItem({required this.data});
+  final bool isFaculty;
+  final VoidCallback onDeleted;
+
+  const _AnnouncementItem({
+    required this.data,
+    required this.isFaculty,
+    required this.onDeleted,
+  });
+
+  static const _announcementRepo = AnnouncementRepository();
 
   static const _colors = [
     Color(0xFF58A6FF),
@@ -122,8 +137,67 @@ class _AnnouncementItem extends StatelessWidget {
     Color(0xFFFF6B6B),
   ];
 
+  Future<void> _confirmDelete(BuildContext context) async {
+    final annId = (data['id'] as num?)?.toInt();
+    final channelId = (data['channel_id'] as num?)?.toInt();
+    if (annId == null || channelId == null) return;
+
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.getSurfaceColor(ctx),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text('Delete Announcement?',
+            style: GoogleFonts.outfit(
+                fontWeight: FontWeight.bold,
+                color: AppColors.getHeadingColor(ctx))),
+        content: Text(
+            'This announcement will be permanently removed for all students.',
+            style: GoogleFonts.outfit(color: AppColors.getBodyColor(ctx))),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text('Cancel',
+                style: GoogleFonts.outfit(color: AppColors.getBodyColor(ctx))),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red.shade600,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10))),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text('Delete',
+                style: GoogleFonts.outfit(
+                    color: Colors.white, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+    if (confirm != true) return;
+    try {
+      await _announcementRepo.deleteAnnouncement(channelId, annId);
+      onDeleted();
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Announcement deleted'),
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+        ));
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Failed to delete: $e'),
+          backgroundColor: Colors.red.shade700,
+          behavior: SnackBarBehavior.floating,
+        ));
+      }
+    }
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final title = data['title'] as String? ?? '';
     final content = data['content'] as String? ?? '';
     final sender = data['created_by_name'] as String? ?? 'Teacher';
@@ -224,6 +298,25 @@ class _AnnouncementItem extends StatelessWidget {
               ],
             ),
           ),
+          // ── Delete button (faculty only) ─────────────────────────────────
+          if (isFaculty) ...[
+            const SizedBox(width: 8),
+            Tooltip(
+              message: 'Delete announcement',
+              child: GestureDetector(
+                onTap: () => _confirmDelete(context),
+                child: Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: Colors.red.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(FeatherIcons.trash2,
+                      size: 13, color: Colors.red.shade400),
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );

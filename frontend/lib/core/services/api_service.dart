@@ -82,6 +82,9 @@ class ApiService {
         'is_important': isImportant,
       });
 
+  Future<Response> deleteAnnouncement(int channelId, int announcementId) =>
+      dio.delete('/channels/$channelId/announcements/$announcementId');
+
   // ── Notes ─────────────────────────────────────────────────────────────────
   Future<Response> getNotes(int channelId) =>
       dio.get('/channels/$channelId/notes');
