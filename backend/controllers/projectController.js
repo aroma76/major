@@ -1,37 +1,32 @@
 const pool = require('../config/db');
 
 /**
- * Auto-migration: ensure custom_members column exists on the projects table.
- * Runs once on first import — safe to run repeatedly (IF NOT EXISTS).
+ * Auto-migration: ensure assigned_to_name column exists on project_tasks.
+ * custom_members is no longer used — members now live in project_members table.
  */
-pool.query(`ALTER TABLE projects ADD COLUMN IF NOT EXISTS custom_members TEXT DEFAULT ''`)
-  .catch(err => console.warn('Migration warning (custom_members):', err.message));
-
 pool.query(`ALTER TABLE project_tasks ADD COLUMN IF NOT EXISTS assigned_to_name TEXT DEFAULT NULL`)
   .catch(err => console.warn('Migration warning (assigned_to_name):', err.message));
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-/** Parse "Alice, Bob, Charlie" → ["Alice", "Bob", "Charlie"] */
-const parseMembers = (raw) =>
-  (raw || '').split(',').map(n => n.trim()).filter(Boolean);
-
-/** ["Alice", "Bob"] → "Alice, Bob" */
-const joinMembers = (arr) => (arr || []).filter(Boolean).join(', ');
 
 // ─── Controllers ──────────────────────────────────────────────────────────────
 
 /**
  * GET /api/projects
- * Retrieves all projects that the logged-in user is a member of (either via
- * project_members table OR listed in custom_members by the creator).
+ * Retrieves all projects that the logged-in user is a member of.
+ * Members are read from project_members JOIN users (real accounts).
  */
 const getProjects = async (req, res) => {
   const result = await pool.query(
     `SELECT p.*,
             u.name AS created_by_name,
             (SELECT COUNT(*) FROM project_tasks pt WHERE pt.project_id = p.id) AS task_count,
-            (SELECT COUNT(*) FROM project_tasks pt WHERE pt.project_id = p.id AND pt.status = 'done') AS done_count
+            (SELECT COUNT(*) FROM project_tasks pt WHERE pt.project_id = p.id AND pt.status = 'done') AS done_count,
+            COALESCE(
+              (SELECT json_agg(json_build_object('id', mu.id, 'name', mu.name))
+               FROM project_members pm
+               JOIN users mu ON pm.user_id = mu.id
+               WHERE pm.project_id = p.id),
+              '[]'
+            ) AS members
      FROM projects p
      JOIN users u ON p.created_by = u.id
      WHERE p.id IN (
@@ -41,10 +36,9 @@ const getProjects = async (req, res) => {
     [req.user.id]
   );
 
-  // Parse custom_members for each project
   const projects = result.rows.map(p => ({
     ...p,
-    member_names: parseMembers(p.custom_members),
+    member_names: (p.members || []).map(m => m.name),
   }));
 
   res.json({ success: true, projects });
@@ -53,11 +47,18 @@ const getProjects = async (req, res) => {
 /**
  * GET /api/projects/:id
  * Retrieves detailed information for a specific project.
- * Returns custom_members as a parsed array + all project tasks.
+ * Returns real member list from project_members + all tasks.
  */
 const getProject = async (req, res) => {
   const project = await pool.query(
-    `SELECT p.*, u.name AS created_by_name
+    `SELECT p.*, u.name AS created_by_name,
+            COALESCE(
+              (SELECT json_agg(json_build_object('id', mu.id, 'name', mu.name))
+               FROM project_members pm
+               JOIN users mu ON pm.user_id = mu.id
+               WHERE pm.project_id = p.id),
+              '[]'
+            ) AS members
      FROM projects p
      JOIN users u ON p.created_by = u.id
      WHERE p.id = $1`,
@@ -72,51 +73,42 @@ const getProject = async (req, res) => {
   );
 
   const p = project.rows[0];
-  const memberNames = parseMembers(p.custom_members);
-
-  // Attach assigned_to_name from custom_members for each task
-  const tasksWithNames = tasks.rows.map(t => ({
-    ...t,
-    assigned_to_name: t.assigned_to_name || null,
-  }));
+  const members = p.members || [];
+  const memberNames = members.map(m => m.name);
 
   res.json({
     success: true,
     project: {
       ...p,
       member_names: memberNames,
-      // Keep members as array of {id, name} for backwards compat
-      members: memberNames.map((name, i) => ({ id: i, name })),
-      tasks: tasksWithNames,
+      members,
+      tasks: tasks.rows,
     }
   });
 };
 
 /**
  * POST /api/projects
- * Creates a new project. Accepts member_names as array of strings.
- * Body: { title, description?, deadline?, member_names? }
+ * Creates a new project. Creator is automatically added as a member.
+ * Body: { title, description?, deadline? }
  */
 const createProject = async (req, res) => {
-  const { title, description, deadline, member_names } = req.body;
+  const { title, description, deadline } = req.body;
   if (!title)
     return res.status(400).json({ success: false, message: 'title required' });
-
   if (title.length > 255)
     return res.status(400).json({ success: false, message: 'title too long (max 255 chars)' });
   if (description && description.length > 2000)
     return res.status(400).json({ success: false, message: 'description too long (max 2000 chars)' });
 
-  const customMembers = joinMembers(Array.isArray(member_names) ? member_names : []);
-
   const result = await pool.query(
-    `INSERT INTO projects (title, description, deadline, created_by, progress, custom_members)
-     VALUES ($1, $2, $3, $4, 0, $5) RETURNING *`,
-    [title, description || null, deadline || null, req.user.id, customMembers]
+    `INSERT INTO projects (title, description, deadline, created_by, progress)
+     VALUES ($1, $2, $3, $4, 0) RETURNING *`,
+    [title, description || null, deadline || null, req.user.id]
   );
   const project = result.rows[0];
 
-  // Always add the creator as a system member so they can see the project
+  // Always add the creator as a member
   await pool.query(
     `INSERT INTO project_members (project_id, user_id) VALUES ($1, $2) ON CONFLICT DO NOTHING`,
     [project.id, req.user.id]
@@ -126,24 +118,89 @@ const createProject = async (req, res) => {
 };
 
 /**
- * PATCH /api/projects/:id/members
- * Replaces the custom member names list for a project.
- * Body: { member_names: ["Alice", "Bob", ...] }
+ * GET /api/projects/:id/students
+ * Returns students enrolled in the same channels as the project creator
+ * who are NOT already members of this project.
+ * Used to populate the "Add Member" picker.
  */
-const updateMembers = async (req, res) => {
-  const { member_names } = req.body;
-  if (!Array.isArray(member_names))
-    return res.status(400).json({ success: false, message: 'member_names must be an array' });
-
-  const custom = joinMembers(member_names);
-  const result = await pool.query(
-    `UPDATE projects SET custom_members = $1 WHERE id = $2 RETURNING *`,
-    [custom, req.params.id]
-  );
-  if (!result.rows.length)
+const getClassroomStudents = async (req, res) => {
+  // Find the project creator
+  const proj = await pool.query('SELECT created_by FROM projects WHERE id = $1', [req.params.id]);
+  if (!proj.rows.length)
     return res.status(404).json({ success: false, message: 'Project not found' });
 
-  res.json({ success: true, member_names: parseMembers(custom) });
+  const creatorId = proj.rows[0].created_by;
+
+  // Students enrolled in ANY channel the creator is also enrolled in,
+  // excluding people already in the project
+  const result = await pool.query(
+    `SELECT DISTINCT u.id, u.name, u.roll_number
+     FROM users u
+     JOIN enrollments e ON e.user_id = u.id
+     WHERE u.role = 'student'
+       AND e.channel_id IN (
+         SELECT channel_id FROM enrollments WHERE user_id = $1
+       )
+       AND u.id NOT IN (
+         SELECT user_id FROM project_members WHERE project_id = $2
+       )
+       AND u.id != $1
+     ORDER BY u.name`,
+    [creatorId, req.params.id]
+  );
+
+  res.json({ success: true, students: result.rows });
+};
+
+/**
+ * POST /api/projects/:id/members
+ * Adds a student (by user_id) to a project.
+ * Body: { user_id: number }
+ */
+const addMember = async (req, res) => {
+  const { user_id } = req.body;
+  if (!user_id)
+    return res.status(400).json({ success: false, message: 'user_id required' });
+
+  // Verify the project exists and request comes from the creator
+  const proj = await pool.query('SELECT created_by FROM projects WHERE id = $1', [req.params.id]);
+  if (!proj.rows.length)
+    return res.status(404).json({ success: false, message: 'Project not found' });
+  if (proj.rows[0].created_by !== req.user.id)
+    return res.status(403).json({ success: false, message: 'Only the project creator can add members' });
+
+  await pool.query(
+    `INSERT INTO project_members (project_id, user_id) VALUES ($1, $2) ON CONFLICT DO NOTHING`,
+    [req.params.id, user_id]
+  );
+
+  // Return the added member's info
+  const user = await pool.query('SELECT id, name FROM users WHERE id = $1', [user_id]);
+  res.status(201).json({ success: true, member: user.rows[0] });
+};
+
+/**
+ * DELETE /api/projects/:id/members/:userId
+ * Removes a member from a project.
+ * Only the project creator can remove members. Creator cannot remove themselves.
+ */
+const removeMember = async (req, res) => {
+  const proj = await pool.query('SELECT created_by FROM projects WHERE id = $1', [req.params.id]);
+  if (!proj.rows.length)
+    return res.status(404).json({ success: false, message: 'Project not found' });
+  if (proj.rows[0].created_by !== req.user.id)
+    return res.status(403).json({ success: false, message: 'Only the project creator can remove members' });
+
+  const targetUserId = parseInt(req.params.userId);
+  if (targetUserId === proj.rows[0].created_by)
+    return res.status(400).json({ success: false, message: 'Cannot remove the project creator' });
+
+  await pool.query(
+    'DELETE FROM project_members WHERE project_id = $1 AND user_id = $2',
+    [req.params.id, targetUserId]
+  );
+
+  res.json({ success: true, message: 'Member removed' });
 };
 
 /**
@@ -179,7 +236,7 @@ const deleteProject = async (req, res) => {
 /**
  * POST /api/projects/:id/tasks
  * Adds a new task to a project.
- * Body: { title, description?, assigned_to_name?, due_date?, priority? }
+ * Body: { title, description?, assigned_to_name?, assigned_to_id?, due_date?, priority? }
  */
 const createTask = async (req, res) => {
   const { title, description, assigned_to_name, due_date, priority } = req.body;
@@ -228,7 +285,6 @@ const updateTaskStatus = async (req, res) => {
 /**
  * PATCH /api/projects/:id/tasks/:taskId
  * Full edit of a task: title, description, priority, due_date, assigned_to_name.
- * Pass assigned_to_name as null/empty string to clear the assignment.
  */
 const updateTask = async (req, res) => {
   const { title, description, priority, due_date, assigned_to_name } = req.body;
@@ -273,7 +329,10 @@ const deleteTask = async (req, res) => {
 
   res.json({ success: true, message: 'Task deleted', progress });
 };
+
 module.exports = {
-  getProjects, getProject, createProject, updateProgress, updateMembers,
-  deleteProject, createTask, updateTask, updateTaskStatus, deleteTask,
+  getProjects, getProject, createProject,
+  getClassroomStudents, addMember, removeMember,
+  updateProgress, deleteProject,
+  createTask, updateTask, updateTaskStatus, deleteTask,
 };

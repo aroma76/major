@@ -115,11 +115,15 @@ class ApiService {
 
   Future<Response> getProject(int id) => dio.get('/projects/$id');
 
-  Future<Response> searchUsers(String query) =>
-      dio.get('/auth/users/search', queryParameters: {'q': query});
 
-  Future<Response> updateProjectMembers(int id, List<String> memberNames) =>
-      dio.patch('/projects/$id/members', data: {'member_names': memberNames});
+  Future<Response> getProjectStudents(int projectId) =>
+      dio.get('/projects/$projectId/students');
+
+  Future<Response> addProjectMember(int projectId, int userId) =>
+      dio.post('/projects/$projectId/members', data: {'user_id': userId});
+
+  Future<Response> removeProjectMember(int projectId, int userId) =>
+      dio.delete('/projects/$projectId/members/$userId');
 
   Future<Response> createProject(Map<String, dynamic> data) =>
       dio.post('/projects', data: data);

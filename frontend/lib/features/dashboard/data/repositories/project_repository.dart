@@ -12,7 +12,7 @@ class ProjectRepository {
     return list.cast<Map<String, dynamic>>();
   }
 
-  /// Returns a single project with its full task list.
+  /// Returns a single project with its full task list and members.
   Future<Map<String, dynamic>> getProject(int id) async {
     final response = await _api.getProject(id);
     return response.data as Map<String, dynamic>;
@@ -23,9 +23,24 @@ class ProjectRepository {
     await _api.createProject(data);
   }
 
-  /// Updates the custom member names list for [projectId].
-  Future<void> updateMembers(int projectId, List<String> names) async {
-    await _api.updateProjectMembers(projectId, names);
+  /// Returns students from the same classroom who can be added to [projectId].
+  Future<List<Map<String, dynamic>>> getClassroomStudents(int projectId) async {
+    final response = await _api.getProjectStudents(projectId);
+    final data = response.data as Map<String, dynamic>;
+    final list = data['students'] as List<dynamic>? ?? [];
+    return list.cast<Map<String, dynamic>>();
+  }
+
+  /// Adds a student (by [userId]) to [projectId].
+  Future<Map<String, dynamic>> addMember(int projectId, int userId) async {
+    final response = await _api.addProjectMember(projectId, userId);
+    final data = response.data as Map<String, dynamic>;
+    return data['member'] as Map<String, dynamic>? ?? {};
+  }
+
+  /// Removes [userId] from [projectId].
+  Future<void> removeMember(int projectId, int userId) async {
+    await _api.removeProjectMember(projectId, userId);
   }
 
   /// Deletes a project by [id].
@@ -38,15 +53,13 @@ class ProjectRepository {
     await _api.createProjectTask(projectId, data);
   }
 
-  /// Fully updates [taskId] inside [projectId] (title, description, priority,
-  /// due_date, assigned_to_name). Pass null for assigned_to_name to clear.
+  /// Fully updates [taskId] inside [projectId].
   Future<void> updateTask(
       int projectId, int taskId, Map<String, dynamic> data) async {
     await _api.updateProjectTask(projectId, taskId, data);
   }
 
   /// Updates the status of [taskId] inside [projectId].
-  /// [status] must be one of: 'todo', 'in_progress', 'done'.
   Future<void> updateTaskStatus(
       int projectId, int taskId, String status) async {
     await _api.updateProjectTaskStatus(projectId, taskId, status);
