@@ -127,7 +127,7 @@ class _AnnouncementItem extends ConsumerWidget {
     required this.onDeleted,
   });
 
-  static const _announcementRepo = AnnouncementRepository();
+  static final _announcementRepo = AnnouncementRepository();
 
   static const _colors = [
     Color(0xFF58A6FF),
