@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_feather_icons/flutter_feather_icons.dart';
 import 'package:intl/intl.dart';
@@ -16,30 +16,16 @@ class _CreateProjectDialogState extends State<CreateProjectDialog> {
   final _formKey        = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _descController = TextEditingController();
-  final _memberController = TextEditingController();
 
   String   _priority = 'Medium';
   DateTime? _deadline;
-  final List<String> _members = [];
 
   @override
   void dispose() {
     _nameController.dispose();
     _descController.dispose();
-    _memberController.dispose();
     super.dispose();
   }
-
-  void _addMember() {
-    final name = _memberController.text.trim();
-    if (name.isEmpty) return;
-    if (!_members.contains(name)) {
-      setState(() => _members.add(name));
-    }
-    _memberController.clear();
-  }
-
-  void _removeMember(int index) => setState(() => _members.removeAt(index));
 
   Future<void> _pickDeadline() async {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -127,61 +113,7 @@ class _CreateProjectDialogState extends State<CreateProjectDialog> {
                     hint: 'What is this project about?', isDark: isDark, maxLines: 3),
                 const SizedBox(height: 16),
 
-                // ── Team Members ──────────────────────────────────────────────
-                _label(context, 'Team Members'),
-                const SizedBox(height: 4),
-                Text('Type a name and press Enter or tap + to add',
-                    style: GoogleFonts.outfit(fontSize: 11, color: AppColors.getBodyColor(context))),
-                const SizedBox(height: 8),
 
-                // Input row
-                Row(children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _memberController,
-                      style: GoogleFonts.outfit(color: AppColors.getHeadingColor(context), fontSize: 14),
-                      onSubmitted: (_) => _addMember(),
-                      inputFormatters: [LengthLimitingTextInputFormatter(50)],
-                      decoration: InputDecoration(
-                        hintText: 'e.g. Rahul Sharma',
-                        hintStyle: GoogleFonts.outfit(color: AppColors.getBodyColor(context), fontSize: 13),
-                        filled: true,
-                        fillColor: isDark ? Colors.white.withValues(alpha: 0.04) : Colors.black.withValues(alpha: 0.03),
-                        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(color: AppColors.getBorderColor(context))),
-                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: AppColors.accent, width: 2)),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  GestureDetector(
-                    onTap: _addMember,
-                    child: Container(
-                      padding: const EdgeInsets.all(13),
-                      decoration: BoxDecoration(
-                        color: AppColors.accent,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Icon(FeatherIcons.plus, size: 18, color: Colors.white),
-                    ),
-                  ),
-                ]),
-
-                // Member chips
-                if (_members.isNotEmpty) ...[
-                  const SizedBox(height: 10),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: _members.asMap().entries.map((e) => _MemberChip(
-                      name: e.value,
-                      onRemove: () => _removeMember(e.key),
-                    )).toList(),
-                  ),
-                ],
-                const SizedBox(height: 16),
 
                 // ── Deadline ──────────────────────────────────────────────────
                 _label(context, 'Deadline'),
@@ -256,7 +188,7 @@ class _CreateProjectDialogState extends State<CreateProjectDialog> {
                             'description':  _descController.text.trim(),
                             'priority':     _priority,
                             'deadline':     _deadline?.toIso8601String(),
-                            'member_names': List<String>.from(_members),
+                            'member_names': <String>[],
                           });
                         }
                       },
@@ -308,43 +240,3 @@ class _CreateProjectDialogState extends State<CreateProjectDialog> {
       );
 }
 
-// ── Member Chip ───────────────────────────────────────────────────────────────
-
-class _MemberChip extends StatelessWidget {
-  final String name;
-  final VoidCallback onRemove;
-
-  const _MemberChip({required this.name, required this.onRemove});
-
-  @override
-  Widget build(BuildContext context) {
-    final initial = name.trim().isNotEmpty ? name.trim()[0].toUpperCase() : '?';
-    return Container(
-      padding: const EdgeInsets.fromLTRB(8, 5, 10, 5),
-      decoration: BoxDecoration(
-        color: AppColors.accent.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.accent.withValues(alpha: 0.3)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          CircleAvatar(
-            radius: 10,
-            backgroundColor: AppColors.accent.withValues(alpha: 0.25),
-            child: Text(initial,
-                style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: AppColors.accent)),
-          ),
-          const SizedBox(width: 6),
-          Text(name, style: GoogleFonts.outfit(
-              fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.accent)),
-          const SizedBox(width: 4),
-          GestureDetector(
-            onTap: onRemove,
-            child: const Icon(Icons.close_rounded, size: 14, color: AppColors.accent),
-          ),
-        ],
-      ),
-    );
-  }
-}
