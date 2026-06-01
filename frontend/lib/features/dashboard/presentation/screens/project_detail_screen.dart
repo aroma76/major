@@ -23,6 +23,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
   // Real tasks from backend
   final _projectRepo = ProjectRepository();
   List<Map<String, dynamic>> _tasks = [];
+  List<Map<String, dynamic>> _members = []; // {id, name}
   bool _loadingTasks = true;
 
   @override
@@ -39,11 +40,20 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
     }
     try {
       final data = await _projectRepo.getProject(id);
-      final tasks = (data['project']?['tasks'] as List<dynamic>? ??
-              data['tasks'] as List<dynamic>? ??
-              [])
+      final projectData = data['project'] as Map<String, dynamic>? ?? data;
+      final tasks = (projectData['tasks'] as List<dynamic>? ?? [])
           .cast<Map<String, dynamic>>();
-      if (mounted) setState(() { _tasks = tasks; _loadingTasks = false; });
+      final members = (projectData['members'] as List<dynamic>? ?? [])
+          .cast<Map<String, dynamic>>()
+          .where((m) => m['id'] != null && m['name'] != null)
+          .toList();
+      if (mounted) {
+        setState(() {
+          _tasks = tasks;
+          _members = members;
+          _loadingTasks = false;
+        });
+      }
     } catch (_) {
       if (mounted) setState(() => _loadingTasks = false);
     }
@@ -57,6 +67,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
     final descCtrl  = TextEditingController();
     String priority = 'medium';
     DateTime? dueDate;
+    Map<String, dynamic>? assignedMember; // {id, name}
 
     final confirmed = await showDialog<bool>(
       context: context,
@@ -303,7 +314,100 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 16),
+
+                    // ── Assign to ──────────────────────────────────────────
+                    if (_members.isNotEmpty) ...[
+                      Text('Assign to',
+                          style: GoogleFonts.outfit(
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.getHeadingColor(ctx))),
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? Colors.white.withValues(alpha: 0.04)
+                              : Colors.black.withValues(alpha: 0.03),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                              color: assignedMember != null
+                                  ? AppColors.accent
+                                  : AppColors.getBorderColor(ctx)),
+                        ),
+                        child: DropdownButtonHideUnderline(
+                          child: DropdownButton<Map<String, dynamic>?>(
+                            value: assignedMember,
+                            isExpanded: true,
+                            dropdownColor: AppColors.getSurfaceColor(ctx),
+                            style: GoogleFonts.outfit(
+                                color: AppColors.getHeadingColor(ctx),
+                                fontSize: 14),
+                            hint: Text('Unassigned',
+                                style: GoogleFonts.outfit(
+                                    color: AppColors.getBodyColor(ctx),
+                                    fontSize: 14)),
+                            items: [
+                              // Unassigned option
+                              DropdownMenuItem<Map<String, dynamic>?>(
+                                value: null,
+                                child: Row(
+                                  children: [
+                                    CircleAvatar(
+                                      radius: 12,
+                                      backgroundColor: AppColors
+                                          .getBorderColor(ctx)
+                                          .withValues(alpha: 0.3),
+                                      child: Icon(FeatherIcons.user,
+                                          size: 12,
+                                          color:
+                                              AppColors.getBodyColor(ctx)),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Text('Unassigned',
+                                        style: GoogleFonts.outfit(
+                                            color:
+                                                AppColors.getBodyColor(ctx))),
+                                  ],
+                                ),
+                              ),
+                              // Project members
+                              ..._members.map((member) =>
+                                  DropdownMenuItem<Map<String, dynamic>?>(
+                                    value: member,
+                                    child: Row(
+                                      children: [
+                                        CircleAvatar(
+                                          radius: 12,
+                                          backgroundColor: AppColors.accent
+                                              .withValues(alpha: 0.18),
+                                          child: Text(
+                                            (member['name'] as String)
+                                                .trim()[0]
+                                                .toUpperCase(),
+                                            style: const TextStyle(
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.bold,
+                                                color: AppColors.accent),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 10),
+                                        Text(member['name'] as String,
+                                            style: GoogleFonts.outfit(
+                                                color: AppColors
+                                                    .getHeadingColor(ctx))),
+                                      ],
+                                    ),
+                                  )),
+                            ],
+                            onChanged: (val) =>
+                                setS(() => assignedMember = val),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                    ],
 
                     // Actions
                     Row(
@@ -356,6 +460,8 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
         if (descCtrl.text.trim().isNotEmpty) 'description': descCtrl.text.trim(),
         'priority': priority,
         if (dueDate != null) 'due_date': dueDate!.toIso8601String(),
+        if (assignedMember != null)
+          'assigned_to': (assignedMember!['id'] as num).toInt(),
       });
       await _fetchTasks(); // refresh the list
       if (mounted) {
