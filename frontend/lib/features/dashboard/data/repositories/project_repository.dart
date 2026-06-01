@@ -39,4 +39,9 @@ class ProjectRepository {
       int projectId, int taskId, String status) async {
     await _api.updateProjectTaskStatus(projectId, taskId, status);
   }
+
+  /// Permanently deletes [taskId] from [projectId].
+  Future<void> deleteTask(int projectId, int taskId) async {
+    await _api.deleteProjectTask(projectId, taskId);
+  }
 }

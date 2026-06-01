@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const {
   getProjects, getProject, createProject, updateProgress,
-  deleteProject, createTask, updateTaskStatus
+  deleteProject, createTask, updateTaskStatus, deleteTask
 } = require('../controllers/projectController');
 const { protect } = require('../middleware/auth');
 
@@ -13,5 +13,6 @@ router.patch('/:id/progress',               protect, updateProgress);
 router.delete('/:id',                        protect, deleteProject);
 router.post('/:id/tasks',                    protect, createTask);
 router.patch('/:id/tasks/:taskId/status',   protect, updateTaskStatus);
+router.delete('/:id/tasks/:taskId',         protect, deleteTask);
 
 module.exports = router;

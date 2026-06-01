@@ -162,4 +162,29 @@ const updateTaskStatus = async (req, res) => {
   res.json({ success: true, task: result.rows[0], progress });
 };
 
-module.exports = { getProjects, getProject, createProject, updateProgress, deleteProject, createTask, updateTaskStatus };
+/**
+ * DELETE /api/projects/:id/tasks/:taskId
+ * Permanently deletes a task from a project.
+ * Automatically recalculates project progress after deletion.
+ */
+const deleteTask = async (req, res) => {
+  const result = await pool.query(
+    `DELETE FROM project_tasks WHERE id = $1 AND project_id = $2 RETURNING *`,
+    [req.params.taskId, req.params.id]
+  );
+  if (!result.rows.length)
+    return res.status(404).json({ success: false, message: 'Task not found' });
+
+  // Recalculate project progress
+  const counts = await pool.query(
+    `SELECT COUNT(*) AS total, COUNT(*) FILTER (WHERE status = 'done') AS done FROM project_tasks WHERE project_id = $1`,
+    [req.params.id]
+  );
+  const { total, done } = counts.rows[0];
+  const progress = total > 0 ? Math.round((done / total) * 100) : 0;
+  await pool.query(`UPDATE projects SET progress = $1 WHERE id = $2`, [progress, req.params.id]);
+
+  res.json({ success: true, message: 'Task deleted', progress });
+};
+
+module.exports = { getProjects, getProject, createProject, updateProgress, deleteProject, createTask, updateTaskStatus, deleteTask };

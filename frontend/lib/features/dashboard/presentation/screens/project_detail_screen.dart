@@ -811,6 +811,63 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
     }
   }
 
+  Future<void> _deleteTask(Map<String, dynamic> task) async {
+    final projectId = int.tryParse(widget.project.id);
+    final taskId = (task['id'] as num?)?.toInt();
+    if (projectId == null || taskId == null) return;
+
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.getSurfaceColor(ctx),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text('Delete Task?',
+            style: GoogleFonts.outfit(
+                fontWeight: FontWeight.bold,
+                color: AppColors.getHeadingColor(ctx))),
+        content: Text(
+            'Are you sure you want to delete "${task['title']}"? This cannot be undone.',
+            style: GoogleFonts.outfit(color: AppColors.getBodyColor(ctx))),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text('Cancel',
+                style: GoogleFonts.outfit(color: AppColors.getBodyColor(ctx))),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red.shade600, elevation: 0,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text('Delete',
+                style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+    try {
+      await _projectRepo.deleteTask(projectId, taskId);
+      await _fetchTasks();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Task deleted'),
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+        ));
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Failed to delete task: $e'),
+          backgroundColor: Colors.red.shade700,
+          behavior: SnackBarBehavior.floating,
+        ));
+      }
+    }
+  }
+
   Widget _buildTaskItem(BuildContext context, Map<String, dynamic> task) {
     final status        = task['status'] as String? ?? 'todo';
     final title         = task['title'] as String? ?? 'Untitled';
@@ -907,6 +964,24 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
                         color: priorityColor),
+                  ),
+                ),
+
+                // ── Delete button ─────────────────────────────────────────
+                const SizedBox(width: 6),
+                Tooltip(
+                  message: 'Delete task',
+                  child: GestureDetector(
+                    onTap: () => _deleteTask(task),
+                    child: Container(
+                      padding: const EdgeInsets.all(5),
+                      decoration: BoxDecoration(
+                        color: Colors.red.withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(7),
+                      ),
+                      child: Icon(FeatherIcons.trash2,
+                          size: 13, color: Colors.red.shade400),
+                    ),
                   ),
                 ),
               ],

@@ -132,6 +132,9 @@ class ApiService {
       dio.patch('/projects/$projectId/tasks/$taskId/status',
           data: {'status': status});
 
+  Future<Response> deleteProjectTask(int projectId, int taskId) =>
+      dio.delete('/projects/$projectId/tasks/$taskId');
+
   // ── Teacher-specific (stats + recent activity) ────────────────────────────
   Future<Response> getTeacherStats() => dio.get('/teacher/stats');
 

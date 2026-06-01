@@ -284,9 +284,63 @@ class _ProjectCard extends StatefulWidget {
 
 class _ProjectCardState extends State<_ProjectCard> {
   bool _hovered = false;
+  final _projectRepo = ProjectRepository();
+
+  Future<void> _confirmDelete(BuildContext context, WidgetRef ref, int id, String title) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.getSurfaceColor(ctx),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text('Delete Project?',
+            style: GoogleFonts.outfit(
+                fontWeight: FontWeight.bold,
+                color: AppColors.getHeadingColor(ctx))),
+        content: Text(
+            'Are you sure you want to delete "$title"? All tasks will be permanently removed.',
+            style: GoogleFonts.outfit(color: AppColors.getBodyColor(ctx))),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text('Cancel', style: GoogleFonts.outfit(color: AppColors.getBodyColor(ctx))),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red.shade600, elevation: 0,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text('Delete',
+                style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+    if (confirm != true) return;
+    try {
+      await _projectRepo.deleteProject(id);
+      ref.invalidate(projectsProvider);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Project "$title" deleted'),
+          backgroundColor: Colors.red.shade700,
+          behavior: SnackBarBehavior.floating,
+        ));
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Failed to delete: $e'),
+          backgroundColor: Colors.red.shade700,
+          behavior: SnackBarBehavior.floating,
+        ));
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    return Consumer(
+      builder: (context, ref, _) {
     final p = widget.data;
     final color = widget.color;
     final m = widget.isMobile;
@@ -401,6 +455,23 @@ class _ProjectCardState extends State<_ProjectCard> {
                                     : AppColors.getHeadingColor(context))),
                       ],
                     ),
+
+                  // ── Delete button ─────────────────────────────────────
+                  Tooltip(
+                    message: 'Delete project',
+                    child: GestureDetector(
+                      onTap: () => _confirmDelete(context, ref, id, title),
+                      child: Container(
+                        padding: const EdgeInsets.all(7),
+                        decoration: BoxDecoration(
+                          color: Colors.red.withValues(alpha: 0.08),
+                          borderRadius: BorderRadius.circular(9),
+                        ),
+                        child: Icon(FeatherIcons.trash2,
+                            size: 15, color: Colors.red.shade400),
+                      ),
+                    ),
+                  ),
                 ],
               ),
               SizedBox(height: m ? 12 : 20),
@@ -505,5 +576,6 @@ class _ProjectCardState extends State<_ProjectCard> {
         ),
       ),
     );
+    }); // Consumer
   }
 }
