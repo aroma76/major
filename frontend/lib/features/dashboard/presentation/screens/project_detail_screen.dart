@@ -26,10 +26,19 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
   List<Map<String, dynamic>> _members = []; // {id, name}
   bool _loadingTasks = true;
 
+  // Controller for the add-member input in _buildTeamSection
+  final _addMemberCtrl = TextEditingController();
+
   @override
   void initState() {
     super.initState();
     _fetchTasks();
+  }
+
+  @override
+  void dispose() {
+    _addMemberCtrl.dispose();
+    super.dispose();
   }
 
   Future<void> _fetchTasks() async {
@@ -674,10 +683,8 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
 
   Widget _buildTeamSection(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final memberNames = _members.map((m) => m['name'] as String).toList();
-    final addCtrl = TextEditingController();
 
-    void syncMembers(List<String> names) async {
+    Future<void> syncMembers(List<String> names) async {
       final id = int.tryParse(widget.project.id);
       if (id == null) return;
       try {
@@ -686,6 +693,8 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
     }
 
     return StatefulBuilder(builder: (context, setS) {
+      // Read _members inside StatefulBuilder so count is always fresh
+      final memberNames = _members.map((m) => m['name'] as String).toList();
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -771,11 +780,11 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
           Row(children: [
             Expanded(
               child: TextField(
-                controller: addCtrl,
+                controller: _addMemberCtrl,
                 style: GoogleFonts.outfit(color: AppColors.getHeadingColor(context), fontSize: 13),
                 onSubmitted: (v) {
                   final name = v.trim();
-                  if (name.isEmpty || memberNames.contains(name)) { addCtrl.clear(); return; }
+                  if (name.isEmpty || memberNames.contains(name)) { _addMemberCtrl.clear(); return; }
                   final updated = [...memberNames, name];
                   setS(() {
                     _members = updated.asMap().entries
@@ -783,7 +792,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                         .toList();
                   });
                   syncMembers(updated);
-                  addCtrl.clear();
+                  _addMemberCtrl.clear();
                 },
                 decoration: InputDecoration(
                   hintText: 'Add member name...',
@@ -801,8 +810,8 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
             const SizedBox(width: 8),
             GestureDetector(
               onTap: () {
-                final name = addCtrl.text.trim();
-                if (name.isEmpty || memberNames.contains(name)) { addCtrl.clear(); return; }
+                final name = _addMemberCtrl.text.trim();
+                if (name.isEmpty || memberNames.contains(name)) { _addMemberCtrl.clear(); return; }
                 final updated = [...memberNames, name];
                 setS(() {
                   _members = updated.asMap().entries
@@ -810,7 +819,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                       .toList();
                 });
                 syncMembers(updated);
-                addCtrl.clear();
+                _addMemberCtrl.clear();
               },
               child: Container(
                 padding: const EdgeInsets.all(11),
