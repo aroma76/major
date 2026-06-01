@@ -995,38 +995,6 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
     );
   }
 
-  // kept for compile safety — no longer called
-  Widget _buildMilestoneItemOld(
-      BuildContext context, String title, bool isCompleted) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Row(
-        children: [
-          Icon(
-            isCompleted ? Icons.check_circle : Icons.radio_button_unchecked,
-            color:
-                isCompleted ? AppColors.doneColor : AppColors.getBodyColor(context),
-            size: 20,
-          ),
-          const SizedBox(width: 16),
-          Text(
-            title,
-            style: GoogleFonts.outfit(
-              color: isCompleted
-                  ? AppColors.getHeadingColor(context)
-                  : AppColors.getBodyColor(context),
-              fontWeight:
-                  isCompleted ? FontWeight.w600 : FontWeight.normal,
-              decoration:
-                  isCompleted ? TextDecoration.lineThrough : null,
-              decorationColor: AppColors.getBodyColor(context),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildFilesSection(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
