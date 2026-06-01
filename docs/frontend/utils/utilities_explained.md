@@ -90,7 +90,7 @@ class AppConfig {
 
 **Development vs Production:**
 - Local: `http://localhost:5000` — the local Node.js server
-- Production: `https://adtu-collab.onrender.com` — the deployed Render.com backend
+- Production: `https://adtu-collab.onrender.com` — the deployed Render.com backend (EduSync API server)
 
 **Why centralize?** Without this, changing the production URL would require finding and updating every Dio client and Socket.IO connection across multiple files. With `AppConfig.baseUrl`, there's one place to change.
 

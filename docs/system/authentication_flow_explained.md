@@ -126,7 +126,7 @@ Future<bool> restoreSession() async {
 
 ```
 ┌─────────────────────────────┐
-│  ADTU Collab                │
+│  EduSync                    │
 │                             │
 │  Welcome back!              │
 │  Sign in to continue        │

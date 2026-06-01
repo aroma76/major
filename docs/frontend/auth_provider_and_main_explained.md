@@ -273,7 +273,7 @@ class MyApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(themeModeProvider);
     return MaterialApp(
-      title: 'ADTU Collab',
+      title: 'EduSync',
       debugShowCheckedModeBanner: false,
       themeMode: themeMode,
       darkTheme: _buildDarkTheme(),
@@ -287,7 +287,7 @@ class MyApp extends ConsumerWidget {
 
 **`ref.watch(themeModeProvider)`** — when the user toggles dark/light mode, `themeMode` changes → `MyApp.build()` rebuilds → `MaterialApp` rebuilds with the new `themeMode` → entire app re-renders in the new theme.
 
-**`title: 'ADTU Collab'`** — the app name shown in the OS task switcher.
+**`title: 'EduSync'`** — the app name shown in the OS task switcher.
 
 **`debugShowCheckedModeBanner: false`** — removes the red "DEBUG" banner in the top-right corner. Common for development builds shared with stakeholders.
 

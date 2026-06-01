@@ -1,0 +1,397 @@
+<mxfile host="app.diagrams.net" modified="2026-05-31" version="21.0.0">
+
+<!-- ============================================================
+     PAGE 12: Authentication Flow — top-to-bottom, clean
+     ============================================================ -->
+<diagram id="p12" name="12. Auth Flow">
+<mxGraphModel dx="1600" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1400" math="0" shadow="0">
+<root>
+<mxCell id="0"/><mxCell id="1" parent="0"/>
+<mxCell id="t12" value="Authentication Flow Diagram — EduSync" style="text;html=1;strokeColor=none;fillColor=none;align=center;fontSize=22;fontStyle=1;" vertex="1" parent="1">
+  <mxGeometry x="300" y="20" width="1000" height="44" as="geometry"/>
+</mxCell>
+
+<!-- COLUMN HEADERS (actors / layers) -->
+<mxCell id="ah-user" value="User" style="rounded=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="60" y="90" width="160" height="44" as="geometry"/></mxCell>
+<mxCell id="ah-frontend" value="Flutter Frontend" style="rounded=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="280" y="90" width="240" height="44" as="geometry"/></mxCell>
+<mxCell id="ah-backend" value="Express Backend" style="rounded=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=13;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="600" y="90" width="240" height="44" as="geometry"/></mxCell>
+<mxCell id="ah-db" value="PostgreSQL" style="rounded=1;fillColor=#ffe6cc;strokeColor=#d6b656;fontSize=13;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="920" y="90" width="200" height="44" as="geometry"/></mxCell>
+<mxCell id="ah-storage" value="StorageService" style="rounded=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=13;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="1200" y="90" width="200" height="44" as="geometry"/></mxCell>
+
+<!-- Lifeline dashes -->
+<mxCell id="afl1" style="dashed=1;strokeColor=#6c8ebf;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="140" y="134" as="sourcePoint"/><mxPoint x="140" y="1350" as="targetPoint"/></mxGeometry></mxCell>
+<mxCell id="afl2" style="dashed=1;strokeColor=#6c8ebf;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="400" y="134" as="sourcePoint"/><mxPoint x="400" y="1350" as="targetPoint"/></mxGeometry></mxCell>
+<mxCell id="afl3" style="dashed=1;strokeColor=#82b366;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="720" y="134" as="sourcePoint"/><mxPoint x="720" y="1350" as="targetPoint"/></mxGeometry></mxCell>
+<mxCell id="afl4" style="dashed=1;strokeColor=#d6b656;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1020" y="134" as="sourcePoint"/><mxPoint x="1020" y="1350" as="targetPoint"/></mxGeometry></mxCell>
+<mxCell id="afl5" style="dashed=1;strokeColor=#9673a6;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1300" y="134" as="sourcePoint"/><mxPoint x="1300" y="1350" as="targetPoint"/></mxGeometry></mxCell>
+
+<!-- STEP BOXES -->
+<mxCell id="as1" value="① Enter email + password" style="rounded=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="1"><mxGeometry x="200" y="190" width="280" height="54" as="geometry"/></mxCell>
+<mxCell id="as2" value="② Tap Login button" style="rounded=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="1"><mxGeometry x="200" y="290" width="280" height="54" as="geometry"/></mxCell>
+<mxCell id="as3" value="③ POST /api/auth/login&#xa;{ email, password }" style="rounded=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" vertex="1" parent="1"><mxGeometry x="530" y="390" width="380" height="60" as="geometry"/></mxCell>
+<mxCell id="as4" value="④ SELECT user WHERE email = ?" style="rounded=1;fillColor=#ffe6cc;strokeColor=#d6b656;fontSize=12;" vertex="1" parent="1"><mxGeometry x="860" y="500" width="360" height="54" as="geometry"/></mxCell>
+<mxCell id="as5" value="⑤ user row returned" style="rounded=1;fillColor=#ffe6cc;strokeColor=#d6b656;fontSize=12;" vertex="1" parent="1"><mxGeometry x="860" y="600" width="360" height="54" as="geometry"/></mxCell>
+<mxCell id="as6" value="⑥ bcrypt.compare() + jwt.sign()" style="rounded=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" vertex="1" parent="1"><mxGeometry x="530" y="700" width="380" height="54" as="geometry"/></mxCell>
+
+<!-- DECISION: valid or not -->
+<mxCell id="as-dec" value="Valid?" style="rhombus;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=13;" vertex="1" parent="1"><mxGeometry x="600" y="800" width="200" height="80" as="geometry"/></mxCell>
+<mxCell id="as-err" value="⊗  401 Unauthorized&#xa;→ Show error toast" style="rounded=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=12;" vertex="1" parent="1"><mxGeometry x="270" y="820" width="260" height="54" as="geometry"/></mxCell>
+<mxCell id="as7" value="⑦  200 OK  { token, user }" style="rounded=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" vertex="1" parent="1"><mxGeometry x="530" y="930" width="380" height="54" as="geometry"/></mxCell>
+<mxCell id="as8" value="⑧  Dio.setAuthToken(token)" style="rounded=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="1"><mxGeometry x="200" y="1030" width="280" height="54" as="geometry"/></mxCell>
+<mxCell id="as9" value="⑨  StorageService.saveToken(token)" style="rounded=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;" vertex="1" parent="1"><mxGeometry x="1100" y="1030" width="380" height="54" as="geometry"/></mxCell>
+<mxCell id="as10" value="⑩  AuthNotifier.state = Authenticated" style="rounded=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" vertex="1" parent="1"><mxGeometry x="200" y="1130" width="280" height="54" as="geometry"/></mxCell>
+<mxCell id="as11" value="⑪  SocketService.connect(jwt)" style="rounded=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="1"><mxGeometry x="200" y="1230" width="280" height="54" as="geometry"/></mxCell>
+<mxCell id="as12" value="⑫  Navigate → MainDashboard" style="rounded=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" vertex="1" parent="1"><mxGeometry x="60" y="1310" width="200" height="54" as="geometry"/></mxCell>
+
+<!-- FLOW ARROWS -->
+<mxCell id="afe1" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;" edge="1" source="as1" target="as2" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="afe2" value="authService.login()" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;" edge="1" source="as2" target="as3" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="afe3" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;" edge="1" source="as3" target="as4" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="afe4" value="DB result" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;dashed=1;" edge="1" source="as4" target="as5" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="afe5" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;" edge="1" source="as5" target="as6" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="afe6" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;" edge="1" source="as6" target="as-dec" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="afe7" value="No" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;" edge="1" source="as-dec" target="as-err" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="afe8" value="Yes" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;" edge="1" source="as-dec" target="as7" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="afe9" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;" edge="1" source="as7" target="as8" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="afe9b" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;" edge="1" source="as7" target="as9" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="afe10" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;" edge="1" source="as8" target="as10" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="afe11" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;" edge="1" source="as10" target="as11" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="afe12" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;" edge="1" source="as11" target="as12" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+<!-- Info boxes -->
+<mxCell id="jwt-info" value="JWT Payload:&#xa;{ id, role, name, email }&#xa;Algorithm: HS256" style="rounded=1;fillColor=#ffe6cc;strokeColor=#d6b656;fontSize=12;align=left;spacingLeft=10;" vertex="1" parent="1">
+  <mxGeometry x="1100" y="700" width="300" height="80" as="geometry"/>
+</mxCell>
+<mxCell id="storage-info" value="Storage Strategy:&#xa;Mobile → FlutterSecureStorage&#xa;Web → SharedPreferences" style="rounded=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;align=left;spacingLeft=10;" vertex="1" parent="1">
+  <mxGeometry x="1100" y="1100" width="300" height="80" as="geometry"/>
+</mxCell>
+</root>
+</mxGraphModel>
+</diagram>
+
+<!-- ============================================================
+     PAGE 13: REST API Request Lifecycle — linear pipeline
+     ============================================================ -->
+<diagram id="p13" name="13. REST API Lifecycle">
+<mxGraphModel dx="1600" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1000" math="0" shadow="0">
+<root>
+<mxCell id="0"/><mxCell id="1" parent="0"/>
+<mxCell id="t13" value="REST API Request Lifecycle — EduSync" style="text;html=1;strokeColor=none;fillColor=none;align=center;fontSize=22;fontStyle=1;" vertex="1" parent="1">
+  <mxGeometry x="300" y="20" width="1000" height="44" as="geometry"/>
+</mxCell>
+
+<!-- Row 1: Request Phase (left to right) -->
+<mxCell id="rl-hdr1" value="REQUEST PHASE  →" style="text;strokeColor=none;fillColor=#dae8fc;fontSize=13;fontStyle=1;align=center;rounded=1;" vertex="1" parent="1"><mxGeometry x="60" y="90" width="1500" height="36" as="geometry"/></mxCell>
+
+<mxCell id="rl1" value="① Flutter Widget&#xa;&#xa;Provider calls&#xa;ApiService.dio.get()" style="rounded=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="60" y="150" width="180" height="120" as="geometry"/></mxCell>
+<mxCell id="rl2" value="② Dio Interceptor&#xa;&#xa;Attach:&#xa;Authorization: Bearer &lt;JWT&gt;&#xa;Content-Type: application/json" style="rounded=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="1"><mxGeometry x="280" y="150" width="200" height="120" as="geometry"/></mxCell>
+<mxCell id="rl3" value="③ HTTPS Request&#xa;&#xa;TLS 1.3 encrypted&#xa;→ Render.com endpoint&#xa;api.adtu.app/api/..." style="rounded=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=12;" vertex="1" parent="1"><mxGeometry x="520" y="150" width="200" height="120" as="geometry"/></mxCell>
+<mxCell id="rl4" value="④ CORS Check&#xa;&#xa;Origin whitelist:&#xa;Vercel domain ✓&#xa;Unknown origin ✗" style="rounded=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" vertex="1" parent="1"><mxGeometry x="760" y="150" width="200" height="120" as="geometry"/></mxCell>
+<mxCell id="rl5" value="⑤ Rate Limiter&#xa;&#xa;Global: 200/15 min&#xa;Login: 10/15 min&#xa;429 if exceeded" style="rounded=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" vertex="1" parent="1"><mxGeometry x="1000" y="150" width="200" height="120" as="geometry"/></mxCell>
+<mxCell id="rl6" value="⑥ Express Router&#xa;&#xa;Match route:&#xa;POST /api/channels&#xa;GET /api/messages/:id" style="rounded=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" vertex="1" parent="1"><mxGeometry x="1240" y="150" width="200" height="120" as="geometry"/></mxCell>
+
+<!-- Row 1 arrows -->
+<mxCell id="r1e1" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;strokeWidth=2;" edge="1" source="rl1" target="rl2" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="r1e2" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;strokeWidth=2;" edge="1" source="rl2" target="rl3" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="r1e3" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;strokeWidth=2;" edge="1" source="rl3" target="rl4" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="r1e4" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;strokeWidth=2;" edge="1" source="rl4" target="rl5" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="r1e5" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;strokeWidth=2;" edge="1" source="rl5" target="rl6" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+<!-- Row 2: Server Processing (right to left) -->
+<mxCell id="rl-hdr2" value="← SERVER PROCESSING" style="text;strokeColor=none;fillColor=#d5e8d4;fontSize=13;fontStyle=1;align=center;rounded=1;" vertex="1" parent="1"><mxGeometry x="60" y="360" width="1500" height="36" as="geometry"/></mxCell>
+
+<mxCell id="rl7" value="⑦ protect()&#xa;Middleware&#xa;&#xa;jwt.verify(token)&#xa;→ req.user = payload&#xa;→ 401 if invalid/expired" style="rounded=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" vertex="1" parent="1"><mxGeometry x="1240" y="420" width="200" height="140" as="geometry"/></mxCell>
+<mxCell id="rl8" value="⑧ authorize()&#xa;Middleware&#xa;&#xa;Check req.user.role&#xa;vs route's roles[]&#xa;→ 403 if denied" style="rounded=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" vertex="1" parent="1"><mxGeometry x="1000" y="420" width="200" height="140" as="geometry"/></mxCell>
+<mxCell id="rl9" value="⑨ Controller&#xa;Function&#xa;&#xa;Business logic&#xa;Input validation&#xa;Build SQL query" style="rounded=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" vertex="1" parent="1"><mxGeometry x="760" y="420" width="200" height="140" as="geometry"/></mxCell>
+<mxCell id="rl10" value="⑩ PostgreSQL&#xa;&#xa;pool.query(sql, params)&#xa;Parameterized query&#xa;Returns rows []" style="shape=cylinder3;fillColor=#ffe6cc;strokeColor=#d6b656;fontSize=12;whiteSpace=wrap;" vertex="1" parent="1"><mxGeometry x="520" y="420" width="200" height="140" as="geometry"/></mxCell>
+<mxCell id="rl11" value="⑪ Build Response&#xa;&#xa;{ success: true,&#xa;  data: [...] }&#xa;or { error: '...' }" style="rounded=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" vertex="1" parent="1"><mxGeometry x="280" y="420" width="200" height="140" as="geometry"/></mxCell>
+<mxCell id="rl12" value="⑫ Riverpod&#xa;State Update&#xa;&#xa;state = AsyncData(data)&#xa;Widget rebuilds" style="rounded=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;" vertex="1" parent="1"><mxGeometry x="60" y="420" width="200" height="140" as="geometry"/></mxCell>
+
+<!-- Row 2 arrows (right to left) -->
+<mxCell id="r2e1" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;strokeWidth=2;" edge="1" source="rl6" target="rl7" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="r2e2" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;strokeWidth=2;" edge="1" source="rl7" target="rl8" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="r2e3" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;strokeWidth=2;" edge="1" source="rl8" target="rl9" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="r2e4" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;strokeWidth=2;" edge="1" source="rl9" target="rl10" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="r2e5" value="rows" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;strokeWidth=2;dashed=1;" edge="1" source="rl10" target="rl11" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="r2e6" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;strokeWidth=2;" edge="1" source="rl11" target="rl12" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+<!-- Optional file path -->
+<mxCell id="rl-sup" value="⑩b  Supabase Storage (optional)&#xa;Multer → stream → publicUrl" style="shape=cylinder3;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;whiteSpace=wrap;" vertex="1" parent="1"><mxGeometry x="400" y="660" width="280" height="100" as="geometry"/></mxCell>
+<mxCell id="r-sup-e" value="(file upload)" style="edgeStyle=orthogonalEdgeStyle;dashed=1;endArrow=open;" edge="1" source="rl9" target="rl-sup" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+<!-- Error outcomes -->
+<mxCell id="err-cors" value="⊗ 403 CORS rejected" style="rounded=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;" vertex="1" parent="1"><mxGeometry x="760" y="100" width="200" height="44" as="geometry"/></mxCell>
+<mxCell id="err-rate" value="⊗ 429 Too Many Requests" style="rounded=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;" vertex="1" parent="1"><mxGeometry x="1000" y="100" width="200" height="44" as="geometry"/></mxCell>
+<mxCell id="err-jwt" value="⊗ 401 Unauthorized" style="rounded=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;" vertex="1" parent="1"><mxGeometry x="1340" y="400" width="200" height="44" as="geometry"/></mxCell>
+<mxCell id="err-rbac" value="⊗ 403 Forbidden (Role)" style="rounded=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;" vertex="1" parent="1"><mxGeometry x="1100" y="400" width="200" height="44" as="geometry"/></mxCell>
+<mxCell id="ere1" value="fail" style="edgeStyle=orthogonalEdgeStyle;dashed=1;endArrow=open;" edge="1" source="rl4" target="err-cors" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="ere2" value="exceed" style="edgeStyle=orthogonalEdgeStyle;dashed=1;endArrow=open;" edge="1" source="rl5" target="err-rate" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="ere3" value="invalid" style="edgeStyle=orthogonalEdgeStyle;dashed=1;endArrow=open;" edge="1" source="rl7" target="err-jwt" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="ere4" value="denied" style="edgeStyle=orthogonalEdgeStyle;dashed=1;endArrow=open;" edge="1" source="rl8" target="err-rbac" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+</root>
+</mxGraphModel>
+</diagram>
+
+<!-- ============================================================
+     PAGE 14: Socket.IO Architecture — 3 clear columns
+     ============================================================ -->
+<diagram id="p14" name="14. Socket.IO Architecture">
+<mxGraphModel dx="1600" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+<root>
+<mxCell id="0"/><mxCell id="1" parent="0"/>
+<mxCell id="t14" value="Real-Time Socket.IO Architecture — EduSync" style="text;html=1;strokeColor=none;fillColor=none;align=center;fontSize=22;fontStyle=1;" vertex="1" parent="1">
+  <mxGeometry x="300" y="20" width="1000" height="44" as="geometry"/>
+</mxCell>
+
+<!-- COLUMN HEADERS -->
+<mxCell id="skh1" value="Flutter Clients" style="rounded=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="40" y="88" width="360" height="44" as="geometry"/></mxCell>
+<mxCell id="skh2" value="Socket.IO Server (socketHandler.js)" style="rounded=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=13;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="480" y="88" width="460" height="44" as="geometry"/></mxCell>
+<mxCell id="skh3" value="Rooms &amp; Data" style="rounded=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=13;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="1040" y="88" width="560" height="44" as="geometry"/></mxCell>
+
+<!-- ── CLIENTS ── -->
+<mxCell id="sk-c1" value="Student A&#xa;channel_42 · user_1" style="rounded=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="1"><mxGeometry x="40" y="160" width="360" height="70" as="geometry"/></mxCell>
+<mxCell id="sk-c2" value="Student B&#xa;channel_42 · user_2" style="rounded=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="1"><mxGeometry x="40" y="260" width="360" height="70" as="geometry"/></mxCell>
+<mxCell id="sk-c3" value="Faculty C&#xa;channel_42 · user_3" style="rounded=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" vertex="1" parent="1"><mxGeometry x="40" y="360" width="360" height="70" as="geometry"/></mxCell>
+<mxCell id="sk-c4" value="Student D&#xa;channel_15 · user_4" style="rounded=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="1"><mxGeometry x="40" y="460" width="360" height="70" as="geometry"/></mxCell>
+
+<!-- Events panel -->
+<mxCell id="sk-emit" value="Events: Client → Server&#xa;&#xa;emit('channel:join', {channelId})&#xa;emit('message:send', {channelId, content})&#xa;disconnect" style="rounded=1;fillColor=#e8f0fe;strokeColor=#6c8ebf;fontSize=12;align=left;spacingLeft=10;" vertex="1" parent="1">
+  <mxGeometry x="40" y="570" width="360" height="120" as="geometry"/>
+</mxCell>
+<mxCell id="sk-recv" value="Events: Server → Client&#xa;&#xa;emit('message:new', {msg})&#xa;emit('notification:new', {notif})&#xa;emit('connect_error', err)" style="rounded=1;fillColor=#e8f0fe;strokeColor=#6c8ebf;fontSize=12;align=left;spacingLeft=10;" vertex="1" parent="1">
+  <mxGeometry x="40" y="720" width="360" height="120" as="geometry"/>
+</mxCell>
+
+<!-- ── SERVER HANDLERS ── -->
+<mxCell id="sk-mw-s" value="Middleware:  Verify JWT&#xa;socket.data.user = decoded payload&#xa;Reject if invalid → connect_error" style="rounded=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;align=left;spacingLeft=10;" vertex="1" parent="1">
+  <mxGeometry x="480" y="160" width="460" height="80" as="geometry"/>
+</mxCell>
+<mxCell id="sk-join" value="on('channel:join', channelId)&#xa;→  socket.join('channel_{channelId}')&#xa;→  User added to channel room" style="rounded=1;fillColor=#ffffff;strokeColor=#82b366;fontSize=12;align=left;spacingLeft=10;" vertex="1" parent="1">
+  <mxGeometry x="480" y="280" width="460" height="90" as="geometry"/>
+</mxCell>
+<mxCell id="sk-msend" value="on('message:send', data)&#xa;1.  INSERT INTO messages (PostgreSQL)&#xa;2.  Fetch message with sender join&#xa;3.  io.to('channel_{id}').emit('message:new', msg)" style="rounded=1;fillColor=#ffffff;strokeColor=#82b366;fontSize=12;align=left;spacingLeft=10;" vertex="1" parent="1">
+  <mxGeometry x="480" y="410" width="460" height="110" as="geometry"/>
+</mxCell>
+<mxCell id="sk-notif-svr" value="Triggered from REST Controllers:&#xa;_io.to('user_{userId}').emit(&#xa;  'notification:new', notification)&#xa;→  INSERT INTO notifications (PostgreSQL)" style="rounded=1;fillColor=#ffffff;strokeColor=#82b366;fontSize=12;align=left;spacingLeft=10;" vertex="1" parent="1">
+  <mxGeometry x="480" y="560" width="460" height="110" as="geometry"/>
+</mxCell>
+<mxCell id="sk-dc" value="on('disconnect')&#xa;→  Cleanup, logging" style="rounded=1;fillColor=#ffffff;strokeColor=#82b366;fontSize=12;align=left;spacingLeft=10;" vertex="1" parent="1">
+  <mxGeometry x="480" y="710" width="460" height="70" as="geometry"/>
+</mxCell>
+
+<!-- PostgreSQL (bottom center) -->
+<mxCell id="sk-pgdb" value="PostgreSQL (Neon)&#xa;messages · notifications" style="shape=cylinder3;fillColor=#ffe6cc;strokeColor=#d6b656;fontSize=12;whiteSpace=wrap;" vertex="1" parent="1"><mxGeometry x="540" y="860" width="300" height="120" as="geometry"/></mxCell>
+
+<!-- ── ROOMS ── -->
+<mxCell id="sk-room42" value="Room: channel_42&#xa;&#xa;Members: Student A, Student B, Faculty C&#xa;→ All receive 'message:new'" style="rounded=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;align=left;spacingLeft=10;" vertex="1" parent="1">
+  <mxGeometry x="1040" y="160" width="360" height="100" as="geometry"/>
+</mxCell>
+<mxCell id="sk-room15" value="Room: channel_15&#xa;&#xa;Members: Student D only&#xa;→  Isolated from channel_42" style="rounded=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;align=left;spacingLeft=10;" vertex="1" parent="1">
+  <mxGeometry x="1040" y="290" width="360" height="90" as="geometry"/>
+</mxCell>
+<mxCell id="sk-room-u1" value="Room: user_1  (personal)&#xa;→ notification:new for Student A only" style="rounded=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;align=left;spacingLeft=10;" vertex="1" parent="1">
+  <mxGeometry x="1040" y="410" width="360" height="80" as="geometry"/>
+</mxCell>
+<mxCell id="sk-room-u2" value="Room: user_2  (personal)&#xa;→  notification:new for Student B only" style="rounded=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;align=left;spacingLeft=10;" vertex="1" parent="1">
+  <mxGeometry x="1040" y="520" width="360" height="80" as="geometry"/>
+</mxCell>
+<mxCell id="sk-room-note" value="Room Architecture:&#xa;&#xa;• Each user auto-joins user_{id} on connect&#xa;• Channel rooms joined via 'channel:join'&#xa;• A user can be in multiple rooms&#xa;• Rooms are isolated — no cross-channel leakage" style="rounded=1;fillColor=#ffe6cc;strokeColor=#d6b656;fontSize=12;align=left;spacingLeft=10;" vertex="1" parent="1">
+  <mxGeometry x="1040" y="640" width="360" height="140" as="geometry"/>
+</mxCell>
+
+<!-- State update box -->
+<mxCell id="sk-state" value="Flutter on 'message:new':&#xa;MessagesNotifier.append(msg)&#xa;→ state = [...messages, msg]&#xa;→ ListView auto-rebuilds (Riverpod)" style="rounded=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;align=left;spacingLeft=10;" vertex="1" parent="1">
+  <mxGeometry x="40" y="880" width="360" height="100" as="geometry"/>
+</mxCell>
+
+<!-- EDGES -->
+<mxCell id="ske1" value="WSS + JWT auth" style="edgeStyle=orthogonalEdgeStyle;strokeWidth=2;strokeColor=#6c8ebf;" edge="1" source="sk-c1" target="sk-mw-s" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="ske2" style="edgeStyle=orthogonalEdgeStyle;strokeWidth=2;strokeColor=#6c8ebf;" edge="1" source="sk-c2" target="sk-mw-s" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="ske3" style="edgeStyle=orthogonalEdgeStyle;strokeWidth=2;strokeColor=#d6b656;" edge="1" source="sk-c3" target="sk-mw-s" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="ske4" style="edgeStyle=orthogonalEdgeStyle;strokeWidth=2;" edge="1" source="sk-c4" target="sk-mw-s" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="ske5" value="broadcast" style="edgeStyle=orthogonalEdgeStyle;strokeWidth=2;strokeColor=#82b366;" edge="1" source="sk-msend" target="sk-room42" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="ske6" value="target user" style="edgeStyle=orthogonalEdgeStyle;strokeWidth=2;strokeColor=#9673a6;" edge="1" source="sk-notif-svr" target="sk-room-u1" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="ske7" value="SQL INSERT" style="edgeStyle=orthogonalEdgeStyle;strokeWidth=2;strokeColor=#d6b656;" edge="1" source="sk-msend" target="sk-pgdb" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="ske8" style="edgeStyle=orthogonalEdgeStyle;strokeWidth=2;strokeColor=#d6b656;" edge="1" source="sk-notif-svr" target="sk-pgdb" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="ske9" value="deliver" style="edgeStyle=orthogonalEdgeStyle;strokeWidth=2;dashed=1;strokeColor=#6c8ebf;" edge="1" source="sk-room42" target="sk-c1" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="ske10" style="edgeStyle=orthogonalEdgeStyle;strokeWidth=2;dashed=1;strokeColor=#6c8ebf;" edge="1" source="sk-room42" target="sk-c2" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+</root>
+</mxGraphModel>
+</diagram>
+
+<!-- ============================================================
+     PAGE 15: Database Schema — clean, spaced tables
+     ============================================================ -->
+<diagram id="p15" name="15. Database Schema">
+<mxGraphModel dx="1600" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2400" pageHeight="1600" math="0" shadow="0">
+<root>
+<mxCell id="0"/><mxCell id="1" parent="0"/>
+<mxCell id="t15" value="Database Schema — EduSync (PostgreSQL / Neon)" style="text;html=1;strokeColor=none;fillColor=none;align=center;fontSize=22;fontStyle=1;" vertex="1" parent="1">
+  <mxGeometry x="400" y="20" width="1600" height="44" as="geometry"/>
+</mxCell>
+
+<!-- ROW 1: Academic Hierarchy -->
+<mxCell id="tb-fac" value="faculties" style="swimlane;startSize=36;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;fontSize=13;rounded=1;" vertex="1" parent="1"><mxGeometry x="60" y="90" width="320" height="160" as="geometry"/></mxCell>
+<mxCell id="tbf1" value="🔑 id  SERIAL PK" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;" vertex="1" parent="tb-fac"><mxGeometry y="36" width="320" height="28" as="geometry"/></mxCell>
+<mxCell id="tbf2" value="name  VARCHAR(255) UNIQUE NOT NULL" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;" vertex="1" parent="tb-fac"><mxGeometry y="64" width="320" height="28" as="geometry"/></mxCell>
+<mxCell id="tbf3" value="color_code  VARCHAR(50)" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;" vertex="1" parent="tb-fac"><mxGeometry y="92" width="320" height="28" as="geometry"/></mxCell>
+<mxCell id="tbf4" value="created_at  TIMESTAMPTZ" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;" vertex="1" parent="tb-fac"><mxGeometry y="120" width="320" height="28" as="geometry"/></mxCell>
+
+<mxCell id="tb-prog" value="programmes" style="swimlane;startSize=36;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;fontSize=13;rounded=1;" vertex="1" parent="1"><mxGeometry x="460" y="90" width="340" height="188" as="geometry"/></mxCell>
+<mxCell id="tbp1" value="🔑 id  SERIAL PK" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;" vertex="1" parent="tb-prog"><mxGeometry y="36" width="340" height="28" as="geometry"/></mxCell>
+<mxCell id="tbp2" value="🔗 faculty_id  INT → faculties" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;fontStyle=2;" vertex="1" parent="tb-prog"><mxGeometry y="64" width="340" height="28" as="geometry"/></mxCell>
+<mxCell id="tbp3" value="name  VARCHAR(255) NOT NULL" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;" vertex="1" parent="tb-prog"><mxGeometry y="92" width="340" height="28" as="geometry"/></mxCell>
+<mxCell id="tbp4" value="code  VARCHAR(50) NOT NULL" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;" vertex="1" parent="tb-prog"><mxGeometry y="120" width="340" height="28" as="geometry"/></mxCell>
+<mxCell id="tbp5" value="duration_semesters  INT NOT NULL" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;" vertex="1" parent="tb-prog"><mxGeometry y="148" width="340" height="28" as="geometry"/></mxCell>
+
+<mxCell id="tb-bat" value="batches" style="swimlane;startSize=36;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;fontSize=13;rounded=1;" vertex="1" parent="1"><mxGeometry x="880" y="90" width="340" height="160" as="geometry"/></mxCell>
+<mxCell id="tbb1" value="🔑 id  SERIAL PK" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;" vertex="1" parent="tb-bat"><mxGeometry y="36" width="340" height="28" as="geometry"/></mxCell>
+<mxCell id="tbb2" value="🔗 programme_id  INT → programmes" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;fontStyle=2;" vertex="1" parent="tb-bat"><mxGeometry y="64" width="340" height="28" as="geometry"/></mxCell>
+<mxCell id="tbb3" value="year  INT NOT NULL" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;" vertex="1" parent="tb-bat"><mxGeometry y="92" width="340" height="28" as="geometry"/></mxCell>
+<mxCell id="tbb4" value="UNIQUE(programme_id, year)" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;fontStyle=2;" vertex="1" parent="tb-bat"><mxGeometry y="120" width="340" height="28" as="geometry"/></mxCell>
+
+<!-- ROW 1: users + channels -->
+<mxCell id="tb-usr" value="users" style="swimlane;startSize=36;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;fontSize=13;rounded=1;" vertex="1" parent="1"><mxGeometry x="60" y="340" width="380" height="360" as="geometry"/></mxCell>
+<mxCell id="tbu1" value="🔑 id  SERIAL PK" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;" vertex="1" parent="tb-usr"><mxGeometry y="36" width="380" height="28" as="geometry"/></mxCell>
+<mxCell id="tbu2" value="name  VARCHAR(255) NOT NULL" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;" vertex="1" parent="tb-usr"><mxGeometry y="64" width="380" height="28" as="geometry"/></mxCell>
+<mxCell id="tbu3" value="email  VARCHAR UNIQUE NOT NULL" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;" vertex="1" parent="tb-usr"><mxGeometry y="92" width="380" height="28" as="geometry"/></mxCell>
+<mxCell id="tbu4" value="roll_number  VARCHAR UNIQUE" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;" vertex="1" parent="tb-usr"><mxGeometry y="120" width="380" height="28" as="geometry"/></mxCell>
+<mxCell id="tbu5" value="password  VARCHAR (bcrypt hash)" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;" vertex="1" parent="tb-usr"><mxGeometry y="148" width="380" height="28" as="geometry"/></mxCell>
+<mxCell id="tbu6" value="role  CHECK(student|faculty|admin|class_rep)" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;" vertex="1" parent="tb-usr"><mxGeometry y="176" width="380" height="28" as="geometry"/></mxCell>
+<mxCell id="tbu7" value="🔗 programme_id  INT → programmes" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;fontStyle=2;" vertex="1" parent="tb-usr"><mxGeometry y="204" width="380" height="28" as="geometry"/></mxCell>
+<mxCell id="tbu8" value="batch_year  INT  current_semester  INT" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;" vertex="1" parent="tb-usr"><mxGeometry y="232" width="380" height="28" as="geometry"/></mxCell>
+<mxCell id="tbu9" value="avatar_url  VARCHAR(500)" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;" vertex="1" parent="tb-usr"><mxGeometry y="260" width="380" height="28" as="geometry"/></mxCell>
+<mxCell id="tbu10" value="avatar_initials  VARCHAR(10)" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;" vertex="1" parent="tb-usr"><mxGeometry y="288" width="380" height="28" as="geometry"/></mxCell>
+<mxCell id="tbu11" value="created_at  TIMESTAMPTZ DEFAULT NOW()" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;" vertex="1" parent="tb-usr"><mxGeometry y="316" width="380" height="28" as="geometry"/></mxCell>
+
+<mxCell id="tb-chan" value="channels" style="swimlane;startSize=36;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;fontSize=13;rounded=1;" vertex="1" parent="1"><mxGeometry x="520" y="340" width="380" height="300" as="geometry"/></mxCell>
+<mxCell id="tbch1" value="🔑 id  SERIAL PK" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;" vertex="1" parent="tb-chan"><mxGeometry y="36" width="380" height="28" as="geometry"/></mxCell>
+<mxCell id="tbch2" value="🔗 batch_id  INT → batches" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;fontStyle=2;" vertex="1" parent="tb-chan"><mxGeometry y="64" width="380" height="28" as="geometry"/></mxCell>
+<mxCell id="tbch3" value="🔗 teacher_id  INT → users (SET NULL)" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;fontStyle=2;" vertex="1" parent="tb-chan"><mxGeometry y="92" width="380" height="28" as="geometry"/></mxCell>
+<mxCell id="tbch4" value="subject_name  VARCHAR(255) NOT NULL" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;" vertex="1" parent="tb-chan"><mxGeometry y="120" width="380" height="28" as="geometry"/></mxCell>
+<mxCell id="tbch5" value="subject_slug  VARCHAR(255) NOT NULL" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;" vertex="1" parent="tb-chan"><mxGeometry y="148" width="380" height="28" as="geometry"/></mxCell>
+<mxCell id="tbch6" value="channel_name  VARCHAR UNIQUE" style="text;align=left;fontSize:12;spacingLeft=12;strokeColor=none;fillColor=none;" vertex="1" parent="tb-chan"><mxGeometry y="176" width="380" height="28" as="geometry"/></mxCell>
+<mxCell id="tbch7" value="semester_number  INT NOT NULL" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;" vertex="1" parent="tb-chan"><mxGeometry y="204" width="380" height="28" as="geometry"/></mxCell>
+<mxCell id="tbch8" value="created_at  TIMESTAMPTZ" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;" vertex="1" parent="tb-chan"><mxGeometry y="232" width="380" height="28" as="geometry"/></mxCell>
+<mxCell id="tbch9" value="INDEX: idx_channels_batch" style="text;align=left;fontSize=11;spacingLeft=12;strokeColor=none;fillColor=none;fontStyle=2;" vertex="1" parent="tb-chan"><mxGeometry y="264" width="380" height="28" as="geometry"/></mxCell>
+
+<mxCell id="tb-enroll" value="enrollments" style="swimlane;startSize=36;fillColor=#ffe6cc;strokeColor=#d6b656;fontStyle=1;fontSize=13;rounded=1;" vertex="1" parent="1"><mxGeometry x="980" y="340" width="360" height="188" as="geometry"/></mxCell>
+<mxCell id="tben1" value="🔑 id  SERIAL PK" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;" vertex="1" parent="tb-enroll"><mxGeometry y="36" width="360" height="28" as="geometry"/></mxCell>
+<mxCell id="tben2" value="🔗 user_id  INT → users" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;fontStyle=2;" vertex="1" parent="tb-enroll"><mxGeometry y="64" width="360" height="28" as="geometry"/></mxCell>
+<mxCell id="tben3" value="🔗 channel_id  INT → channels" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;fontStyle=2;" vertex="1" parent="tb-enroll"><mxGeometry y="92" width="360" height="28" as="geometry"/></mxCell>
+<mxCell id="tben4" value="created_at  TIMESTAMPTZ" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;" vertex="1" parent="tb-enroll"><mxGeometry y="120" width="360" height="28" as="geometry"/></mxCell>
+<mxCell id="tben5" value="UNIQUE(user_id, channel_id)" style="text;align=left;fontSize=11;spacingLeft=12;strokeColor=none;fillColor=none;fontStyle=2;" vertex="1" parent="tb-enroll"><mxGeometry y="148" width="360" height="28" as="geometry"/></mxCell>
+
+<!-- ROW 3: messages, notes, assignments -->
+<mxCell id="tb-msg" value="messages" style="swimlane;startSize=36;fillColor=#ffe6cc;strokeColor=#d6b656;fontStyle=1;fontSize=13;rounded=1;" vertex="1" parent="1"><mxGeometry x="60" y="800" width="360" height="244" as="geometry"/></mxCell>
+<mxCell id="tbmg1" value="🔑 id  SERIAL PK" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;" vertex="1" parent="tb-msg"><mxGeometry y="36" width="360" height="28" as="geometry"/></mxCell>
+<mxCell id="tbmg2" value="🔗 channel_id  INT → channels" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;fontStyle=2;" vertex="1" parent="tb-msg"><mxGeometry y="64" width="360" height="28" as="geometry"/></mxCell>
+<mxCell id="tbmg3" value="🔗 sender_id  INT → users" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;fontStyle=2;" vertex="1" parent="tb-msg"><mxGeometry y="92" width="360" height="28" as="geometry"/></mxCell>
+<mxCell id="tbmg4" value="content  TEXT" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;" vertex="1" parent="tb-msg"><mxGeometry y="120" width="360" height="28" as="geometry"/></mxCell>
+<mxCell id="tbmg5" value="file_url, file_name  VARCHAR" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;" vertex="1" parent="tb-msg"><mxGeometry y="148" width="360" height="28" as="geometry"/></mxCell>
+<mxCell id="tbmg6" value="is_pinned  BOOLEAN  created_at" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;" vertex="1" parent="tb-msg"><mxGeometry y="176" width="360" height="28" as="geometry"/></mxCell>
+<mxCell id="tbmg7" value="INDEX: idx_messages_channel" style="text;align=left;fontSize=11;spacingLeft=12;strokeColor=none;fillColor=none;fontStyle=2;" vertex="1" parent="tb-msg"><mxGeometry y="204" width="360" height="28" as="geometry"/></mxCell>
+
+<mxCell id="tb-notes" value="notes" style="swimlane;startSize=36;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;fontSize=13;rounded=1;" vertex="1" parent="1"><mxGeometry x="500" y="800" width="360" height="216" as="geometry"/></mxCell>
+<mxCell id="tbnt1" value="🔑 id  SERIAL PK" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;" vertex="1" parent="tb-notes"><mxGeometry y="36" width="360" height="28" as="geometry"/></mxCell>
+<mxCell id="tbnt2" value="🔗 channel_id  INT → channels" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;fontStyle=2;" vertex="1" parent="tb-notes"><mxGeometry y="64" width="360" height="28" as="geometry"/></mxCell>
+<mxCell id="tbnt3" value="🔗 created_by  INT → users" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;fontStyle=2;" vertex="1" parent="tb-notes"><mxGeometry y="92" width="360" height="28" as="geometry"/></mxCell>
+<mxCell id="tbnt4" value="title  VARCHAR(255) NOT NULL" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;" vertex="1" parent="tb-notes"><mxGeometry y="120" width="360" height="28" as="geometry"/></mxCell>
+<mxCell id="tbnt5" value="content  TEXT" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;" vertex="1" parent="tb-notes"><mxGeometry y="148" width="360" height="28" as="geometry"/></mxCell>
+<mxCell id="tbnt6" value="created_at  TIMESTAMPTZ" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;" vertex="1" parent="tb-notes"><mxGeometry y="176" width="360" height="28" as="geometry"/></mxCell>
+
+<mxCell id="tb-assign" value="assignments" style="swimlane;startSize=36;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;fontSize=13;rounded=1;" vertex="1" parent="1"><mxGeometry x="940" y="800" width="380" height="272" as="geometry"/></mxCell>
+<mxCell id="tbas1" value="🔑 id  SERIAL PK" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;" vertex="1" parent="tb-assign"><mxGeometry y="36" width="380" height="28" as="geometry"/></mxCell>
+<mxCell id="tbas2" value="🔗 channel_id  INT → channels" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;fontStyle=2;" vertex="1" parent="tb-assign"><mxGeometry y="64" width="380" height="28" as="geometry"/></mxCell>
+<mxCell id="tbas3" value="🔗 created_by  INT → users" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;fontStyle=2;" vertex="1" parent="tb-assign"><mxGeometry y="92" width="380" height="28" as="geometry"/></mxCell>
+<mxCell id="tbas4" value="title  VARCHAR(255) NOT NULL" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;" vertex="1" parent="tb-assign"><mxGeometry y="120" width="380" height="28" as="geometry"/></mxCell>
+<mxCell id="tbas5" value="description  TEXT" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;" vertex="1" parent="tb-assign"><mxGeometry y="148" width="380" height="28" as="geometry"/></mxCell>
+<mxCell id="tbas6" value="due_date  TIMESTAMPTZ NOT NULL" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;" vertex="1" parent="tb-assign"><mxGeometry y="176" width="380" height="28" as="geometry"/></mxCell>
+<mxCell id="tbas7" value="max_marks  INT  DEFAULT 100" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;" vertex="1" parent="tb-assign"><mxGeometry y="204" width="380" height="28" as="geometry"/></mxCell>
+<mxCell id="tbas8" value="status  VARCHAR(20)  priority  VARCHAR(20)" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;" vertex="1" parent="tb-assign"><mxGeometry y="232" width="380" height="28" as="geometry"/></mxCell>
+
+<!-- ROW 4: submissions, projects, announcements, notifications -->
+<mxCell id="tb-sub" value="assignment_submissions" style="swimlane;startSize=36;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;fontSize=13;rounded=1;" vertex="1" parent="1"><mxGeometry x="940" y="1150" width="380" height="272" as="geometry"/></mxCell>
+<mxCell id="tbsb1" value="🔑 id  SERIAL PK" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;" vertex="1" parent="tb-sub"><mxGeometry y="36" width="380" height="28" as="geometry"/></mxCell>
+<mxCell id="tbsb2" value="🔗 assignment_id  INT → assignments" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;fontStyle=2;" vertex="1" parent="tb-sub"><mxGeometry y="64" width="380" height="28" as="geometry"/></mxCell>
+<mxCell id="tbsb3" value="🔗 student_id  INT → users" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;fontStyle=2;" vertex="1" parent="tb-sub"><mxGeometry y="92" width="380" height="28" as="geometry"/></mxCell>
+<mxCell id="tbsb4" value="file_url, file_name  VARCHAR" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;" vertex="1" parent="tb-sub"><mxGeometry y="120" width="380" height="28" as="geometry"/></mxCell>
+<mxCell id="tbsb5" value="status  pending|submitted|late|graded" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;" vertex="1" parent="tb-sub"><mxGeometry y="148" width="380" height="28" as="geometry"/></mxCell>
+<mxCell id="tbsb6" value="marks  INT  feedback  TEXT" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;" vertex="1" parent="tb-sub"><mxGeometry y="176" width="380" height="28" as="geometry"/></mxCell>
+<mxCell id="tbsb7" value="submitted_at  UNIQUE(assignment, student)" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;fontStyle=2;" vertex="1" parent="tb-sub"><mxGeometry y="204" width="380" height="28" as="geometry"/></mxCell>
+<mxCell id="tbsb8" value="INDEX: idx_submissions_assignment" style="text;align=left;fontSize=11;spacingLeft=12;strokeColor=none;fillColor=none;fontStyle=2;" vertex="1" parent="tb-sub"><mxGeometry y="232" width="380" height="28" as="geometry"/></mxCell>
+
+<mxCell id="tb-ann" value="announcements" style="swimlane;startSize=36;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1;fontSize=13;rounded=1;" vertex="1" parent="1"><mxGeometry x="60" y="1150" width="360" height="216" as="geometry"/></mxCell>
+<mxCell id="tban1" value="🔑 id  SERIAL PK" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;" vertex="1" parent="tb-ann"><mxGeometry y="36" width="360" height="28" as="geometry"/></mxCell>
+<mxCell id="tban2" value="🔗 channel_id  INT → channels" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;fontStyle=2;" vertex="1" parent="tb-ann"><mxGeometry y="64" width="360" height="28" as="geometry"/></mxCell>
+<mxCell id="tban3" value="🔗 user_id  INT → users" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;fontStyle=2;" vertex="1" parent="tb-ann"><mxGeometry y="92" width="360" height="28" as="geometry"/></mxCell>
+<mxCell id="tban4" value="title  VARCHAR  content  TEXT" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;" vertex="1" parent="tb-ann"><mxGeometry y="120" width="360" height="28" as="geometry"/></mxCell>
+<mxCell id="tban5" value="is_important  BOOLEAN" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;" vertex="1" parent="tb-ann"><mxGeometry y="148" width="360" height="28" as="geometry"/></mxCell>
+<mxCell id="tban6" value="created_at  TIMESTAMPTZ" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;" vertex="1" parent="tb-ann"><mxGeometry y="176" width="360" height="28" as="geometry"/></mxCell>
+
+<mxCell id="tb-notif" value="notifications" style="swimlane;startSize=36;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1;fontSize=13;rounded=1;" vertex="1" parent="1"><mxGeometry x="500" y="1150" width="360" height="244" as="geometry"/></mxCell>
+<mxCell id="tbnf1" value="🔑 id  SERIAL PK" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;" vertex="1" parent="tb-notif"><mxGeometry y="36" width="360" height="28" as="geometry"/></mxCell>
+<mxCell id="tbnf2" value="🔗 user_id  INT → users" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;fontStyle=2;" vertex="1" parent="tb-notif"><mxGeometry y="64" width="360" height="28" as="geometry"/></mxCell>
+<mxCell id="tbnf3" value="type  VARCHAR(100) NOT NULL" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;" vertex="1" parent="tb-notif"><mxGeometry y="92" width="360" height="28" as="geometry"/></mxCell>
+<mxCell id="tbnf4" value="title  VARCHAR(255) NOT NULL" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;" vertex="1" parent="tb-notif"><mxGeometry y="120" width="360" height="28" as="geometry"/></mxCell>
+<mxCell id="tbnf5" value="message  TEXT  is_read  BOOLEAN" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;" vertex="1" parent="tb-notif"><mxGeometry y="148" width="360" height="28" as="geometry"/></mxCell>
+<mxCell id="tbnf6" value="ref_id  INT  ref_type  VARCHAR" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;" vertex="1" parent="tb-notif"><mxGeometry y="176" width="360" height="28" as="geometry"/></mxCell>
+<mxCell id="tbnf7" value="created_at  TIMESTAMPTZ" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;" vertex="1" parent="tb-notif"><mxGeometry y="204" width="360" height="28" as="geometry"/></mxCell>
+
+<!-- Projects column (right) -->
+<mxCell id="tb-proj" value="projects" style="swimlane;startSize=36;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;fontSize=13;rounded=1;" vertex="1" parent="1"><mxGeometry x="1440" y="340" width="360" height="216" as="geometry"/></mxCell>
+<mxCell id="tbpr1" value="🔑 id  SERIAL PK" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;" vertex="1" parent="tb-proj"><mxGeometry y="36" width="360" height="28" as="geometry"/></mxCell>
+<mxCell id="tbpr2" value="🔗 created_by  INT → users" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;fontStyle=2;" vertex="1" parent="tb-proj"><mxGeometry y="64" width="360" height="28" as="geometry"/></mxCell>
+<mxCell id="tbpr3" value="title  VARCHAR(255) NOT NULL" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;" vertex="1" parent="tb-proj"><mxGeometry y="92" width="360" height="28" as="geometry"/></mxCell>
+<mxCell id="tbpr4" value="description  TEXT  deadline  TIMESTAMPTZ" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;" vertex="1" parent="tb-proj"><mxGeometry y="120" width="360" height="28" as="geometry"/></mxCell>
+<mxCell id="tbpr5" value="progress  INT  CHECK(0..100)" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;" vertex="1" parent="tb-proj"><mxGeometry y="148" width="360" height="28" as="geometry"/></mxCell>
+<mxCell id="tbpr6" value="created_at  TIMESTAMPTZ" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;" vertex="1" parent="tb-proj"><mxGeometry y="176" width="360" height="28" as="geometry"/></mxCell>
+
+<mxCell id="tb-pm" value="project_members" style="swimlane;startSize=36;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;fontSize=13;rounded=1;" vertex="1" parent="1"><mxGeometry x="1440" y="640" width="360" height="188" as="geometry"/></mxCell>
+<mxCell id="tbpm1" value="🔑 id  SERIAL PK" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;" vertex="1" parent="tb-pm"><mxGeometry y="36" width="360" height="28" as="geometry"/></mxCell>
+<mxCell id="tbpm2" value="🔗 project_id  INT → projects" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;fontStyle=2;" vertex="1" parent="tb-pm"><mxGeometry y="64" width="360" height="28" as="geometry"/></mxCell>
+<mxCell id="tbpm3" value="🔗 user_id  INT → users" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;fontStyle=2;" vertex="1" parent="tb-pm"><mxGeometry y="92" width="360" height="28" as="geometry"/></mxCell>
+<mxCell id="tbpm4" value="joined_at  TIMESTAMPTZ" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;" vertex="1" parent="tb-pm"><mxGeometry y="120" width="360" height="28" as="geometry"/></mxCell>
+<mxCell id="tbpm5" value="UNIQUE(project_id, user_id)" style="text;align=left;fontSize=11;spacingLeft=12;strokeColor=none;fillColor=none;fontStyle=2;" vertex="1" parent="tb-pm"><mxGeometry y="148" width="360" height="28" as="geometry"/></mxCell>
+
+<mxCell id="tb-pt" value="project_tasks" style="swimlane;startSize=36;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;fontSize=13;rounded=1;" vertex="1" parent="1"><mxGeometry x="1440" y="910" width="380" height="300" as="geometry"/></mxCell>
+<mxCell id="tbpt1" value="🔑 id  SERIAL PK" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;" vertex="1" parent="tb-pt"><mxGeometry y="36" width="380" height="28" as="geometry"/></mxCell>
+<mxCell id="tbpt2" value="🔗 project_id  INT → projects" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;fontStyle=2;" vertex="1" parent="tb-pt"><mxGeometry y="64" width="380" height="28" as="geometry"/></mxCell>
+<mxCell id="tbpt3" value="🔗 assigned_to  INT → users (SET NULL)" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;fontStyle=2;" vertex="1" parent="tb-pt"><mxGeometry y="92" width="380" height="28" as="geometry"/></mxCell>
+<mxCell id="tbpt4" value="🔗 created_by  INT → users" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;fontStyle=2;" vertex="1" parent="tb-pt"><mxGeometry y="120" width="380" height="28" as="geometry"/></mxCell>
+<mxCell id="tbpt5" value="title  VARCHAR(255)  description  TEXT" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;" vertex="1" parent="tb-pt"><mxGeometry y="148" width="380" height="28" as="geometry"/></mxCell>
+<mxCell id="tbpt6" value="due_date  TIMESTAMPTZ" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;" vertex="1" parent="tb-pt"><mxGeometry y="176" width="380" height="28" as="geometry"/></mxCell>
+<mxCell id="tbpt7" value="priority  low|medium|high" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;" vertex="1" parent="tb-pt"><mxGeometry y="204" width="380" height="28" as="geometry"/></mxCell>
+<mxCell id="tbpt8" value="status  todo|in_progress|done" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;" vertex="1" parent="tb-pt"><mxGeometry y="232" width="380" height="28" as="geometry"/></mxCell>
+<mxCell id="tbpt9" value="created_at  TIMESTAMPTZ" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;" vertex="1" parent="tb-pt"><mxGeometry y="260" width="380" height="28" as="geometry"/></mxCell>
+
+<mxCell id="tb-ae" value="academic_events" style="swimlane;startSize=36;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;fontSize=13;rounded=1;" vertex="1" parent="1"><mxGeometry x="1440" y="90" width="360" height="216" as="geometry"/></mxCell>
+<mxCell id="tbae1" value="🔑 id  SERIAL PK" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;" vertex="1" parent="tb-ae"><mxGeometry y="36" width="360" height="28" as="geometry"/></mxCell>
+<mxCell id="tbae2" value="🔗 created_by  INT → users (SET NULL)" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;fontStyle=2;" vertex="1" parent="tb-ae"><mxGeometry y="64" width="360" height="28" as="geometry"/></mxCell>
+<mxCell id="tbae3" value="title  VARCHAR(255) NOT NULL" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;" vertex="1" parent="tb-ae"><mxGeometry y="92" width="360" height="28" as="geometry"/></mxCell>
+<mxCell id="tbae4" value="description  TEXT" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;" vertex="1" parent="tb-ae"><mxGeometry y="120" width="360" height="28" as="geometry"/></mxCell>
+<mxCell id="tbae5" value="event_date  TIMESTAMPTZ NOT NULL" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;" vertex="1" parent="tb-ae"><mxGeometry y="148" width="360" height="28" as="geometry"/></mxCell>
+<mxCell id="tbae6" value="event_type  VARCHAR(100)" style="text;align=left;fontSize=12;spacingLeft=12;strokeColor=none;fillColor=none;" vertex="1" parent="tb-ae"><mxGeometry y="176" width="360" height="28" as="geometry"/></mxCell>
+
+<!-- FK Relationship Lines -->
+<mxCell id="scr1" value="1:N" style="edgeStyle=orthogonalEdgeStyle;endArrow=ERmany;startArrow=ERone;strokeWidth=2;strokeColor=#6c8ebf;" edge="1" source="tb-fac" target="tb-prog" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="scr2" value="1:N" style="edgeStyle=orthogonalEdgeStyle;endArrow=ERmany;startArrow=ERone;strokeWidth=2;strokeColor=#6c8ebf;" edge="1" source="tb-prog" target="tb-bat" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="scr3" value="1:N" style="edgeStyle=orthogonalEdgeStyle;endArrow=ERmany;startArrow=ERone;strokeWidth=2;strokeColor=#d6b656;" edge="1" source="tb-bat" target="tb-chan" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="scr4" value="1:N" style="edgeStyle=orthogonalEdgeStyle;endArrow=ERmany;startArrow=ERone;strokeWidth=2;strokeColor=#82b366;" edge="1" source="tb-prog" target="tb-usr" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="scr5" value="M:N" style="edgeStyle=orthogonalEdgeStyle;endArrow=ERmany;startArrow=ERmany;strokeWidth=2;strokeColor=#d6b656;" edge="1" source="tb-usr" target="tb-enroll" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="scr5b" style="edgeStyle=orthogonalEdgeStyle;endArrow=ERmany;startArrow=ERmany;strokeWidth=2;strokeColor=#d6b656;" edge="1" source="tb-chan" target="tb-enroll" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="scr6" value="1:N" style="edgeStyle=orthogonalEdgeStyle;endArrow=ERmany;startArrow=ERone;strokeWidth=2;" edge="1" source="tb-chan" target="tb-msg" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="scr7" value="1:N" style="edgeStyle=orthogonalEdgeStyle;endArrow=ERmany;startArrow=ERone;strokeWidth=2;" edge="1" source="tb-chan" target="tb-notes" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="scr8" value="1:N" style="edgeStyle=orthogonalEdgeStyle;endArrow=ERmany;startArrow=ERone;strokeWidth=2;strokeColor=#82b366;" edge="1" source="tb-chan" target="tb-assign" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="scr9" value="1:N" style="edgeStyle=orthogonalEdgeStyle;endArrow=ERmany;startArrow=ERone;strokeWidth=2;strokeColor=#82b366;" edge="1" source="tb-assign" target="tb-sub" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="scr10" value="1:N" style="edgeStyle=orthogonalEdgeStyle;endArrow=ERmany;startArrow=ERone;strokeWidth=2;strokeColor=#b85450;" edge="1" source="tb-chan" target="tb-ann" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="scr11" value="1:N" style="edgeStyle=orthogonalEdgeStyle;endArrow=ERmany;startArrow=ERone;strokeWidth=2;strokeColor=#b85450;" edge="1" source="tb-usr" target="tb-notif" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="scr12" value="1:N" style="edgeStyle=orthogonalEdgeStyle;endArrow=ERmany;startArrow=ERone;strokeWidth=2;strokeColor=#6c8ebf;" edge="1" source="tb-usr" target="tb-proj" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="scr13" value="1:N" style="edgeStyle=orthogonalEdgeStyle;endArrow=ERmany;startArrow=ERone;strokeWidth=2;strokeColor=#6c8ebf;" edge="1" source="tb-proj" target="tb-pm" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="scr14" value="1:N" style="edgeStyle=orthogonalEdgeStyle;endArrow=ERmany;startArrow=ERone;strokeWidth=2;strokeColor=#6c8ebf;" edge="1" source="tb-proj" target="tb-pt" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="scr15" value="1:N" style="edgeStyle=orthogonalEdgeStyle;endArrow=ERmany;startArrow=ERone;strokeWidth=2;strokeColor=#6c8ebf;" edge="1" source="tb-usr" target="tb-pm" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+</root>
+</mxGraphModel>
+</diagram>
+
+</mxfile>

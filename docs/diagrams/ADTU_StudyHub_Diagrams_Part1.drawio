@@ -1,0 +1,285 @@
+<mxfile host="app.diagrams.net" modified="2026-05-31" version="21.0.0">
+
+<!-- ============================================================
+     PAGE 1: High-Level Architecture
+     ============================================================ -->
+<diagram id="p1" name="1. High-Level Architecture">
+<mxGraphModel dx="1600" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+<root>
+<mxCell id="0"/><mxCell id="1" parent="0"/>
+
+<!-- Title -->
+<mxCell id="t1" value="EduSync — High-Level Architecture" style="text;html=1;strokeColor=none;fillColor=none;align=center;fontSize=22;fontStyle=1;fontColor=#1a1a2e;" vertex="1" parent="1">
+  <mxGeometry x="300" y="30" width="1000" height="44" as="geometry"/>
+</mxCell>
+
+<!-- ── ACTORS (left column) ── -->
+<mxCell id="a-student" value="Student" style="shape=umlActor;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;fontStyle=1;verticalLabelPosition=bottom;verticalAlign=top;" vertex="1" parent="1">
+  <mxGeometry x="60" y="200" width="60" height="80" as="geometry"/>
+</mxCell>
+<mxCell id="a-faculty" value="Faculty" style="shape=umlActor;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=13;fontStyle=1;verticalLabelPosition=bottom;verticalAlign=top;" vertex="1" parent="1">
+  <mxGeometry x="60" y="440" width="60" height="80" as="geometry"/>
+</mxCell>
+<mxCell id="a-admin" value="Admin" style="shape=umlActor;fillColor=#ffe6cc;strokeColor=#d6b656;fontSize=13;fontStyle=1;verticalLabelPosition=bottom;verticalAlign=top;" vertex="1" parent="1">
+  <mxGeometry x="60" y="680" width="60" height="80" as="geometry"/>
+</mxCell>
+
+<!-- ── TIER 1: FRONTEND ── -->
+<mxCell id="fe" value="Flutter Frontend  (Web + Mobile)" style="swimlane;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=15;fontStyle=1;startSize=44;rounded=1;arcSize=4;" vertex="1" parent="1">
+  <mxGeometry x="220" y="130" width="880" height="220" as="geometry"/>
+</mxCell>
+<mxCell id="fe-auth" value="Auth Layer&#xa;Riverpod AuthNotifier" style="rounded=1;fillColor=#ffffff;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="fe">
+  <mxGeometry x="40" y="70" width="220" height="110" as="geometry"/>
+</mxCell>
+<mxCell id="fe-dash" value="Screens &amp; Widgets&#xa;Dashboard, Channels, Messages&#xa;Assignments, Projects" style="rounded=1;fillColor=#ffffff;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="fe">
+  <mxGeometry x="320" y="70" width="240" height="110" as="geometry"/>
+</mxCell>
+<mxCell id="fe-core" value="Core Services&#xa;ApiService (Dio)&#xa;SocketService · StorageService" style="rounded=1;fillColor=#ffffff;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="fe">
+  <mxGeometry x="620" y="70" width="220" height="110" as="geometry"/>
+</mxCell>
+
+<!-- ── TIER 2: BACKEND ── -->
+<mxCell id="be" value="Backend  (Node.js + Express · Render.com)" style="swimlane;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=15;fontStyle=1;startSize=44;rounded=1;arcSize=4;" vertex="1" parent="1">
+  <mxGeometry x="220" y="460" width="880" height="220" as="geometry"/>
+</mxCell>
+<mxCell id="be-routes" value="Routes Layer&#xa;12 Route Modules" style="rounded=1;fillColor=#ffffff;strokeColor=#82b366;fontSize=12;" vertex="1" parent="be">
+  <mxGeometry x="40" y="70" width="200" height="110" as="geometry"/>
+</mxCell>
+<mxCell id="be-mw" value="Middleware&#xa;JWT · RBAC · Helmet&#xa;CORS · Rate Limit · Multer" style="rounded=1;fillColor=#ffffff;strokeColor=#82b366;fontSize=12;" vertex="1" parent="be">
+  <mxGeometry x="300" y="70" width="220" height="110" as="geometry"/>
+</mxCell>
+<mxCell id="be-ctrl" value="Controllers&#xa;11 Controller Modules" style="rounded=1;fillColor=#ffffff;strokeColor=#82b366;fontSize=12;" vertex="1" parent="be">
+  <mxGeometry x="580" y="70" width="200" height="110" as="geometry"/>
+</mxCell>
+<mxCell id="be-sock" value="Socket.IO Server&#xa;Real-Time Events" style="rounded=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" vertex="1" parent="be">
+  <mxGeometry x="840" y="70" width="200" height="110" as="geometry"/>
+</mxCell>
+
+<!-- ── TIER 3: DATA ── -->
+<mxCell id="db-pg" value="PostgreSQL (Neon)&#xa;&#xa;All Relational Data&#xa;16 Tables" style="shape=cylinder3;fillColor=#ffe6cc;strokeColor=#d6b656;fontSize=13;fontStyle=1;whiteSpace=wrap;" vertex="1" parent="1">
+  <mxGeometry x="300" y="810" width="200" height="160" as="geometry"/>
+</mxCell>
+<mxCell id="db-sup" value="Supabase Storage&#xa;&#xa;File Uploads&#xa;Notes · Assignments" style="shape=cylinder3;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=13;fontStyle=1;whiteSpace=wrap;" vertex="1" parent="1">
+  <mxGeometry x="620" y="810" width="200" height="160" as="geometry"/>
+</mxCell>
+<mxCell id="dep-vercel" value="Vercel CDN&#xa;Flutter Web" style="rounded=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+  <mxGeometry x="940" y="840" width="160" height="80" as="geometry"/>
+</mxCell>
+
+<!-- ── EDGES ── -->
+<mxCell id="e-s" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="a-student" target="fe" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="e-f" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="a-faculty" target="fe" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="e-a" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="a-admin" target="fe" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="e-fe-be" value="HTTPS REST + WSS" style="edgeStyle=orthogonalEdgeStyle;strokeWidth=2;strokeColor=#6c8ebf;fontStyle=2;fontSize=12;" edge="1" source="fe" target="be" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="e-be-pg" value="SQL" style="edgeStyle=orthogonalEdgeStyle;strokeWidth=2;" edge="1" source="be" target="db-pg" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="e-be-sup" value="File I/O" style="edgeStyle=orthogonalEdgeStyle;strokeWidth=2;" edge="1" source="be" target="db-sup" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+</root>
+</mxGraphModel>
+</diagram>
+
+<!-- ============================================================
+     PAGE 2: Low-Level Design
+     ============================================================ -->
+<diagram id="p2" name="2. Low-Level Design">
+<mxGraphModel dx="1600" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+<root>
+<mxCell id="0"/><mxCell id="1" parent="0"/>
+<mxCell id="t2" value="EduSync — Low-Level Design" style="text;html=1;strokeColor=none;fillColor=none;align=center;fontSize=22;fontStyle=1;" vertex="1" parent="1">
+  <mxGeometry x="300" y="30" width="1000" height="44" as="geometry"/>
+</mxCell>
+
+<!-- COLUMN HEADERS -->
+<mxCell id="h1" value="Flutter Frontend" style="rounded=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=14;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="60" y="100" width="280" height="44" as="geometry"/></mxCell>
+<mxCell id="h2" value="Express Backend" style="rounded=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=14;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="440" y="100" width="280" height="44" as="geometry"/></mxCell>
+<mxCell id="h3" value="Data Layer" style="rounded=1;fillColor=#ffe6cc;strokeColor=#d6b656;fontSize=14;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="820" y="100" width="280" height="44" as="geometry"/></mxCell>
+
+<!-- FRONTEND BOXES -->
+<mxCell id="fl-scr" value="Screens&#xa;LoginScreen · DashboardScreen&#xa;ChannelsScreen · MessagesScreen&#xa;AssignmentsScreen · ProjectsScreen" style="rounded=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;align=left;spacingLeft=10;" vertex="1" parent="1"><mxGeometry x="60" y="180" width="280" height="120" as="geometry"/></mxCell>
+<mxCell id="fl-wid" value="Widgets&#xa;ChannelCard · MessageBubble&#xa;AssignmentTile · ProjectCard" style="rounded=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;align=left;spacingLeft=10;" vertex="1" parent="1"><mxGeometry x="60" y="340" width="280" height="100" as="geometry"/></mxCell>
+<mxCell id="fl-prov" value="Riverpod Providers&#xa;authProvider · messagesNotifier&#xa;taskProvider · apiProviders" style="rounded=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;align=left;spacingLeft=10;" vertex="1" parent="1"><mxGeometry x="60" y="480" width="280" height="100" as="geometry"/></mxCell>
+<mxCell id="fl-repo" value="Repositories&#xa;ChannelRepository&#xa;AssignmentRepository · ProjectRepository" style="rounded=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;align=left;spacingLeft=10;" vertex="1" parent="1"><mxGeometry x="60" y="620" width="280" height="100" as="geometry"/></mxCell>
+<mxCell id="fl-svc" value="Core Services&#xa;ApiService (Dio) · AuthService&#xa;SocketService · StorageService" style="rounded=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;align=left;spacingLeft=10;" vertex="1" parent="1"><mxGeometry x="60" y="760" width="280" height="100" as="geometry"/></mxCell>
+<mxCell id="fl-mdl" value="Models&#xa;ChannelModel · MessageModel&#xa;AssignmentModel · TaskModel" style="rounded=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;align=left;spacingLeft=10;" vertex="1" parent="1"><mxGeometry x="60" y="900" width="280" height="100" as="geometry"/></mxCell>
+
+<!-- FRONTEND FLOW ARROWS -->
+<mxCell id="fw1" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="fl-scr" target="fl-wid" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="fw2" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="fl-wid" target="fl-prov" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="fw3" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="fl-prov" target="fl-repo" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="fw4" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="fl-repo" target="fl-svc" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="fw5" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="fl-svc" target="fl-mdl" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+<!-- BACKEND BOXES -->
+<mxCell id="be-entry" value="server.js&#xa;Express App + Socket.IO" style="rounded=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;align=left;spacingLeft=10;" vertex="1" parent="1"><mxGeometry x="440" y="180" width="280" height="80" as="geometry"/></mxCell>
+<mxCell id="be-mw-lld" value="Middleware Stack&#xa;helmet · cors · rateLimit&#xa;protect(JWT) · authorize(RBAC)&#xa;upload (Multer) · errorHandler" style="rounded=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;align=left;spacingLeft=10;" vertex="1" parent="1"><mxGeometry x="440" y="300" width="280" height="140" as="geometry"/></mxCell>
+<mxCell id="be-rts" value="Routes (12 modules)&#xa;/api/auth · /api/channels&#xa;/api/messages · /api/assignments&#xa;/api/notes · /api/projects · ..." style="rounded=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;align=left;spacingLeft=10;" vertex="1" parent="1"><mxGeometry x="440" y="490" width="280" height="140" as="geometry"/></mxCell>
+<mxCell id="be-ctr" value="Controllers (11 modules)&#xa;authController · channelController&#xa;assignmentController · projectController&#xa;notificationController · ..." style="rounded=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;align=left;spacingLeft=10;" vertex="1" parent="1"><mxGeometry x="440" y="680" width="280" height="140" as="geometry"/></mxCell>
+<mxCell id="be-sock-lld" value="Socket Handler&#xa;socketHandler.js&#xa;Events: channel:join · message:send&#xa;Emit: message:new · notification:new" style="rounded=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;align=left;spacingLeft=10;" vertex="1" parent="1"><mxGeometry x="440" y="870" width="280" height="130" as="geometry"/></mxCell>
+
+<!-- BACKEND FLOW ARROWS -->
+<mxCell id="bw1" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="be-entry" target="be-mw-lld" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="bw2" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="be-mw-lld" target="be-rts" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="bw3" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="be-rts" target="be-ctr" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+<!-- DATA BOXES -->
+<mxCell id="da-cfg" value="config/db.js&#xa;pg Pool · Neon PostgreSQL&#xa;SSL · Max 10 connections" style="rounded=1;fillColor=#ffe6cc;strokeColor=#d6b656;fontSize=12;align=left;spacingLeft=10;" vertex="1" parent="1"><mxGeometry x="820" y="180" width="280" height="100" as="geometry"/></mxCell>
+<mxCell id="da-pg" value="PostgreSQL Tables&#xa;16 tables: users · channels&#xa;messages · assignments · notes&#xa;projects · notifications · ..." style="shape=cylinder3;fillColor=#ffe6cc;strokeColor=#d6b656;fontSize=12;whiteSpace=wrap;" vertex="1" parent="1"><mxGeometry x="820" y="330" width="280" height="240" as="geometry"/></mxCell>
+<mxCell id="da-sup-cfg" value="config/supabase.js&#xa;Supabase Client · studyhub-uploads bucket" style="rounded=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;align=left;spacingLeft=10;" vertex="1" parent="1"><mxGeometry x="820" y="630" width="280" height="80" as="geometry"/></mxCell>
+<mxCell id="da-sup" value="Supabase Storage&#xa;/assignments/ · /notes/&#xa;/messages/ · /avatars/" style="shape=cylinder3;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;whiteSpace=wrap;" vertex="1" parent="1"><mxGeometry x="820" y="760" width="280" height="200" as="geometry"/></mxCell>
+
+<!-- CROSS-LAYER EDGES -->
+<mxCell id="cross1" value="REST API" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#6c8ebf;strokeWidth=2;" edge="1" source="fl-svc" target="be-rts" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="cross2" value="WebSocket" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#9673a6;strokeWidth=2;dashed=1;" edge="1" source="fl-svc" target="be-sock-lld" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="cross3" value="SQL" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#d6b656;strokeWidth=2;" edge="1" source="be-ctr" target="da-pg" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="cross4" value="File I/O" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#9673a6;strokeWidth=2;" edge="1" source="be-ctr" target="da-sup" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+</root>
+</mxGraphModel>
+</diagram>
+
+<!-- ============================================================
+     PAGE 3: System Architecture
+     ============================================================ -->
+<diagram id="p3" name="3. System Architecture">
+<mxGraphModel dx="1600" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+<root>
+<mxCell id="0"/><mxCell id="1" parent="0"/>
+<mxCell id="t3" value="EduSync — System Architecture" style="text;html=1;strokeColor=none;fillColor=none;align=center;fontSize=22;fontStyle=1;" vertex="1" parent="1">
+  <mxGeometry x="300" y="30" width="1000" height="44" as="geometry"/>
+</mxCell>
+
+<!-- CLIENT ZONE -->
+<mxCell id="sys-client" value="Client Zone" style="swimlane;fillColor=#f0f4ff;strokeColor=#6c8ebf;strokeWidth=2;fontSize=14;fontStyle=1;startSize=40;rounded=1;dashed=1;" vertex="1" parent="1">
+  <mxGeometry x="60" y="100" width="380" height="500" as="geometry"/>
+</mxCell>
+<mxCell id="sys-mob" value="Mobile App&#xa;(Android / iOS)" style="shape=mxgraph.android.phone2;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="sys-client">
+  <mxGeometry x="40" y="60" width="120" height="180" as="geometry"/>
+</mxCell>
+<mxCell id="sys-web" value="Web Browser" style="shape=mxgraph.cisco.computers_and_peripherals.pc;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="sys-client">
+  <mxGeometry x="220" y="60" width="120" height="180" as="geometry"/>
+</mxCell>
+<mxCell id="sys-sdk" value="Flutter SDK&#xa;Riverpod · Dio · Socket.IO Client&#xa;SecureStorage / SharedPrefs" style="rounded=1;fillColor=#ffffff;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="sys-client">
+  <mxGeometry x="40" y="300" width="300" height="100" as="geometry"/>
+</mxCell>
+
+<!-- VERCEL -->
+<mxCell id="sys-v" value="Vercel CDN&#xa;Flutter Web Build&#xa;Global Edge Network · HTTPS" style="rounded=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;fontStyle=1;" vertex="1" parent="1">
+  <mxGeometry x="560" y="100" width="280" height="120" as="geometry"/>
+</mxCell>
+
+<!-- RENDER -->
+<mxCell id="sys-r" value="Render.com — Node.js Service&#xa;&#xa;Express.js HTTP + Socket.IO&#xa;Middleware Stack · 11 Controllers" style="rounded=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=13;fontStyle=1;" vertex="1" parent="1">
+  <mxGeometry x="560" y="320" width="280" height="160" as="geometry"/>
+</mxCell>
+
+<!-- NEON -->
+<mxCell id="sys-neon" value="Neon.tech&#xa;Serverless PostgreSQL&#xa;&#xa;Auto-scaling · WAL replication&#xa;16 Tables · SSL" style="shape=cylinder3;fillColor=#ffe6cc;strokeColor=#d6b656;fontSize=13;fontStyle=1;whiteSpace=wrap;" vertex="1" parent="1">
+  <mxGeometry x="980" y="200" width="260" height="200" as="geometry"/>
+</mxCell>
+
+<!-- SUPABASE -->
+<mxCell id="sys-supabase" value="Supabase&#xa;S3-Compatible Storage&#xa;&#xa;RLS Policies · CDN URLs&#xa;Auto Backups" style="shape=cylinder3;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=13;fontStyle=1;whiteSpace=wrap;" vertex="1" parent="1">
+  <mxGeometry x="980" y="480" width="260" height="200" as="geometry"/>
+</mxCell>
+
+<!-- JWT -->
+<mxCell id="sys-jwt" value="JWT Tokens&#xa;HS256 · {id, role, name, email}" style="rounded=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" vertex="1" parent="1">
+  <mxGeometry x="560" y="580" width="280" height="80" as="geometry"/>
+</mxCell>
+
+<!-- EDGES -->
+<mxCell id="se1" value="HTTPS" style="edgeStyle=orthogonalEdgeStyle;strokeWidth=2;" edge="1" source="sys-sdk" target="sys-v" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="se2" value="REST API + WSS" style="edgeStyle=orthogonalEdgeStyle;strokeWidth=2;" edge="1" source="sys-sdk" target="sys-r" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="se3" value="pg wire SSL" style="edgeStyle=orthogonalEdgeStyle;strokeWidth=2;" edge="1" source="sys-r" target="sys-neon" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="se4" value="Supabase SDK" style="edgeStyle=orthogonalEdgeStyle;strokeWidth=2;" edge="1" source="sys-r" target="sys-supabase" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="se5" value="issues" style="edgeStyle=orthogonalEdgeStyle;strokeWidth=2;dashed=1;" edge="1" source="sys-r" target="sys-jwt" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="se6" value="verifies" style="edgeStyle=orthogonalEdgeStyle;strokeWidth=2;dashed=1;" edge="1" source="sys-jwt" target="sys-sdk" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+</root>
+</mxGraphModel>
+</diagram>
+
+<!-- ============================================================
+     PAGE 4: UML Use Case Diagram
+     ============================================================ -->
+<diagram id="p4" name="4. UML Use Case">
+<mxGraphModel dx="1600" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+<root>
+<mxCell id="0"/><mxCell id="1" parent="0"/>
+<mxCell id="t4" value="UML Use Case Diagram — EduSync" style="text;html=1;strokeColor=none;fillColor=none;align=center;fontSize=22;fontStyle=1;" vertex="1" parent="1">
+  <mxGeometry x="300" y="30" width="1000" height="44" as="geometry"/>
+</mxCell>
+
+<!-- SYSTEM BOUNDARY -->
+<mxCell id="uc-sys" value="EduSync" style="swimlane;fillColor=#f9f9f9;strokeColor=#333333;strokeWidth=2;fontSize=16;fontStyle=1;startSize=44;rounded=1;" vertex="1" parent="1">
+  <mxGeometry x="220" y="90" width="1160" height="980" as="geometry"/>
+</mxCell>
+
+<!-- AUTH section label -->
+<mxCell id="uc-auth-lbl" value="Authentication" style="text;html=1;strokeColor=none;fillColor=#dae8fc;fontSize=12;fontStyle=1;align=center;rounded=1;" vertex="1" parent="uc-sys">
+  <mxGeometry x="430" y="20" width="300" height="30" as="geometry"/>
+</mxCell>
+<mxCell id="uc-login" value="Login / Authenticate" style="ellipse;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;" vertex="1" parent="uc-sys"><mxGeometry x="430" y="60" width="300" height="60" as="geometry"/></mxCell>
+
+<!-- STUDENT use cases -->
+<mxCell id="uc-s-lbl" value="Student Actions" style="text;html=1;strokeColor=none;fillColor=#d5e8d4;fontSize=12;fontStyle=1;align=center;rounded=1;" vertex="1" parent="uc-sys">
+  <mxGeometry x="60" y="160" width="300" height="30" as="geometry"/>
+</mxCell>
+<mxCell id="uc-view-sub" value="View Enrolled Subjects" style="ellipse;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" vertex="1" parent="uc-sys"><mxGeometry x="60" y="210" width="300" height="55" as="geometry"/></mxCell>
+<mxCell id="uc-submit" value="Submit Assignment" style="ellipse;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" vertex="1" parent="uc-sys"><mxGeometry x="60" y="290" width="300" height="55" as="geometry"/></mxCell>
+<mxCell id="uc-view-notes" value="View Notes" style="ellipse;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" vertex="1" parent="uc-sys"><mxGeometry x="60" y="370" width="300" height="55" as="geometry"/></mxCell>
+<mxCell id="uc-chat" value="Send / Receive Messages" style="ellipse;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" vertex="1" parent="uc-sys"><mxGeometry x="60" y="450" width="300" height="55" as="geometry"/></mxCell>
+<mxCell id="uc-proj" value="Manage Projects &amp; Tasks" style="ellipse;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" vertex="1" parent="uc-sys"><mxGeometry x="60" y="530" width="300" height="55" as="geometry"/></mxCell>
+<mxCell id="uc-recv" value="Receive Notifications" style="ellipse;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" vertex="1" parent="uc-sys"><mxGeometry x="60" y="610" width="300" height="55" as="geometry"/></mxCell>
+<mxCell id="uc-events" value="View Academic Events" style="ellipse;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" vertex="1" parent="uc-sys"><mxGeometry x="60" y="690" width="300" height="55" as="geometry"/></mxCell>
+
+<!-- FACULTY use cases -->
+<mxCell id="uc-f-lbl" value="Faculty Actions" style="text;html=1;strokeColor=none;fillColor=#fff2cc;fontSize=12;fontStyle=1;align=center;rounded=1;" vertex="1" parent="uc-sys">
+  <mxGeometry x="430" y="160" width="300" height="30" as="geometry"/>
+</mxCell>
+<mxCell id="uc-create-a" value="Create Assignment" style="ellipse;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" vertex="1" parent="uc-sys"><mxGeometry x="430" y="210" width="300" height="55" as="geometry"/></mxCell>
+<mxCell id="uc-grade" value="Grade Submissions" style="ellipse;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" vertex="1" parent="uc-sys"><mxGeometry x="430" y="290" width="300" height="55" as="geometry"/></mxCell>
+<mxCell id="uc-upload-n" value="Upload Notes" style="ellipse;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" vertex="1" parent="uc-sys"><mxGeometry x="430" y="370" width="300" height="55" as="geometry"/></mxCell>
+<mxCell id="uc-ann" value="Post Announcement" style="ellipse;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" vertex="1" parent="uc-sys"><mxGeometry x="430" y="450" width="300" height="55" as="geometry"/></mxCell>
+<mxCell id="uc-mgch" value="Manage Channels" style="ellipse;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" vertex="1" parent="uc-sys"><mxGeometry x="430" y="530" width="300" height="55" as="geometry"/></mxCell>
+<mxCell id="uc-view-subs" value="View All Submissions" style="ellipse;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" vertex="1" parent="uc-sys"><mxGeometry x="430" y="610" width="300" height="55" as="geometry"/></mxCell>
+
+<!-- ADMIN use cases -->
+<mxCell id="uc-adm-lbl" value="Admin Actions" style="text;html=1;strokeColor=none;fillColor=#f8cecc;fontSize=12;fontStyle=1;align=center;rounded=1;" vertex="1" parent="uc-sys">
+  <mxGeometry x="800" y="160" width="300" height="30" as="geometry"/>
+</mxCell>
+<mxCell id="uc-mgusers" value="Manage Users" style="ellipse;fillColor=#f8cecc;strokeColor=#b85450;fontSize=12;" vertex="1" parent="uc-sys"><mxGeometry x="800" y="210" width="300" height="55" as="geometry"/></mxCell>
+<mxCell id="uc-mgenroll" value="Manage Enrollments" style="ellipse;fillColor=#f8cecc;strokeColor=#b85450;fontSize=12;" vertex="1" parent="uc-sys"><mxGeometry x="800" y="290" width="300" height="55" as="geometry"/></mxCell>
+<mxCell id="uc-mgev" value="Manage Academic Events" style="ellipse;fillColor=#f8cecc;strokeColor=#b85450;fontSize=12;" vertex="1" parent="uc-sys"><mxGeometry x="800" y="370" width="300" height="55" as="geometry"/></mxCell>
+<mxCell id="uc-monitor" value="Monitor Platform" style="ellipse;fillColor=#f8cecc;strokeColor=#b85450;fontSize=12;" vertex="1" parent="uc-sys"><mxGeometry x="800" y="450" width="300" height="55" as="geometry"/></mxCell>
+<mxCell id="uc-mgfac" value="Manage Faculty Records" style="ellipse;fillColor=#f8cecc;strokeColor=#b85450;fontSize=12;" vertex="1" parent="uc-sys"><mxGeometry x="800" y="530" width="300" height="55" as="geometry"/></mxCell>
+
+<!-- ACTORS OUTSIDE -->
+<mxCell id="act-student" value="Student" style="shape=umlActor;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=13;fontStyle=1;verticalLabelPosition=bottom;verticalAlign=top;" vertex="1" parent="1">
+  <mxGeometry x="100" y="480" width="60" height="80" as="geometry"/>
+</mxCell>
+<mxCell id="act-faculty" value="Faculty" style="shape=umlActor;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=13;fontStyle=1;verticalLabelPosition=bottom;verticalAlign=top;" vertex="1" parent="1">
+  <mxGeometry x="1440" y="340" width="60" height="80" as="geometry"/>
+</mxCell>
+<mxCell id="act-admin" value="Admin" style="shape=umlActor;fillColor=#f8cecc;strokeColor=#b85450;fontSize=13;fontStyle=1;verticalLabelPosition=bottom;verticalAlign=top;" vertex="1" parent="1">
+  <mxGeometry x="1440" y="560" width="60" height="80" as="geometry"/>
+</mxCell>
+
+<!-- Actor → use case edges -->
+<mxCell id="ue1" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="act-student" target="uc-login" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="ue2" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="act-student" target="uc-view-sub" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="ue3" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="act-student" target="uc-submit" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="ue4" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="act-student" target="uc-chat" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="ue5" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="act-student" target="uc-proj" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="ue6" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="act-faculty" target="uc-login" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="ue7" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="act-faculty" target="uc-create-a" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="ue8" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="act-faculty" target="uc-grade" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="ue9" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="act-faculty" target="uc-ann" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="ue10" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="act-admin" target="uc-login" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="ue11" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="act-admin" target="uc-mgusers" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="ue12" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="act-admin" target="uc-mgenroll" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="ue13" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="act-admin" target="uc-monitor" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="uc-inc1" value="&lt;&lt;include&gt;&gt;" style="edgeStyle=orthogonalEdgeStyle;dashed=1;endArrow=open;fontSize=10;" edge="1" source="uc-submit" target="uc-recv" parent="uc-sys"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="uc-inc2" value="&lt;&lt;include&gt;&gt;" style="edgeStyle=orthogonalEdgeStyle;dashed=1;endArrow=open;fontSize=10;" edge="1" source="uc-grade" target="uc-recv" parent="uc-sys"><mxGeometry relative="1" as="geometry"/></mxCell>
+</root>
+</mxGraphModel>
+</diagram>
+
+</mxfile>

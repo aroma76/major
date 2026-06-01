@@ -1,7 +1,7 @@
 const multer = require('multer');
 const { supabase, BUCKET } = require('../config/supabase');
 
-const FOLDER = 'adtu-collab';
+const FOLDER = 'edusync';
 
 /**
  * Custom multer storage engine that streams uploaded files directly to

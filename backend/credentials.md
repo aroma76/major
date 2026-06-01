@@ -1,4 +1,4 @@
-# ADTU Collab - All Login Credentials
+# EduSync - All Login Credentials
 
 > Password for ALL accounts: 2004-05-15
 > Students log in with Roll Number | Faculty/Admin log in with Email

@@ -1,0 +1,254 @@
+<mxfile host="app.diagrams.net" modified="2026-05-31" version="21.0.0">
+
+<!-- ============================================================
+     PAGE 7: Data Flow Diagram
+     ============================================================ -->
+<diagram id="p7" name="7. Data Flow Diagram">
+<mxGraphModel dx="1600" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+<root>
+<mxCell id="0"/><mxCell id="1" parent="0"/>
+<mxCell id="t7" value="Data Flow Diagram — EduSync" style="text;html=1;strokeColor=none;fillColor=none;align=center;fontSize=22;fontStyle=1;" vertex="1" parent="1">
+  <mxGeometry x="300" y="20" width="1000" height="44" as="geometry"/>
+</mxCell>
+
+<!-- ── LEVEL 0 SECTION ── -->
+<mxCell id="l0-hdr" value="LEVEL 0 — Context Diagram" style="text;html=1;strokeColor=#6c8ebf;fillColor=#dae8fc;fontSize=14;fontStyle=1;align=center;rounded=1;" vertex="1" parent="1">
+  <mxGeometry x="60" y="80" width="280" height="40" as="geometry"/>
+</mxCell>
+
+<mxCell id="l0-s" value="Student" style="shape=mxgraph.flowchart.start_2;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="60" y="200" width="80" height="80" as="geometry"/></mxCell>
+<mxCell id="l0-f" value="Faculty" style="shape=mxgraph.flowchart.start_2;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="60" y="380" width="80" height="80" as="geometry"/></mxCell>
+<mxCell id="l0-a" value="Admin" style="shape=mxgraph.flowchart.start_2;fillColor=#f8cecc;strokeColor=#b85450;fontSize=12;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="60" y="560" width="80" height="80" as="geometry"/></mxCell>
+
+<mxCell id="l0-sys" value="EduSync&#xa;Platform" style="ellipse;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=14;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="280" y="340" width="240" height="120" as="geometry"/></mxCell>
+
+<mxCell id="l0-pg" value="PostgreSQL DB" style="shape=mxgraph.dfd.datastore;fillColor=#ffe6cc;strokeColor=#d6b656;fontSize=12;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="620" y="280" width="200" height="60" as="geometry"/></mxCell>
+<mxCell id="l0-st" value="Supabase Storage" style="shape=mxgraph.dfd.datastore;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="620" y="440" width="200" height="60" as="geometry"/></mxCell>
+
+<mxCell id="l0e1" value="Login, Submit, Chat" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#82b366;" edge="1" source="l0-s" target="l0-sys" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="l0e1r" value="Notifications, Grades" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#82b366;dashed=1;" edge="1" source="l0-sys" target="l0-s" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="l0e2" value="Create, Grade, Post" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#d6b656;" edge="1" source="l0-f" target="l0-sys" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="l0e3" value="Manage Users/Events" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#b85450;" edge="1" source="l0-a" target="l0-sys" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="l0e4" value="Read/Write" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="l0-sys" target="l0-pg" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="l0e5" value="Store/Retrieve files" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="l0-sys" target="l0-st" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+<!-- ── LEVEL 1 SECTION ── -->
+<mxCell id="l1-hdr" value="LEVEL 1 — Detailed DFD" style="text;html=1;strokeColor=#82b366;fillColor=#d5e8d4;fontSize=14;fontStyle=1;align=center;rounded=1;" vertex="1" parent="1">
+  <mxGeometry x="900" y="80" width="280" height="40" as="geometry"/>
+</mxCell>
+
+<!-- L1 Actors -->
+<mxCell id="l1-s" value="Student" style="shape=mxgraph.flowchart.start_2;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="1"><mxGeometry x="840" y="180" width="60" height="60" as="geometry"/></mxCell>
+<mxCell id="l1-f" value="Faculty" style="shape=mxgraph.flowchart.start_2;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" vertex="1" parent="1"><mxGeometry x="840" y="480" width="60" height="60" as="geometry"/></mxCell>
+<mxCell id="l1-a" value="Admin" style="shape=mxgraph.flowchart.start_2;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;" vertex="1" parent="1"><mxGeometry x="840" y="760" width="60" height="60" as="geometry"/></mxCell>
+
+<!-- L1 Processes -->
+<mxCell id="p1" value="1.0 Auth" style="ellipse;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="960" y="160" width="140" height="90" as="geometry"/></mxCell>
+<mxCell id="p2" value="2.0 Messaging" style="ellipse;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="960" y="310" width="140" height="90" as="geometry"/></mxCell>
+<mxCell id="p3" value="3.0 Assignments" style="ellipse;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="960" y="460" width="140" height="90" as="geometry"/></mxCell>
+<mxCell id="p4" value="4.0 Notes" style="ellipse;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="960" y="610" width="140" height="90" as="geometry"/></mxCell>
+<mxCell id="p5" value="5.0 Projects" style="ellipse;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="960" y="760" width="140" height="90" as="geometry"/></mxCell>
+<mxCell id="p6" value="6.0 Notifications" style="ellipse;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="960" y="910" width="140" height="90" as="geometry"/></mxCell>
+
+<!-- L1 Datastores -->
+<mxCell id="ds1" value="DS1: users" style="shape=mxgraph.dfd.datastore;fillColor=#ffe6cc;strokeColor=#d6b656;fontSize=11;" vertex="1" parent="1"><mxGeometry x="1180" y="180" width="160" height="50" as="geometry"/></mxCell>
+<mxCell id="ds2" value="DS2: messages" style="shape=mxgraph.dfd.datastore;fillColor=#ffe6cc;strokeColor=#d6b656;fontSize=11;" vertex="1" parent="1"><mxGeometry x="1180" y="320" width="160" height="50" as="geometry"/></mxCell>
+<mxCell id="ds3" value="DS3: assignments + submissions" style="shape=mxgraph.dfd.datastore;fillColor=#ffe6cc;strokeColor=#d6b656;fontSize=11;" vertex="1" parent="1"><mxGeometry x="1180" y="480" width="200" height="50" as="geometry"/></mxCell>
+<mxCell id="ds4" value="DS4: notes" style="shape=mxgraph.dfd.datastore;fillColor=#ffe6cc;strokeColor=#d6b656;fontSize=11;" vertex="1" parent="1"><mxGeometry x="1180" y="630" width="160" height="50" as="geometry"/></mxCell>
+<mxCell id="ds5" value="DS5: projects + tasks" style="shape=mxgraph.dfd.datastore;fillColor=#ffe6cc;strokeColor=#d6b656;fontSize=11;" vertex="1" parent="1"><mxGeometry x="1180" y="780" width="160" height="50" as="geometry"/></mxCell>
+<mxCell id="ds6" value="DS6: notifications" style="shape=mxgraph.dfd.datastore;fillColor=#ffe6cc;strokeColor=#d6b656;fontSize=11;" vertex="1" parent="1"><mxGeometry x="1180" y="930" width="160" height="50" as="geometry"/></mxCell>
+
+<!-- L1 Edges -->
+<mxCell id="l1e1" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="l1-s" target="p1" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="l1e2" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="l1-s" target="p2" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="l1e3" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="l1-s" target="p3" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="l1e4" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="l1-f" target="p3" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="l1e5" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="l1-f" target="p4" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="l1e6" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="l1-s" target="p5" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="l1e7" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="l1-a" target="p5" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="l1e8" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="p1" target="ds1" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="l1e9" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="p2" target="ds2" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="l1e10" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="p3" target="ds3" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="l1e11" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="p4" target="ds4" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="l1e12" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="p5" target="ds5" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="l1e13" value="triggers" style="edgeStyle=orthogonalEdgeStyle;dashed=1;" edge="1" source="p3" target="p6" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="l1e14" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="p6" target="ds6" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+</root>
+</mxGraphModel>
+</diagram>
+
+<!-- ============================================================
+     PAGE 8: ERD — clean, spread out
+     ============================================================ -->
+<diagram id="p8" name="8. ERD">
+<mxGraphModel dx="1600" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2200" pageHeight="1600" math="0" shadow="0">
+<root>
+<mxCell id="0"/><mxCell id="1" parent="0"/>
+<mxCell id="t8" value="Entity Relationship Diagram — EduSync" style="text;html=1;strokeColor=none;fillColor=none;align=center;fontSize=22;fontStyle=1;" vertex="1" parent="1">
+  <mxGeometry x="400" y="20" width="1400" height="44" as="geometry"/>
+</mxCell>
+
+<!-- Helper macro: Each entity is a rounded rectangle with a colored header -->
+<!-- TIER 1: ACADEMIC HIERARCHY (top row) -->
+
+<!-- faculties -->
+<mxCell id="e-fac" value="faculties" style="swimlane;startSize=36;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;fontSize=13;rounded=1;" vertex="1" parent="1"><mxGeometry x="60" y="100" width="280" height="170" as="geometry"/></mxCell>
+<mxCell id="ef1" value="🔑 id  SERIAL PRIMARY KEY" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;" vertex="1" parent="e-fac"><mxGeometry y="36" width="280" height="30" as="geometry"/></mxCell>
+<mxCell id="ef2" value="name  VARCHAR(255) UNIQUE NOT NULL" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;" vertex="1" parent="e-fac"><mxGeometry y="66" width="280" height="30" as="geometry"/></mxCell>
+<mxCell id="ef3" value="color_code  VARCHAR(50)" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;" vertex="1" parent="e-fac"><mxGeometry y="96" width="280" height="30" as="geometry"/></mxCell>
+<mxCell id="ef4" value="created_at  TIMESTAMPTZ" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;" vertex="1" parent="e-fac"><mxGeometry y="126" width="280" height="30" as="geometry"/></mxCell>
+
+<!-- programmes -->
+<mxCell id="e-prog" value="programmes" style="swimlane;startSize=36;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;fontSize=13;rounded=1;" vertex="1" parent="1"><mxGeometry x="460" y="100" width="300" height="200" as="geometry"/></mxCell>
+<mxCell id="ep1" value="🔑 id  SERIAL PRIMARY KEY" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;" vertex="1" parent="e-prog"><mxGeometry y="36" width="300" height="30" as="geometry"/></mxCell>
+<mxCell id="ep2" value="🔗 faculty_id  INT → faculties" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;fontStyle=2;" vertex="1" parent="e-prog"><mxGeometry y="66" width="300" height="30" as="geometry"/></mxCell>
+<mxCell id="ep3" value="name  VARCHAR(255) NOT NULL" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;" vertex="1" parent="e-prog"><mxGeometry y="96" width="300" height="30" as="geometry"/></mxCell>
+<mxCell id="ep4" value="code  VARCHAR(50) NOT NULL" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;" vertex="1" parent="e-prog"><mxGeometry y="126" width="300" height="30" as="geometry"/></mxCell>
+<mxCell id="ep5" value="duration_semesters  INT NOT NULL" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;" vertex="1" parent="e-prog"><mxGeometry y="156" width="300" height="30" as="geometry"/></mxCell>
+
+<!-- batches -->
+<mxCell id="e-bat" value="batches" style="swimlane;startSize=36;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;fontSize=13;rounded=1;" vertex="1" parent="1"><mxGeometry x="880" y="100" width="280" height="160" as="geometry"/></mxCell>
+<mxCell id="eb1" value="🔑 id  SERIAL PRIMARY KEY" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;" vertex="1" parent="e-bat"><mxGeometry y="36" width="280" height="30" as="geometry"/></mxCell>
+<mxCell id="eb2" value="🔗 programme_id  INT → programmes" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;fontStyle=2;" vertex="1" parent="e-bat"><mxGeometry y="66" width="280" height="30" as="geometry"/></mxCell>
+<mxCell id="eb3" value="year  INT NOT NULL" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;" vertex="1" parent="e-bat"><mxGeometry y="96" width="280" height="30" as="geometry"/></mxCell>
+<mxCell id="eb4" value="created_at  TIMESTAMPTZ" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;" vertex="1" parent="e-bat"><mxGeometry y="126" width="280" height="30" as="geometry"/></mxCell>
+
+<!-- channels -->
+<mxCell id="e-chan" value="channels" style="swimlane;startSize=36;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;fontSize=13;rounded=1;" vertex="1" parent="1"><mxGeometry x="1280" y="100" width="300" height="250" as="geometry"/></mxCell>
+<mxCell id="ech1" value="🔑 id  SERIAL PRIMARY KEY" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;" vertex="1" parent="e-chan"><mxGeometry y="36" width="300" height="30" as="geometry"/></mxCell>
+<mxCell id="ech2" value="🔗 batch_id  INT → batches" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;fontStyle=2;" vertex="1" parent="e-chan"><mxGeometry y="66" width="300" height="30" as="geometry"/></mxCell>
+<mxCell id="ech3" value="🔗 teacher_id  INT → users (SET NULL)" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;fontStyle=2;" vertex="1" parent="e-chan"><mxGeometry y="96" width="300" height="30" as="geometry"/></mxCell>
+<mxCell id="ech4" value="subject_name  VARCHAR(255) NOT NULL" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;" vertex="1" parent="e-chan"><mxGeometry y="126" width="300" height="30" as="geometry"/></mxCell>
+<mxCell id="ech5" value="channel_name  VARCHAR UNIQUE" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;" vertex="1" parent="e-chan"><mxGeometry y="156" width="300" height="30" as="geometry"/></mxCell>
+<mxCell id="ech6" value="semester_number  INT" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;" vertex="1" parent="e-chan"><mxGeometry y="186" width="300" height="30" as="geometry"/></mxCell>
+<mxCell id="ech7" value="created_at  TIMESTAMPTZ" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;" vertex="1" parent="e-chan"><mxGeometry y="216" width="300" height="30" as="geometry"/></mxCell>
+
+<!-- TIER 2: users -->
+<mxCell id="e-usr" value="users" style="swimlane;startSize=36;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;fontSize=13;rounded=1;" vertex="1" parent="1"><mxGeometry x="880" y="380" width="300" height="310" as="geometry"/></mxCell>
+<mxCell id="eu1" value="🔑 id  SERIAL PRIMARY KEY" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;" vertex="1" parent="e-usr"><mxGeometry y="36" width="300" height="30" as="geometry"/></mxCell>
+<mxCell id="eu2" value="name, email  VARCHAR NOT NULL/UNIQUE" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;" vertex="1" parent="e-usr"><mxGeometry y="66" width="300" height="30" as="geometry"/></mxCell>
+<mxCell id="eu3" value="roll_number  VARCHAR UNIQUE" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;" vertex="1" parent="e-usr"><mxGeometry y="96" width="300" height="30" as="geometry"/></mxCell>
+<mxCell id="eu4" value="password  VARCHAR (bcrypt)" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;" vertex="1" parent="e-usr"><mxGeometry y="126" width="300" height="30" as="geometry"/></mxCell>
+<mxCell id="eu5" value="role  student | faculty | admin | class_rep" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;" vertex="1" parent="e-usr"><mxGeometry y="156" width="300" height="30" as="geometry"/></mxCell>
+<mxCell id="eu6" value="🔗 programme_id  INT → programmes" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;fontStyle=2;" vertex="1" parent="e-usr"><mxGeometry y="186" width="300" height="30" as="geometry"/></mxCell>
+<mxCell id="eu7" value="batch_year, current_semester  INT" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;" vertex="1" parent="e-usr"><mxGeometry y="216" width="300" height="30" as="geometry"/></mxCell>
+<mxCell id="eu8" value="avatar_url, avatar_initials" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;" vertex="1" parent="e-usr"><mxGeometry y="246" width="300" height="30" as="geometry"/></mxCell>
+<mxCell id="eu9" value="created_at  TIMESTAMPTZ" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;" vertex="1" parent="e-usr"><mxGeometry y="276" width="300" height="30" as="geometry"/></mxCell>
+
+<!-- TIER 3: channel-related tables -->
+<!-- enrollments -->
+<mxCell id="e-enroll" value="enrollments" style="swimlane;startSize=36;fillColor=#ffe6cc;strokeColor=#d6b656;fontStyle=1;fontSize=13;rounded=1;" vertex="1" parent="1"><mxGeometry x="1700" y="380" width="300" height="160" as="geometry"/></mxCell>
+<mxCell id="een1" value="🔑 id  SERIAL PRIMARY KEY" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;" vertex="1" parent="e-enroll"><mxGeometry y="36" width="300" height="30" as="geometry"/></mxCell>
+<mxCell id="een2" value="🔗 user_id  INT → users" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;fontStyle=2;" vertex="1" parent="e-enroll"><mxGeometry y="66" width="300" height="30" as="geometry"/></mxCell>
+<mxCell id="een3" value="🔗 channel_id  INT → channels" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;fontStyle=2;" vertex="1" parent="e-enroll"><mxGeometry y="96" width="300" height="30" as="geometry"/></mxCell>
+<mxCell id="een4" value="created_at  UNIQUE(user,channel)" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;" vertex="1" parent="e-enroll"><mxGeometry y="126" width="300" height="30" as="geometry"/></mxCell>
+
+<!-- messages -->
+<mxCell id="e-msg" value="messages" style="swimlane;startSize=36;fillColor=#ffe6cc;strokeColor=#d6b656;fontStyle=1;fontSize=13;rounded=1;" vertex="1" parent="1"><mxGeometry x="60" y="780" width="300" height="220" as="geometry"/></mxCell>
+<mxCell id="emg1" value="🔑 id  SERIAL PRIMARY KEY" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;" vertex="1" parent="e-msg"><mxGeometry y="36" width="300" height="30" as="geometry"/></mxCell>
+<mxCell id="emg2" value="🔗 channel_id  INT → channels" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;fontStyle=2;" vertex="1" parent="e-msg"><mxGeometry y="66" width="300" height="30" as="geometry"/></mxCell>
+<mxCell id="emg3" value="🔗 sender_id  INT → users" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;fontStyle=2;" vertex="1" parent="e-msg"><mxGeometry y="96" width="300" height="30" as="geometry"/></mxCell>
+<mxCell id="emg4" value="content  TEXT" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;" vertex="1" parent="e-msg"><mxGeometry y="126" width="300" height="30" as="geometry"/></mxCell>
+<mxCell id="emg5" value="file_url, file_name  VARCHAR" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;" vertex="1" parent="e-msg"><mxGeometry y="156" width="300" height="30" as="geometry"/></mxCell>
+<mxCell id="emg6" value="is_pinned  BOOLEAN  created_at" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;" vertex="1" parent="e-msg"><mxGeometry y="186" width="300" height="30" as="geometry"/></mxCell>
+
+<!-- notes -->
+<mxCell id="e-notes" value="notes" style="swimlane;startSize=36;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;fontSize=13;rounded=1;" vertex="1" parent="1"><mxGeometry x="460" y="780" width="280" height="190" as="geometry"/></mxCell>
+<mxCell id="ent1" value="🔑 id  SERIAL PRIMARY KEY" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;" vertex="1" parent="e-notes"><mxGeometry y="36" width="280" height="30" as="geometry"/></mxCell>
+<mxCell id="ent2" value="🔗 channel_id  INT → channels" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;fontStyle=2;" vertex="1" parent="e-notes"><mxGeometry y="66" width="280" height="30" as="geometry"/></mxCell>
+<mxCell id="ent3" value="🔗 created_by  INT → users" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;fontStyle=2;" vertex="1" parent="e-notes"><mxGeometry y="96" width="280" height="30" as="geometry"/></mxCell>
+<mxCell id="ent4" value="title  VARCHAR(255) NOT NULL" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;" vertex="1" parent="e-notes"><mxGeometry y="126" width="280" height="30" as="geometry"/></mxCell>
+<mxCell id="ent5" value="content  TEXT  created_at" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;" vertex="1" parent="e-notes"><mxGeometry y="156" width="280" height="30" as="geometry"/></mxCell>
+
+<!-- assignments -->
+<mxCell id="e-assign" value="assignments" style="swimlane;startSize=36;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;fontSize=13;rounded=1;" vertex="1" parent="1"><mxGeometry x="850" y="780" width="300" height="250" as="geometry"/></mxCell>
+<mxCell id="eas1" value="🔑 id  SERIAL PRIMARY KEY" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;" vertex="1" parent="e-assign"><mxGeometry y="36" width="300" height="30" as="geometry"/></mxCell>
+<mxCell id="eas2" value="🔗 channel_id  INT → channels" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;fontStyle=2;" vertex="1" parent="e-assign"><mxGeometry y="66" width="300" height="30" as="geometry"/></mxCell>
+<mxCell id="eas3" value="🔗 created_by  INT → users" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;fontStyle=2;" vertex="1" parent="e-assign"><mxGeometry y="96" width="300" height="30" as="geometry"/></mxCell>
+<mxCell id="eas4" value="title  VARCHAR(255) NOT NULL" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;" vertex="1" parent="e-assign"><mxGeometry y="126" width="300" height="30" as="geometry"/></mxCell>
+<mxCell id="eas5" value="description  TEXT" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;" vertex="1" parent="e-assign"><mxGeometry y="156" width="300" height="30" as="geometry"/></mxCell>
+<mxCell id="eas6" value="due_date  TIMESTAMPTZ NOT NULL" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;" vertex="1" parent="e-assign"><mxGeometry y="186" width="300" height="30" as="geometry"/></mxCell>
+<mxCell id="eas7" value="max_marks INT  status  priority" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;" vertex="1" parent="e-assign"><mxGeometry y="216" width="300" height="30" as="geometry"/></mxCell>
+
+<!-- assignment_submissions -->
+<mxCell id="e-sub" value="assignment_submissions" style="swimlane;startSize=36;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;fontSize=13;rounded=1;" vertex="1" parent="1"><mxGeometry x="850" y="1120" width="300" height="250" as="geometry"/></mxCell>
+<mxCell id="esb1" value="🔑 id  SERIAL PRIMARY KEY" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;" vertex="1" parent="e-sub"><mxGeometry y="36" width="300" height="30" as="geometry"/></mxCell>
+<mxCell id="esb2" value="🔗 assignment_id  INT → assignments" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;fontStyle=2;" vertex="1" parent="e-sub"><mxGeometry y="66" width="300" height="30" as="geometry"/></mxCell>
+<mxCell id="esb3" value="🔗 student_id  INT → users" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;fontStyle=2;" vertex="1" parent="e-sub"><mxGeometry y="96" width="300" height="30" as="geometry"/></mxCell>
+<mxCell id="esb4" value="file_url, file_name  VARCHAR" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;" vertex="1" parent="e-sub"><mxGeometry y="126" width="300" height="30" as="geometry"/></mxCell>
+<mxCell id="esb5" value="status  pending|submitted|late|graded" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;" vertex="1" parent="e-sub"><mxGeometry y="156" width="300" height="30" as="geometry"/></mxCell>
+<mxCell id="esb6" value="marks  INT  feedback  TEXT" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;" vertex="1" parent="e-sub"><mxGeometry y="186" width="300" height="30" as="geometry"/></mxCell>
+<mxCell id="esb7" value="submitted_at  UNIQUE(assignment,student)" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;" vertex="1" parent="e-sub"><mxGeometry y="216" width="300" height="30" as="geometry"/></mxCell>
+
+<!-- announcements -->
+<mxCell id="e-ann" value="announcements" style="swimlane;startSize=36;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1;fontSize=13;rounded=1;" vertex="1" parent="1"><mxGeometry x="1300" y="780" width="300" height="190" as="geometry"/></mxCell>
+<mxCell id="ean1" value="🔑 id  SERIAL PRIMARY KEY" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;" vertex="1" parent="e-ann"><mxGeometry y="36" width="300" height="30" as="geometry"/></mxCell>
+<mxCell id="ean2" value="🔗 channel_id  INT → channels" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;fontStyle=2;" vertex="1" parent="e-ann"><mxGeometry y="66" width="300" height="30" as="geometry"/></mxCell>
+<mxCell id="ean3" value="🔗 user_id  INT → users" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;fontStyle=2;" vertex="1" parent="e-ann"><mxGeometry y="96" width="300" height="30" as="geometry"/></mxCell>
+<mxCell id="ean4" value="title, content  is_important BOOL" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;" vertex="1" parent="e-ann"><mxGeometry y="126" width="300" height="30" as="geometry"/></mxCell>
+<mxCell id="ean5" value="created_at  TIMESTAMPTZ" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;" vertex="1" parent="e-ann"><mxGeometry y="156" width="300" height="30" as="geometry"/></mxCell>
+
+<!-- notifications -->
+<mxCell id="e-notif" value="notifications" style="swimlane;startSize=36;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1;fontSize=13;rounded=1;" vertex="1" parent="1"><mxGeometry x="1300" y="1080" width="300" height="220" as="geometry"/></mxCell>
+<mxCell id="enf1" value="🔑 id  SERIAL PRIMARY KEY" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;" vertex="1" parent="e-notif"><mxGeometry y="36" width="300" height="30" as="geometry"/></mxCell>
+<mxCell id="enf2" value="🔗 user_id  INT → users" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;fontStyle=2;" vertex="1" parent="e-notif"><mxGeometry y="66" width="300" height="30" as="geometry"/></mxCell>
+<mxCell id="enf3" value="type, title  VARCHAR NOT NULL" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;" vertex="1" parent="e-notif"><mxGeometry y="96" width="300" height="30" as="geometry"/></mxCell>
+<mxCell id="enf4" value="message  TEXT  is_read  BOOLEAN" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;" vertex="1" parent="e-notif"><mxGeometry y="126" width="300" height="30" as="geometry"/></mxCell>
+<mxCell id="enf5" value="ref_id  INT  ref_type  VARCHAR" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;" vertex="1" parent="e-notif"><mxGeometry y="156" width="300" height="30" as="geometry"/></mxCell>
+<mxCell id="enf6" value="created_at  TIMESTAMPTZ" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;" vertex="1" parent="e-notif"><mxGeometry y="186" width="300" height="30" as="geometry"/></mxCell>
+
+<!-- projects -->
+<mxCell id="e-proj" value="projects" style="swimlane;startSize=36;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;fontSize=13;rounded=1;" vertex="1" parent="1"><mxGeometry x="60" y="1120" width="300" height="200" as="geometry"/></mxCell>
+<mxCell id="epr1" value="🔑 id  SERIAL PRIMARY KEY" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;" vertex="1" parent="e-proj"><mxGeometry y="36" width="300" height="30" as="geometry"/></mxCell>
+<mxCell id="epr2" value="title  VARCHAR(255) NOT NULL" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;" vertex="1" parent="e-proj"><mxGeometry y="66" width="300" height="30" as="geometry"/></mxCell>
+<mxCell id="epr3" value="description  TEXT  deadline  TIMESTAMPTZ" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;" vertex="1" parent="e-proj"><mxGeometry y="96" width="300" height="30" as="geometry"/></mxCell>
+<mxCell id="epr4" value="progress  INT  CHECK(0..100)" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;" vertex="1" parent="e-proj"><mxGeometry y="126" width="300" height="30" as="geometry"/></mxCell>
+<mxCell id="epr5" value="🔗 created_by  INT → users" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;fontStyle=2;" vertex="1" parent="e-proj"><mxGeometry y="156" width="300" height="30" as="geometry"/></mxCell>
+
+<!-- project_members -->
+<mxCell id="e-pm" value="project_members" style="swimlane;startSize=36;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;fontSize=13;rounded=1;" vertex="1" parent="1"><mxGeometry x="460" y="1120" width="300" height="175" as="geometry"/></mxCell>
+<mxCell id="epm1" value="🔑 id  SERIAL PRIMARY KEY" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;" vertex="1" parent="e-pm"><mxGeometry y="36" width="300" height="30" as="geometry"/></mxCell>
+<mxCell id="epm2" value="🔗 project_id  INT → projects" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;fontStyle=2;" vertex="1" parent="e-pm"><mxGeometry y="66" width="300" height="30" as="geometry"/></mxCell>
+<mxCell id="epm3" value="🔗 user_id  INT → users" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;fontStyle=2;" vertex="1" parent="e-pm"><mxGeometry y="96" width="300" height="30" as="geometry"/></mxCell>
+<mxCell id="epm4" value="joined_at  UNIQUE(project, user)" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;" vertex="1" parent="e-pm"><mxGeometry y="126" width="300" height="30" as="geometry"/></mxCell>
+
+<!-- project_tasks -->
+<mxCell id="e-pt" value="project_tasks" style="swimlane;startSize=36;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;fontSize=13;rounded=1;" vertex="1" parent="1"><mxGeometry x="60" y="1420" width="300" height="250" as="geometry"/></mxCell>
+<mxCell id="ept1" value="🔑 id  SERIAL PRIMARY KEY" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;" vertex="1" parent="e-pt"><mxGeometry y="36" width="300" height="30" as="geometry"/></mxCell>
+<mxCell id="ept2" value="🔗 project_id  INT → projects" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;fontStyle=2;" vertex="1" parent="e-pt"><mxGeometry y="66" width="300" height="30" as="geometry"/></mxCell>
+<mxCell id="ept3" value="🔗 assigned_to  INT → users (SET NULL)" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;fontStyle=2;" vertex="1" parent="e-pt"><mxGeometry y="96" width="300" height="30" as="geometry"/></mxCell>
+<mxCell id="ept4" value="🔗 created_by  INT → users" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;fontStyle=2;" vertex="1" parent="e-pt"><mxGeometry y="126" width="300" height="30" as="geometry"/></mxCell>
+<mxCell id="ept5" value="title  VARCHAR  description  TEXT" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;" vertex="1" parent="e-pt"><mxGeometry y="156" width="300" height="30" as="geometry"/></mxCell>
+<mxCell id="ept6" value="due_date  TIMESTAMPTZ" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;" vertex="1" parent="e-pt"><mxGeometry y="186" width="300" height="30" as="geometry"/></mxCell>
+<mxCell id="ept7" value="priority  low|medium|high  status  todo|done" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;" vertex="1" parent="e-pt"><mxGeometry y="216" width="300" height="30" as="geometry"/></mxCell>
+
+<!-- academic_events -->
+<mxCell id="e-ae" value="academic_events" style="swimlane;startSize=36;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;fontSize=13;rounded=1;" vertex="1" parent="1"><mxGeometry x="1700" y="780" width="300" height="200" as="geometry"/></mxCell>
+<mxCell id="eae1" value="🔑 id  SERIAL PRIMARY KEY" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;" vertex="1" parent="e-ae"><mxGeometry y="36" width="300" height="30" as="geometry"/></mxCell>
+<mxCell id="eae2" value="title, description  VARCHAR/TEXT" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;" vertex="1" parent="e-ae"><mxGeometry y="66" width="300" height="30" as="geometry"/></mxCell>
+<mxCell id="eae3" value="event_date  TIMESTAMPTZ NOT NULL" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;" vertex="1" parent="e-ae"><mxGeometry y="96" width="300" height="30" as="geometry"/></mxCell>
+<mxCell id="eae4" value="event_type  VARCHAR" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;" vertex="1" parent="e-ae"><mxGeometry y="126" width="300" height="30" as="geometry"/></mxCell>
+<mxCell id="eae5" value="🔗 created_by  INT → users (SET NULL)" style="text;strokeColor=none;fillColor=none;align=left;fontSize=12;spacingLeft=10;fontStyle=2;" vertex="1" parent="e-ae"><mxGeometry y="156" width="300" height="30" as="geometry"/></mxCell>
+
+<!-- ERD RELATIONSHIP LINES -->
+<mxCell id="er1" value="1" style="edgeStyle=orthogonalEdgeStyle;endArrow=ERmany;startArrow=ERone;strokeWidth=2;strokeColor=#6c8ebf;" edge="1" source="e-fac" target="e-prog" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="er2" value="1" style="edgeStyle=orthogonalEdgeStyle;endArrow=ERmany;startArrow=ERone;strokeWidth=2;strokeColor=#6c8ebf;" edge="1" source="e-prog" target="e-bat" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="er3" value="1" style="edgeStyle=orthogonalEdgeStyle;endArrow=ERmany;startArrow=ERone;strokeWidth=2;strokeColor=#d6b656;" edge="1" source="e-bat" target="e-chan" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="er4" value="1" style="edgeStyle=orthogonalEdgeStyle;endArrow=ERmany;startArrow=ERone;strokeWidth=2;strokeColor=#82b366;" edge="1" source="e-prog" target="e-usr" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="er5" value="M:N" style="edgeStyle=orthogonalEdgeStyle;endArrow=ERmany;startArrow=ERmany;strokeWidth=2;strokeColor=#d6b656;" edge="1" source="e-usr" target="e-enroll" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="er5b" style="edgeStyle=orthogonalEdgeStyle;endArrow=ERmany;startArrow=ERmany;strokeWidth=2;strokeColor=#d6b656;" edge="1" source="e-chan" target="e-enroll" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="er6" value="1" style="edgeStyle=orthogonalEdgeStyle;endArrow=ERmany;startArrow=ERone;strokeWidth=2;" edge="1" source="e-chan" target="e-msg" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="er7" value="1" style="edgeStyle=orthogonalEdgeStyle;endArrow=ERmany;startArrow=ERone;strokeWidth=2;" edge="1" source="e-chan" target="e-notes" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="er8" value="1" style="edgeStyle=orthogonalEdgeStyle;endArrow=ERmany;startArrow=ERone;strokeWidth=2;strokeColor=#82b366;" edge="1" source="e-chan" target="e-assign" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="er9" value="1" style="edgeStyle=orthogonalEdgeStyle;endArrow=ERmany;startArrow=ERone;strokeWidth=2;strokeColor=#82b366;" edge="1" source="e-assign" target="e-sub" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="er10" value="1" style="edgeStyle=orthogonalEdgeStyle;endArrow=ERmany;startArrow=ERone;strokeWidth=2;strokeColor=#b85450;" edge="1" source="e-chan" target="e-ann" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="er11" value="1" style="edgeStyle=orthogonalEdgeStyle;endArrow=ERmany;startArrow=ERone;strokeWidth=2;strokeColor=#b85450;" edge="1" source="e-usr" target="e-notif" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="er12" value="1" style="edgeStyle=orthogonalEdgeStyle;endArrow=ERmany;startArrow=ERone;strokeWidth=2;strokeColor=#6c8ebf;" edge="1" source="e-usr" target="e-proj" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="er13" value="1" style="edgeStyle=orthogonalEdgeStyle;endArrow=ERmany;startArrow=ERone;strokeWidth=2;strokeColor=#6c8ebf;" edge="1" source="e-proj" target="e-pm" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="er14" value="1" style="edgeStyle=orthogonalEdgeStyle;endArrow=ERmany;startArrow=ERone;strokeWidth=2;strokeColor=#6c8ebf;" edge="1" source="e-proj" target="e-pt" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="er15" value="1" style="edgeStyle=orthogonalEdgeStyle;endArrow=ERmany;startArrow=ERone;strokeWidth=2;strokeColor=#6c8ebf;" edge="1" source="e-usr" target="e-pm" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+</root>
+</mxGraphModel>
+</diagram>
+
+</mxfile>

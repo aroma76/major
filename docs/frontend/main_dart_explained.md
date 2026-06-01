@@ -64,7 +64,7 @@ class MyApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(themeModeProvider);
     return MaterialApp(
-      title: 'ADTU Collab',
+      title: 'EduSync',
       debugShowCheckedModeBanner: false,
       themeMode: themeMode,
       darkTheme: _buildDarkTheme(),

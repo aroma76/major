@@ -1,6 +1,6 @@
-# 📚 ADTU StudyHub — Complete Documentation Index
+# 📚 EduSync — Complete Documentation Index
 
-**Project:** ADTU StudyHub (Academic Collaboration Platform)
+**Project:** EduSync (Academic Collaboration Platform)
 **Stack:** Flutter + Riverpod | Node.js + Express | PostgreSQL (Neon) + Supabase Storage
 **Documentation Status:** ✅ Complete
 

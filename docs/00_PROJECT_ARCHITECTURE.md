@@ -1,8 +1,8 @@
-# 🏗️ ADTU StudyHub — Project Architecture
+# 🏗️ EduSync — Project Architecture
 
 ## 📌 What Is This Project?
 
-**ADTU StudyHub** (also called *ADTU Collab*) is a **full-stack academic collaboration platform** built for Assam Down Town University (ADTU). Think of it as a **Google Classroom + Discord hybrid** designed specifically for university use. It allows:
+**EduSync** is a **full-stack academic collaboration platform** built for Assam Down Town University (ADTU). Think of it as a **Google Classroom + Discord hybrid** designed specifically for university use. It allows:
 
 - Students to view subjects, submit assignments, chat, and manage projects.
 - Faculty to post announcements, create assignments, grade submissions, and monitor student activity.

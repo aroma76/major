@@ -178,7 +178,7 @@ class _Logo extends StatelessWidget {
             height: 72, fit: BoxFit.contain),
         const SizedBox(height: 14),
         Text(
-          'ADTU Collab',
+          'EduSync',
           style: GoogleFonts.outfit(
               fontSize: 26,
               fontWeight: FontWeight.bold,

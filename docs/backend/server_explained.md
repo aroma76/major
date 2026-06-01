@@ -289,7 +289,7 @@ app.use(helmet({
 
 ```js
 app.get('/api/health', (req, res) =>
-  res.json({ success: true, message: 'ADTU Collab API is running 🚀', timestamp: new Date().toISOString() })
+  res.json({ success: true, message: 'EduSync API is running 🚀', timestamp: new Date().toISOString() })
 );
 
 const globalLimiter = rateLimit({

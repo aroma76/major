@@ -1,7 +1,7 @@
 {
-  "name": "adtu-collab-backend",
+  "name": "edusync-backend",
   "version": "1.0.0",
-  "description": "Backend for Assam down town University Academic Collaboration System",
+  "description": "EduSync — Backend API for Academic Collaboration Platform",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

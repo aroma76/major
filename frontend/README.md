@@ -1,4 +1,4 @@
-# student_teacher_dashboard
+# EduSync
 
 A new Flutter project.
 

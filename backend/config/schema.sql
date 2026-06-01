@@ -1,5 +1,5 @@
 -- ============================================================
--- ADTU StudyHub - PostgreSQL Schema
+-- EduSync - PostgreSQL Schema
 -- Hierarchical Structure: Faculty -> Programme -> Batch -> Channel
 -- ============================================================
 

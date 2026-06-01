@@ -87,7 +87,7 @@ app.use(helmet({
 
 // ── Health check (MUST be before rate limiter so cron pings are never throttled)
 app.get('/api/health', (req, res) =>
-  res.json({ success: true, message: 'ADTU Collab API is running 🚀', timestamp: new Date().toISOString() })
+  res.json({ success: true, message: 'EduSync API is running 🚀', timestamp: new Date().toISOString() })
 );
 
 // ── Global rate limiter (protects all /api/* routes, skips health check) ──────

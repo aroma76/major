@@ -1,8 +1,8 @@
-# ADTU Collab — Academic Workspace & Collaboration Portal
+# EduSync — Academic Workspace & Collaboration Portal
 
 <div align="center">
 
-![ADTU Collab Banner](https://major-three-tau.vercel.app/icons/Icon-192.png)
+![EduSync Banner](https://major-three-tau.vercel.app/icons/Icon-192.png)
 
 **A real-time, Jira-inspired academic collaboration platform built for Assam down town University (AdtU)**
 
@@ -18,7 +18,7 @@
 
 ## 📖 Overview
 
-**ADTU Collab** (internally named *ADTU StudyHub*) is a full-stack, real-time academic collaboration platform that replaces fragmented tools like WhatsApp groups, Google Classroom, and static portals with a single, structured workspace.
+**EduSync** is a full-stack, real-time academic collaboration platform that replaces fragmented tools like WhatsApp groups, Google Classroom, and static portals with a single, structured workspace.
 
 It is designed as a **"Jira for Students"** — every subject has a dedicated channel where chat, assignments, notes, files, and announcements live together. Faculty manage their classes, students track their work via Kanban boards, and the `admin` role protects privileged backend routes — all in one place.
 

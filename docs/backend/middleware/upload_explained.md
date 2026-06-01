@@ -40,12 +40,12 @@ A `Buffer` is a fixed-size chunk of raw binary data in Node.js memory. `Buffer.c
 
 ---
 
-## Line 4 — `const FOLDER = 'adtu-collab';`
+## Line 4 — `const FOLDER = 'edusync';`
 
-**`const FOLDER`** — a constant string. All uploaded files go into a sub-folder called `adtu-collab` inside the `files` bucket.
+**`const FOLDER`** — a constant string. All uploaded files go into a sub-folder called `edusync` inside the `files` bucket.
 
-Final storage path example: `adtu-collab/1716450000000-Report.pdf`
-Full public URL: `https://your-project.supabase.co/storage/v1/object/public/files/adtu-collab/1716450000000-Report.pdf`
+Final storage path example: `edusync/1716450000000-Report.pdf`
+Full public URL: `https://your-project.supabase.co/storage/v1/object/public/files/edusync/1716450000000-Report.pdf`
 
 Using a folder prefix organizes files and makes it easier to manage/clean them separately.
 
@@ -177,13 +177,13 @@ An empty array that will collect the stream's data chunks. Each chunk is a `Buff
 - Used as a prefix to make filenames unique even if users upload files with the same name
 
 **Template literal** combines:
-- `FOLDER` = `'adtu-collab'`
+- `FOLDER` = `'edusync'`
 - `/` — path separator
 - `Date.now()` = timestamp
 - `-` — separator between timestamp and name
 - `safeName` = `'My_Report.pdf'`
 
-Result: `'adtu-collab/1716450000000-My_Report.pdf'`
+Result: `'edusync/1716450000000-My_Report.pdf'`
 
 ### `supabase.storage.from(BUCKET).upload(storagePath, buffer, {...})`
 
@@ -339,8 +339,8 @@ multer intercepts (before controller runs)
          │
          └─ _handleFile: upload to Supabase
               │  collect stream chunks → Buffer.concat → complete file
-              │  supabase.storage.upload('adtu-collab/timestamp-filename', buffer)
-              │  getPublicUrl('adtu-collab/timestamp-filename')
+              │  supabase.storage.upload('edusync/timestamp-filename', buffer)
+              │  getPublicUrl('edusync/timestamp-filename')
               └─ req.file = { path: 'https://supabase.co/...', filename: 'file.pdf', ... }
          │
          ▼

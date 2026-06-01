@@ -278,7 +278,7 @@ class _TopBarWidgetState extends ConsumerState<TopBarWidget> {
                     size: 13, color: AppColors.getBodyColor(context)),
                 const SizedBox(width: 5),
                 Text(
-                  'ADTU Collab',
+                  'EduSync',
                   style: TextStyle(
                       fontSize: 12, color: AppColors.getBodyColor(context)),
                 ),
