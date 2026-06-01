@@ -119,21 +119,28 @@ const createProject = async (req, res) => {
 
 /**
  * GET /api/projects/:id/students
- * Returns students enrolled in the same channels as the project creator
- * who are NOT already members of this project.
- * Used to populate the "Add Member" picker.
+ * Returns students who can be added to this project.
+ *
+ * Priority 1: Students enrolled in the same channels as the project creator.
+ * Fallback (if 0 results): Students with the same programme_id + semester as creator.
+ * Always excludes existing project members and the creator themselves.
  */
 const getClassroomStudents = async (req, res) => {
-  // Find the project creator
-  const proj = await pool.query('SELECT created_by FROM projects WHERE id = $1', [req.params.id]);
+  // Find the project and creator info
+  const proj = await pool.query(
+    `SELECT p.created_by, u.programme_id, u.current_semester
+     FROM projects p
+     JOIN users u ON p.created_by = u.id
+     WHERE p.id = $1`,
+    [req.params.id]
+  );
   if (!proj.rows.length)
     return res.status(404).json({ success: false, message: 'Project not found' });
 
-  const creatorId = proj.rows[0].created_by;
+  const { created_by: creatorId, programme_id, current_semester } = proj.rows[0];
 
-  // Students enrolled in ANY channel the creator is also enrolled in,
-  // excluding people already in the project
-  const result = await pool.query(
+  // Priority 1: same enrolled channels
+  const byEnrollment = await pool.query(
     `SELECT DISTINCT u.id, u.name, u.roll_number
      FROM users u
      JOIN enrollments e ON e.user_id = u.id
@@ -149,7 +156,26 @@ const getClassroomStudents = async (req, res) => {
     [creatorId, req.params.id]
   );
 
-  res.json({ success: true, students: result.rows });
+  if (byEnrollment.rows.length > 0) {
+    return res.json({ success: true, students: byEnrollment.rows });
+  }
+
+  // Fallback: same programme + semester (even if not enrolled in any channel yet)
+  const byCohort = await pool.query(
+    `SELECT id, name, roll_number
+     FROM users
+     WHERE role = 'student'
+       AND programme_id = $1
+       AND current_semester = $2
+       AND id != $3
+       AND id NOT IN (
+         SELECT user_id FROM project_members WHERE project_id = $4
+       )
+     ORDER BY name`,
+    [programme_id, current_semester, creatorId, req.params.id]
+  );
+
+  res.json({ success: true, students: byCohort.rows });
 };
 
 /**
