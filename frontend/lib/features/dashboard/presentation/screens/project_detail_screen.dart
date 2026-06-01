@@ -679,24 +679,57 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
     );
   }
 
+  /// Cycles status: todo → in_progress → done → todo
+  String _nextStatus(String current) {
+    if (current == 'todo') return 'in_progress';
+    if (current == 'in_progress') return 'done';
+    return 'todo';
+  }
+
+  Future<void> _changeTaskStatus(
+      Map<String, dynamic> task, String newStatus) async {
+    final projectId = int.tryParse(widget.project.id);
+    final taskId = (task['id'] as num?)?.toInt();
+    if (projectId == null || taskId == null) return;
+    try {
+      await _projectRepo.updateTaskStatus(projectId, taskId, newStatus);
+      await _fetchTasks();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Failed to update status: $e'),
+          backgroundColor: Colors.red.shade700,
+          behavior: SnackBarBehavior.floating,
+        ));
+      }
+    }
+  }
+
   Widget _buildTaskItem(BuildContext context, Map<String, dynamic> task) {
-    final status = task['status'] as String? ?? 'todo';
-    final title = task['title'] as String? ?? 'Untitled';
-    final priority = task['priority'] as String? ?? 'medium';
-    final isDone = status == 'done';
-    final isInProgress = status == 'in_progress';
+    final status        = task['status'] as String? ?? 'todo';
+    final title         = task['title'] as String? ?? 'Untitled';
+    final priority      = task['priority'] as String? ?? 'medium';
+    final assigneeName  = task['assigned_to_name'] as String?;
+    final dueDateRaw    = task['due_date'] as String?;
+    final dueDate       = dueDateRaw != null ? DateTime.tryParse(dueDateRaw) : null;
+    final isDone        = status == 'done';
+    final isInProgress  = status == 'in_progress';
 
     Color statusColor;
     IconData statusIcon;
+    String statusLabel;
     if (isDone) {
       statusColor = AppColors.doneColor;
-      statusIcon = Icons.check_circle;
+      statusIcon  = Icons.check_circle;
+      statusLabel = 'Done';
     } else if (isInProgress) {
       statusColor = AppColors.inProgressColor;
-      statusIcon = Icons.pending_actions;
+      statusIcon  = Icons.pending_actions;
+      statusLabel = 'In Progress';
     } else {
       statusColor = AppColors.todoColor;
-      statusIcon = Icons.radio_button_unchecked;
+      statusIcon  = Icons.radio_button_unchecked;
+      statusLabel = 'To Do';
     }
 
     Color priorityColor;
@@ -713,37 +746,141 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
         decoration: BoxDecoration(
           color: AppColors.getSurfaceColor(context),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.getBorderColor(context)),
+          border: Border.all(
+              color: isDone
+                  ? AppColors.doneColor.withValues(alpha: 0.3)
+                  : AppColors.getBorderColor(context)),
         ),
-        child: Row(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(statusIcon, color: statusColor, size: 20),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Text(
-                title,
-                style: GoogleFonts.outfit(
-                  color: isDone
-                      ? AppColors.getBodyColor(context)
-                      : AppColors.getHeadingColor(context),
-                  fontWeight: FontWeight.w500,
-                  decoration: isDone ? TextDecoration.lineThrough : null,
-                  decorationColor: AppColors.getBodyColor(context),
+            Row(
+              children: [
+                // ── Tappable status icon ──────────────────────────────────
+                Tooltip(
+                  message: 'Tap to mark as: ${_nextStatus(status).replaceAll('_', ' ')}',
+                  child: GestureDetector(
+                    onTap: () => _changeTaskStatus(task, _nextStatus(status)),
+                    child: AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 200),
+                      child: Icon(statusIcon,
+                          key: ValueKey(status),
+                          color: statusColor,
+                          size: 22),
+                    ),
+                  ),
                 ),
-              ),
+                const SizedBox(width: 12),
+
+                // ── Title ─────────────────────────────────────────────────
+                Expanded(
+                  child: Text(
+                    title,
+                    style: GoogleFonts.outfit(
+                      color: isDone
+                          ? AppColors.getBodyColor(context)
+                          : AppColors.getHeadingColor(context),
+                      fontWeight: FontWeight.w600,
+                      decoration: isDone ? TextDecoration.lineThrough : null,
+                      decorationColor: AppColors.getBodyColor(context),
+                    ),
+                  ),
+                ),
+
+                // ── Priority badge ────────────────────────────────────────
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: priorityColor.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    priority.toUpperCase(),
+                    style: GoogleFonts.outfit(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        color: priorityColor),
+                  ),
+                ),
+              ],
             ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-              decoration: BoxDecoration(
-                color: priorityColor.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: Text(
-                priority.toUpperCase(),
-                style: GoogleFonts.outfit(
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                    color: priorityColor),
+
+            // ── Sub-row: status label · assignee · due date ───────────────
+            Padding(
+              padding: const EdgeInsets.only(left: 34, top: 6),
+              child: Wrap(
+                spacing: 12,
+                runSpacing: 4,
+                children: [
+                  // Status label
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 6,
+                        height: 6,
+                        decoration: BoxDecoration(
+                            color: statusColor, shape: BoxShape.circle),
+                      ),
+                      const SizedBox(width: 5),
+                      Text(statusLabel,
+                          style: GoogleFonts.outfit(
+                              fontSize: 11,
+                              color: statusColor,
+                              fontWeight: FontWeight.w600)),
+                    ],
+                  ),
+
+                  // Assignee
+                  if (assigneeName != null && assigneeName.isNotEmpty)
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        CircleAvatar(
+                          radius: 8,
+                          backgroundColor:
+                              AppColors.accent.withValues(alpha: 0.18),
+                          child: Text(
+                            assigneeName.trim().isNotEmpty
+                                ? assigneeName.trim()[0].toUpperCase()
+                                : '?',
+                            style: const TextStyle(
+                                fontSize: 8,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.accent),
+                          ),
+                        ),
+                        const SizedBox(width: 5),
+                        Text(assigneeName,
+                            style: GoogleFonts.outfit(
+                                fontSize: 11,
+                                color: AppColors.getBodyColor(context))),
+                      ],
+                    ),
+
+                  // Due date
+                  if (dueDate != null)
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(FeatherIcons.calendar,
+                            size: 11,
+                            color: dueDate.isBefore(DateTime.now()) && !isDone
+                                ? Colors.red.shade400
+                                : AppColors.getBodyColor(context)),
+                        const SizedBox(width: 4),
+                        Text(
+                          DateFormat('MMM d, y').format(dueDate),
+                          style: GoogleFonts.outfit(
+                              fontSize: 11,
+                              color: dueDate.isBefore(DateTime.now()) && !isDone
+                                  ? Colors.red.shade400
+                                  : AppColors.getBodyColor(context)),
+                        ),
+                      ],
+                    ),
+                ],
               ),
             ),
           ],
