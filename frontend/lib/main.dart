@@ -109,7 +109,6 @@ class _AuthGate extends ConsumerWidget {
 
     return authAsync.when(
       loading: () => const Scaffold(
-        backgroundColor: AppColors.background,
         body: Center(
           child: CircularProgressIndicator(color: AppColors.accent),
         ),
