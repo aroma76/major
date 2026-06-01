@@ -294,8 +294,10 @@ class _ProjectCardState extends State<_ProjectCard> {
     final deadlineRaw = p['deadline'] as String?;
     final deadline =
         deadlineRaw != null ? DateTime.tryParse(deadlineRaw) : null;
-    final members = (p['members'] as List<dynamic>?)
-            ?.map((m) => (m['name'] ?? m['roll_number'] ?? '?').toString())
+    // Backend returns member_names as a flat string array (array_agg of names)
+    final members = (p['member_names'] as List<dynamic>?)
+            ?.where((m) => m != null)
+            .map((m) => m.toString())
             .toList() ??
         [];
     final id = (p['id'] as num?)?.toInt() ?? 0;
