@@ -461,7 +461,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
         'priority': priority,
         if (dueDate != null) 'due_date': dueDate!.toIso8601String(),
         if (assignedMember != null)
-          'assigned_to': (assignedMember!['id'] as num).toInt(),
+          'assigned_to_name': assignedMember!['name'] as String,
       });
       await _fetchTasks(); // refresh the list
       if (mounted) {
@@ -673,61 +673,160 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
   }
 
   Widget _buildTeamSection(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Team Members',
-          style: GoogleFonts.outfit(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: AppColors.getHeadingColor(context)),
-        ),
-        const SizedBox(height: 16),
-        Wrap(
-          spacing: 12,
-          runSpacing: 12,
-          children: widget.project.teamMembers
-              .map((member) => Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 10),
-                    decoration: BoxDecoration(
-                      color: AppColors.getSurfaceColor(context),
-                      borderRadius: BorderRadius.circular(12),
-                      border:
-                          Border.all(color: AppColors.getBorderColor(context)),
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final memberNames = _members.map((m) => m['name'] as String).toList();
+    final addCtrl = TextEditingController();
+
+    void syncMembers(List<String> names) async {
+      final id = int.tryParse(widget.project.id);
+      if (id == null) return;
+      try {
+        await _projectRepo.updateMembers(id, names);
+      } catch (_) {}
+    }
+
+    return StatefulBuilder(builder: (context, setS) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Team Members',
+                  style: GoogleFonts.outfit(
+                      fontSize: 20, fontWeight: FontWeight.bold,
+                      color: AppColors.getHeadingColor(context))),
+              Text('${memberNames.length} member${memberNames.length != 1 ? 's' : ''}',
+                  style: GoogleFonts.outfit(fontSize: 13, color: AppColors.getBodyColor(context))),
+            ],
+          ),
+          const SizedBox(height: 12),
+
+          // Member chips
+          if (memberNames.isEmpty)
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppColors.getSurfaceColor(context),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppColors.getBorderColor(context)),
+              ),
+              child: Row(children: [
+                Icon(FeatherIcons.users, size: 16,
+                    color: AppColors.getBodyColor(context).withValues(alpha: 0.4)),
+                const SizedBox(width: 10),
+                Text('No team members yet. Add one below.',
+                    style: GoogleFonts.outfit(color: AppColors.getBodyColor(context), fontSize: 13)),
+              ]),
+            )
+          else
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: memberNames.asMap().entries.map((e) {
+                final i = e.key;
+                final name = e.value;
+                final initial = name.trim().isNotEmpty ? name.trim()[0].toUpperCase() : '?';
+                return Container(
+                  padding: const EdgeInsets.fromLTRB(8, 5, 10, 5),
+                  decoration: BoxDecoration(
+                    color: AppColors.accent.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: AppColors.accent.withValues(alpha: 0.3)),
+                  ),
+                  child: Row(mainAxisSize: MainAxisSize.min, children: [
+                    CircleAvatar(
+                      radius: 10,
+                      backgroundColor: AppColors.accent.withValues(alpha: 0.25),
+                      child: Text(initial,
+                          style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold,
+                              color: AppColors.accent)),
                     ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // initials avatar — no external URL needed
-                        CircleAvatar(
-                          radius: 12,
-                          backgroundColor:
-                              AppColors.accent.withValues(alpha: 0.2),
-                          child: Text(
-                            member.isNotEmpty
-                                ? member.trim()[0].toUpperCase()
-                                : '?',
-                            style: GoogleFonts.outfit(
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.accent),
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Text(member,
-                            style: GoogleFonts.outfit(
-                                color: AppColors.getHeadingColor(context),
-                                fontWeight: FontWeight.w500)),
-                      ],
+                    const SizedBox(width: 6),
+                    Text(name,
+                        style: GoogleFonts.outfit(fontSize: 12,
+                            fontWeight: FontWeight.w600, color: AppColors.accent)),
+                    const SizedBox(width: 4),
+                    GestureDetector(
+                      onTap: () {
+                        final updated = List<String>.from(memberNames)..removeAt(i);
+                        setS(() {
+                          _members = updated.asMap().entries
+                              .map((e) => {'id': e.key, 'name': e.value})
+                              .toList();
+                        });
+                        syncMembers(updated);
+                      },
+                      child: const Icon(Icons.close_rounded, size: 14, color: AppColors.accent),
                     ),
-                  ))
-              .toList(),
-        ),
-      ],
-    );
+                  ]),
+                );
+              }).toList(),
+            ),
+
+          const SizedBox(height: 12),
+
+          // Add member input
+          Row(children: [
+            Expanded(
+              child: TextField(
+                controller: addCtrl,
+                style: GoogleFonts.outfit(color: AppColors.getHeadingColor(context), fontSize: 13),
+                onSubmitted: (v) {
+                  final name = v.trim();
+                  if (name.isEmpty || memberNames.contains(name)) { addCtrl.clear(); return; }
+                  final updated = [...memberNames, name];
+                  setS(() {
+                    _members = updated.asMap().entries
+                        .map((e) => {'id': e.key, 'name': e.value})
+                        .toList();
+                  });
+                  syncMembers(updated);
+                  addCtrl.clear();
+                },
+                decoration: InputDecoration(
+                  hintText: 'Add member name...',
+                  hintStyle: GoogleFonts.outfit(color: AppColors.getBodyColor(context), fontSize: 12),
+                  filled: true,
+                  fillColor: isDark ? Colors.white.withValues(alpha: 0.04) : Colors.black.withValues(alpha: 0.03),
+                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide(color: AppColors.getBorderColor(context))),
+                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(color: AppColors.accent, width: 1.5)),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            GestureDetector(
+              onTap: () {
+                final name = addCtrl.text.trim();
+                if (name.isEmpty || memberNames.contains(name)) { addCtrl.clear(); return; }
+                final updated = [...memberNames, name];
+                setS(() {
+                  _members = updated.asMap().entries
+                      .map((e) => {'id': e.key, 'name': e.value})
+                      .toList();
+                });
+                syncMembers(updated);
+                addCtrl.clear();
+              },
+              child: Container(
+                padding: const EdgeInsets.all(11),
+                decoration: BoxDecoration(
+                  color: AppColors.accent,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(FeatherIcons.userPlus, size: 16, color: Colors.white),
+              ),
+            ),
+          ]),
+        ],
+      );
+    });
   }
+
 
   Widget _buildMilestonesSection(BuildContext context) {
     return Column(

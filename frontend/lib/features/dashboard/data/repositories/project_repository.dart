@@ -23,6 +23,11 @@ class ProjectRepository {
     await _api.createProject(data);
   }
 
+  /// Updates the custom member names list for [projectId].
+  Future<void> updateMembers(int projectId, List<String> names) async {
+    await _api.updateProjectMembers(projectId, names);
+  }
+
   /// Deletes a project by [id].
   Future<void> deleteProject(int id) async {
     await _api.deleteProject(id);

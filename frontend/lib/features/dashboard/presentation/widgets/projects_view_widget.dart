@@ -69,8 +69,8 @@ class ProjectsViewWidget extends ConsumerWidget {
                       'title': result['name'],
                       'description': result['description'],
                       'deadline': result['deadline'],
-                      if ((result['member_ids'] as List?)?.isNotEmpty == true)
-                        'member_ids': result['member_ids'],
+                      if ((result['member_names'] as List?)?.isNotEmpty == true)
+                        'member_names': result['member_names'],
                     });
                     ref.invalidate(projectsProvider);
                     if (context.mounted) {
@@ -142,8 +142,8 @@ class ProjectsViewWidget extends ConsumerWidget {
                         'title': result['name'],
                         'description': result['description'],
                         'deadline': result['deadline'],
-                        if ((result['member_ids'] as List?)?.isNotEmpty == true)
-                          'member_ids': result['member_ids'],
+                        if ((result['member_names'] as List?)?.isNotEmpty == true)
+                          'member_names': result['member_names'],
                       });
                       ref.invalidate(projectsProvider);
                       if (context.mounted) {
