@@ -10,7 +10,7 @@
 [![API Server](https://img.shields.io/badge/API_Server-Render-46E3B7?style=for-the-badge&logo=render)](https://major-gin9.onrender.com)
 [![Flutter](https://img.shields.io/badge/Flutter-Web-02569B?style=for-the-badge&logo=flutter)](https://flutter.dev)
 [![Node.js](https://img.shields.io/badge/Node.js-Express-339933?style=for-the-badge&logo=node.js)](https://nodejs.org)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Supabase-4169E1?style=for-the-badge&logo=postgresql)](https://supabase.com)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Neon-4169E1?style=for-the-badge&logo=postgresql)](https://neon.tech)
 
 </div>
 
@@ -22,7 +22,7 @@
 
 It is designed as a **"Jira for Students"** — every subject has a dedicated channel where chat, assignments, notes, files, and announcements live together. Faculty manage their classes, students track their work via Kanban boards, and the `admin` role protects privileged backend routes — all in one place.
 
-> **Note:** There is no frontend admin dashboard. Administrative setup (seeding faculties, programmes, and batches) is done directly via the Supabase SQL editor. The `admin` role is a backend-only RBAC concept.
+> **Note:** There is no frontend admin dashboard. Administrative setup (seeding faculties, programmes, and batches) is done directly via the Neon SQL editor. The `admin` role is a backend-only RBAC concept.
 
 > ⚠️ **Cold Start Notice:** The backend is hosted on Render's free tier. If idle for 15+ minutes, the first request may take 20–30 seconds to wake up. Subsequent requests are fast.
 
@@ -141,7 +141,7 @@ It is designed as a **"Jira for Students"** — every subject has a dedicated ch
 |---------|---------|
 | **Vercel** | Flutter Web frontend — global CDN edge deployment, auto CI/CD from GitHub |
 | **Render** | Node.js backend API — free tier with auto-deploy from `main` branch |
-| **Supabase (PostgreSQL)** | Serverless PostgreSQL — compute scales to zero when idle, storage is always-on |
+| **Neon (PostgreSQL)** | Serverless PostgreSQL — compute scales to zero when idle, storage is always-on |
 | **Supabase Storage** | CDN-backed file bucket for assignment submissions, notes, and chat attachments |
 
 ---
@@ -174,7 +174,7 @@ It is designed as a **"Jira for Students"** — every subject has a dedicated ch
            ┌───────────────┴───────────────┐
            │                               │
 ┌──────────▼──────────┐         ┌──────────▼──────────┐
-│  Supabase PostgreSQL │         │   Supabase Storage  │
+│  Neon PostgreSQL     │         │   Supabase Storage  │
 │  (Relational DB)    │         │   (CDN File Bucket) │
 │  13 tables, ACID    │         │   stream upload     │
 └─────────────────────┘         └─────────────────────┘
@@ -281,7 +281,7 @@ Client                          Server                         Database
 major-project/
 ├── backend/                          # Node.js + Express + Socket.IO server
 │   ├── config/
-│   │   ├── db.js                     # pg.Pool connection to Supabase PostgreSQL
+│   │   ├── db.js                     # pg.Pool connection to Neon PostgreSQL
 │   │   ├── supabase.js               # Supabase Storage client + ensureBucket()
 │   │   ├── schema.sql                # Full PostgreSQL schema (13 tables)
 │   │   └── migration.sql             # Incremental schema migrations
@@ -336,7 +336,8 @@ major-project/
 ### Prerequisites
 - **Node.js** v18+
 - **Flutter SDK** v3.0+
-- A [Supabase](https://supabase.com) project with PostgreSQL database and Storage enabled
+- A [Neon](https://neon.tech) PostgreSQL database
+- A [Supabase](https://supabase.com) project with Storage enabled
 
 ### 1. Backend Setup
 
@@ -363,7 +364,7 @@ npm run dev
 ```env
 PORT=5000
 NODE_ENV=development
-DATABASE_URL=postgresql://...          # Supabase PostgreSQL connection string
+DATABASE_URL=postgresql://...          # Neon PostgreSQL connection string
 JWT_SECRET=your_super_secret_key
 CLIENT_URL=http://localhost:9090
 
@@ -433,7 +434,7 @@ A complete trace of a student opening their subject channel chat:
 |-------|---------|---------|
 | Frontend | Vercel | Auto-deploy on push to `main` → `flutter build web` via `build.sh` |
 | Backend | Render | Auto-deploy on push to `main` → `node server.js` |
-| Database | Supabase (PostgreSQL) | Always-on serverless PostgreSQL; no deployment needed |
+| Database | Neon (PostgreSQL) | Always-on serverless PostgreSQL; no deployment needed |
 | Storage | Supabase | `ensureBucket()` runs at server startup to verify the `files` bucket |
 
 ```bash
