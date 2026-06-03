@@ -10,7 +10,7 @@
 [![API Server](https://img.shields.io/badge/API_Server-Render-46E3B7?style=for-the-badge&logo=render)](https://major-gin9.onrender.com)
 [![Flutter](https://img.shields.io/badge/Flutter-Web-02569B?style=for-the-badge&logo=flutter)](https://flutter.dev)
 [![Node.js](https://img.shields.io/badge/Node.js-Express-339933?style=for-the-badge&logo=node.js)](https://nodejs.org)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Neon-4169E1?style=for-the-badge&logo=postgresql)](https://neon.tech)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Supabase-4169E1?style=for-the-badge&logo=postgresql)](https://supabase.com)
 
 </div>
 
@@ -141,7 +141,7 @@ It is designed as a **"Jira for Students"** — every subject has a dedicated ch
 |---------|---------|
 | **Vercel** | Flutter Web frontend — global CDN edge deployment, auto CI/CD from GitHub |
 | **Render** | Node.js backend API — free tier with auto-deploy from `main` branch |
-| **Neon** | Serverless PostgreSQL — compute scales to zero when idle, storage is always-on |
+| **Supabase (PostgreSQL)** | Serverless PostgreSQL — compute scales to zero when idle, storage is always-on |
 | **Supabase Storage** | CDN-backed file bucket for assignment submissions, notes, and chat attachments |
 
 ---
@@ -174,7 +174,7 @@ It is designed as a **"Jira for Students"** — every subject has a dedicated ch
            ┌───────────────┴───────────────┐
            │                               │
 ┌──────────▼──────────┐         ┌──────────▼──────────┐
-│  Neon PostgreSQL    │         │   Supabase Storage  │
+│  Supabase PostgreSQL │         │   Supabase Storage  │
 │  (Relational DB)    │         │   (CDN File Bucket) │
 │  13 tables, ACID    │         │   stream upload     │
 └─────────────────────┘         └─────────────────────┘
@@ -281,8 +281,7 @@ Client                          Server                         Database
 major-project/
 ├── backend/                          # Node.js + Express + Socket.IO server
 │   ├── config/
-│   │   ├── db.js                     # pg.Pool connection to Neon PostgreSQL
-│   │   ├── cloudinary.js             # Cloudinary SDK config
+│   │   ├── db.js                     # pg.Pool connection to Supabase PostgreSQL
 │   │   ├── supabase.js               # Supabase Storage client + ensureBucket()
 │   │   ├── schema.sql                # Full PostgreSQL schema (13 tables)
 │   │   └── migration.sql             # Incremental schema migrations
@@ -337,8 +336,7 @@ major-project/
 ### Prerequisites
 - **Node.js** v18+
 - **Flutter SDK** v3.0+
-- A PostgreSQL database (local or [Neon](https://neon.tech) cloud)
-- A [Supabase](https://supabase.com) project with Storage enabled
+- A [Supabase](https://supabase.com) project with PostgreSQL database and Storage enabled
 
 ### 1. Backend Setup
 
@@ -365,7 +363,7 @@ npm run dev
 ```env
 PORT=5000
 NODE_ENV=development
-DATABASE_URL=postgresql://...          # Neon or local PostgreSQL connection string
+DATABASE_URL=postgresql://...          # Supabase PostgreSQL connection string
 JWT_SECRET=your_super_secret_key
 CLIENT_URL=http://localhost:9090
 
@@ -435,7 +433,7 @@ A complete trace of a student opening their subject channel chat:
 |-------|---------|---------|
 | Frontend | Vercel | Auto-deploy on push to `main` → `flutter build web` via `build.sh` |
 | Backend | Render | Auto-deploy on push to `main` → `node server.js` |
-| Database | Neon | Always-on serverless PostgreSQL; no deployment needed |
+| Database | Supabase (PostgreSQL) | Always-on serverless PostgreSQL; no deployment needed |
 | Storage | Supabase | `ensureBucket()` runs at server startup to verify the `files` bucket |
 
 ```bash
