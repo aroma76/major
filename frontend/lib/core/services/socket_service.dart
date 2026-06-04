@@ -13,8 +13,17 @@ class SocketService {
 
   bool get isConnected => _socket?.connected ?? false;
 
+  /// Connects (or re-connects) the socket with the JWT currently in storage.
+  /// Always disconnects any existing connection first so that logging in as
+  /// a different user always gets a fresh, correctly-authenticated socket.
   Future<void> connect() async {
-    if (isConnected) return;
+    // Tear down any existing connection before creating a new one.
+    // This ensures switching accounts always authenticates the new user's JWT.
+    if (_socket != null) {
+      _socket!.disconnect();
+      _socket = null;
+    }
+
     final token = await _storage.read('adtu_token');
 
     _socket = io.io(
