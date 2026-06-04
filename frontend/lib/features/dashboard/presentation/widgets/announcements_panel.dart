@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/services/socket_service.dart';
 import '../../../../features/auth/auth_provider.dart';
 import '../../data/repositories/announcement_repository.dart';
 import '../providers/api_providers.dart';
@@ -30,20 +29,10 @@ class _AnnouncementsPanelState extends ConsumerState<AnnouncementsPanel> {
         ref.invalidate(dashboardRecentActivityProvider(auth.isFaculty));
       });
     });
-
-    // Listen for real-time announcement broadcasts from the backend.
-    // When a teacher posts, the backend emits 'announcement:new' to all
-    // channel members so they see it without refreshing.
-    SocketService().onNewAnnouncement((_) {
-      if (!mounted) return;
-      final isFaculty = ref.read(authProvider).value?.isFaculty ?? false;
-      ref.invalidate(dashboardRecentActivityProvider(isFaculty));
-    });
   }
 
   @override
   void dispose() {
-    SocketService().off('announcement:new');
     super.dispose();
   }
 

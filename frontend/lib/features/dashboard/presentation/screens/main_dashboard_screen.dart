@@ -13,6 +13,7 @@ import '../widgets/question_papers_view_widget.dart';
 import '../widgets/settings_view_widget.dart';
 import '../widgets/today_overview_widget.dart';
 import '../widgets/teacher_overview_widget.dart';
+import '../widgets/notification_toast.dart';
 import '../providers/task_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../features/auth/auth_provider.dart';
@@ -116,69 +117,71 @@ class _MainDashboardScreenState extends ConsumerState<MainDashboardScreen> {
               },
             )
           : null,
-      body: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Desktop sidebar
-          if (!isMobile)
-            const RepaintBoundary(
-              child: SizedBox(
-                width: 240,
-                child: SidebarWidget(),
+      body: NotificationToastOverlay(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Desktop sidebar
+            if (!isMobile)
+              const RepaintBoundary(
+                child: SizedBox(
+                  width: 240,
+                  child: SidebarWidget(),
+                ),
+              ),
+            Expanded(
+              child: Column(
+                children: [
+                  const RepaintBoundary(child: TopBarWidget()),
+                  Expanded(
+                    child: _LazyIndexedStack(
+                      index: selectedIndex,
+                      children: [
+                        // 0 – Dashboard
+                        isFaculty
+                            ? const TeacherOverviewWidget()
+                            : const TodayOverviewWidget(),
+                        // 1 – Subjects (with built-in Assignments tab per subject)
+                        const SubjectsViewWidget(),
+                        // 2 – Projects
+                        const ProjectsViewWidget(),
+                        // 3 – Calendar
+                        const CalendarViewWidget(),
+                        // 4 – Messages
+                        const MessagesViewWidget(),
+                        // 5 – Notes
+                        const NotesViewWidget(),
+                        // 6 – Question Papers
+                        const QuestionPapersViewWidget(),
+                        // 7 – Settings
+                        const SettingsViewWidget(),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
-          Expanded(
-            child: Column(
-              children: [
-                const RepaintBoundary(child: TopBarWidget()),
-                Expanded(
-                  child: _LazyIndexedStack(
-                    index: selectedIndex,
-                    children: [
-                      // 0 – Dashboard
-                      isFaculty
-                          ? const TeacherOverviewWidget()
-                          : const TodayOverviewWidget(),
-                      // 1 – Subjects (with built-in Assignments tab per subject)
-                      const SubjectsViewWidget(),
-                      // 2 – Projects
-                      const ProjectsViewWidget(),
-                      // 3 – Calendar
-                      const CalendarViewWidget(),
-                      // 4 – Messages
-                      const MessagesViewWidget(),
-                      // 5 – Notes
-                      const NotesViewWidget(),
-                      // 6 – Question Papers
-                      const QuestionPapersViewWidget(),
-                      // 7 – Settings
-                      const SettingsViewWidget(),
-                    ],
+            // Desktop announcements panel
+            if (!isMobile && selectedIndex == 0 && !isFaculty)
+              Container(
+                width: 300,
+                height: double.infinity,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? AppColors.secondaryBackground
+                      : AppColors.lightSecondaryBackground,
+                  border: Border(
+                    left: BorderSide(
+                        color: AppColors.getBorderColor(context), width: 1),
                   ),
                 ),
-              ],
-            ),
-          ),
-          // Desktop announcements panel
-          if (!isMobile && selectedIndex == 0 && !isFaculty)
-            Container(
-              width: 300,
-              height: double.infinity,
-              decoration: BoxDecoration(
-                color: Theme.of(context).brightness == Brightness.dark
-                    ? AppColors.secondaryBackground
-                    : AppColors.lightSecondaryBackground,
-                border: Border(
-                  left: BorderSide(
-                      color: AppColors.getBorderColor(context), width: 1),
+                child: const SingleChildScrollView(
+                  padding: EdgeInsets.fromLTRB(24, 20, 24, 24),
+                  child: AnnouncementsPanel(),
                 ),
               ),
-              child: const SingleChildScrollView(
-                padding: EdgeInsets.fromLTRB(24, 20, 24, 24),
-                child: AnnouncementsPanel(),
-              ),
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }
