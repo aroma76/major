@@ -162,12 +162,8 @@ class NotificationPanel extends ConsumerWidget {
                     final createdAt = n['created_at'] as String?;
                     final id = (n['id'] as num?)?.toInt();
                     final timestamp = createdAt != null
-                        ? (DateTime.tryParse(createdAt) ?? DateTime.now())
-                            .toUtc()
-                            .add(const Duration(hours: 5, minutes: 30))
-                        : DateTime.now()
-                            .toUtc()
-                            .add(const Duration(hours: 5, minutes: 30));
+                        ? DateTime.tryParse(createdAt) ?? DateTime.now()
+                        : DateTime.now();
 
                     return Container(
                       color: isRead

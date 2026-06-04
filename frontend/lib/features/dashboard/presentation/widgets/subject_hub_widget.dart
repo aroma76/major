@@ -672,8 +672,7 @@ class _AnnouncementCard extends StatelessWidget {
     final createdBy = data['created_by_name'] as String? ?? 'Teacher';
     final rawDate = data['created_at'] as String?;
     final date = rawDate != null
-        ? DateFormat('MMM d, y • h:mm a').format(
-            DateTime.parse(rawDate).toUtc().add(const Duration(hours: 5, minutes: 30)))
+        ? DateFormat('MMM d, y').format(DateTime.parse(rawDate).toLocal())
         : '';
 
     return Container(

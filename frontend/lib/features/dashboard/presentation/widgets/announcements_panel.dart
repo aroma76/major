@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/services/socket_service.dart';
 import '../../../../features/auth/auth_provider.dart';
 import '../../data/repositories/announcement_repository.dart';
 import '../providers/api_providers.dart';
@@ -29,10 +30,20 @@ class _AnnouncementsPanelState extends ConsumerState<AnnouncementsPanel> {
         ref.invalidate(dashboardRecentActivityProvider(auth.isFaculty));
       });
     });
+
+    // Listen for real-time announcement broadcasts from the backend.
+    // When a teacher posts, the backend emits 'announcement:new' to all
+    // channel members so they see it without refreshing.
+    SocketService().onNewAnnouncement((_) {
+      if (!mounted) return;
+      final isFaculty = ref.read(authProvider).value?.isFaculty ?? false;
+      ref.invalidate(dashboardRecentActivityProvider(isFaculty));
+    });
   }
 
   @override
   void dispose() {
+    SocketService().off('announcement:new');
     super.dispose();
   }
 
@@ -194,7 +205,7 @@ class _AnnouncementItem extends ConsumerWidget {
     final isImportant = data['is_important'] as bool? ?? false;
     final rawDate = data['created_at'] as String?;
     final timeAgo =
-        rawDate != null ? _formatTimeAgo(_toIST(DateTime.parse(rawDate))) : '';
+        rawDate != null ? _formatTimeAgo(DateTime.parse(rawDate)) : '';
     final colorIndex =
         sender.isNotEmpty ? sender.codeUnitAt(0) % _colors.length : 0;
     final color = isImportant ? Colors.orange : _colors[colorIndex];
@@ -311,18 +322,13 @@ class _AnnouncementItem extends ConsumerWidget {
     );
   }
 
-  /// Converts a UTC [DateTime] to IST (UTC+5:30).
-  static DateTime _toIST(DateTime utc) =>
-      utc.toUtc().add(const Duration(hours: 5, minutes: 30));
-
-  String _formatTimeAgo(DateTime istTime) {
-    final nowIST = DateTime.now().toUtc().add(const Duration(hours: 5, minutes: 30));
-    final diff = nowIST.difference(istTime);
+  String _formatTimeAgo(DateTime dt) {
+    final diff = DateTime.now().difference(dt.toLocal());
     if (diff.inMinutes < 1) return 'Just now';
     if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
     if (diff.inHours < 24) return '${diff.inHours}h ago';
     if (diff.inDays < 7) return '${diff.inDays}d ago';
-    return DateFormat('MMM d').format(istTime);
+    return DateFormat('MMM d').format(dt.toLocal());
   }
 }
 
