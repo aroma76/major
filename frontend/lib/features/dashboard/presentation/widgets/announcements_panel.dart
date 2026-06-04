@@ -205,7 +205,7 @@ class _AnnouncementItem extends ConsumerWidget {
     final isImportant = data['is_important'] as bool? ?? false;
     final rawDate = data['created_at'] as String?;
     final timeAgo =
-        rawDate != null ? _formatTimeAgo(DateTime.parse(rawDate)) : '';
+        rawDate != null ? _formatTimeAgo(_toIST(DateTime.parse(rawDate))) : '';;
     final colorIndex =
         sender.isNotEmpty ? sender.codeUnitAt(0) % _colors.length : 0;
     final color = isImportant ? Colors.orange : _colors[colorIndex];
@@ -322,13 +322,18 @@ class _AnnouncementItem extends ConsumerWidget {
     );
   }
 
-  String _formatTimeAgo(DateTime dt) {
-    final diff = DateTime.now().difference(dt.toLocal());
+  /// Converts a UTC [DateTime] to IST (UTC+5:30).
+  static DateTime _toIST(DateTime utc) =>
+      utc.toUtc().add(const Duration(hours: 5, minutes: 30));
+
+  String _formatTimeAgo(DateTime istTime) {
+    final nowIST = DateTime.now().toUtc().add(const Duration(hours: 5, minutes: 30));
+    final diff = nowIST.difference(istTime);
     if (diff.inMinutes < 1) return 'Just now';
     if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
     if (diff.inHours < 24) return '${diff.inHours}h ago';
     if (diff.inDays < 7) return '${diff.inDays}d ago';
-    return DateFormat('MMM d').format(dt.toLocal());
+    return DateFormat('MMM d').format(istTime);
   }
 }
 
