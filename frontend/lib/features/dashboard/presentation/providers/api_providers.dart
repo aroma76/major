@@ -5,6 +5,7 @@ import '../../../../core/services/api_service.dart';
 
 import '../../data/repositories/channel_repository.dart';
 import '../../data/repositories/assignment_repository.dart';
+import '../../data/repositories/notes_repository.dart';
 
 import '../../data/repositories/announcement_repository.dart';
 import '../../data/repositories/notification_repository.dart';
@@ -15,6 +16,7 @@ import '../../data/repositories/academic_event_repository.dart';
 
 final _channelRepo = ChannelRepository();
 final _assignmentRepo = AssignmentRepository();
+final _notesRepo = NotesRepository();
 final _announcementRepo = AnnouncementRepository();
 final _notificationRepo = NotificationRepository();
 final _projectRepo = ProjectRepository();
@@ -79,6 +81,34 @@ final selectedChannelProvider =
 final projectsProvider =
     FutureProvider<List<Map<String, dynamic>>>((ref) async {
   return _projectRepo.getProjects();
+});
+
+// ── Notes (per-channel, type-filtered) ────────────────────────────────────────
+
+/// Param: (channelId, noteType) — noteType is 'note' or 'question'
+final channelNotesProvider =
+    FutureProvider.family<List<Map<String, dynamic>>, (int, String)>(
+        (ref, key) async {
+  final channelId = key.$1;
+  final noteType = key.$2;
+  return _notesRepo.getNotes(channelId, noteType: noteType);
+});
+
+/// Aggregates notes of a given type from ALL enrolled channels.
+final allNotesProvider =
+    FutureProvider.family<List<Map<String, dynamic>>, String>(
+        (ref, noteType) async {
+  final channels = await ref.watch(channelsProvider.future);
+  final results = await Future.wait(
+    channels.map((ch) =>
+        _notesRepo.getNotes(ch.id, noteType: noteType).catchError((_) => <Map<String, dynamic>>[]))
+  );
+  return results.expand((list) => list).toList()
+    ..sort((a, b) {
+      final aDate = DateTime.tryParse(a['created_at'] as String? ?? '') ?? DateTime(0);
+      final bDate = DateTime.tryParse(b['created_at'] as String? ?? '') ?? DateTime(0);
+      return bDate.compareTo(aDate); // newest first
+    });
 });
 
 // ── Academic Events (Calendar) ────────────────────────────────────────────────

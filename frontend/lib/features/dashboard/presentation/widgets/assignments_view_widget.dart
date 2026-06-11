@@ -4,7 +4,9 @@ import 'package:intl/intl.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/responsive.dart';
 import '../providers/task_provider.dart';
+import '../providers/api_providers.dart';
 import '../../data/models/task_model.dart';
+import '../../data/models/assignment_model.dart';
 import 'kanban_board_widget.dart';
 import 'task_details_dialog.dart';
 
@@ -13,100 +15,157 @@ class AssignmentsViewWidget extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final tasks = ref.watch(taskProvider);
+    final assignmentsAsync = ref.watch(allAssignmentsProvider);
     final viewType = ref.watch(assignmentViewTypeProvider);
     final selectedSubject = ref.watch(selectedSubjectFilterProvider);
     final selectedPriority = ref.watch(selectedPriorityFilterProvider);
 
-    // Apply filters
-    final filteredTasks = tasks.where((task) {
-      final matchesSubject =
-          selectedSubject == null || task.subject == selectedSubject;
-      final matchesPriority =
-          selectedPriority == null || task.priority == selectedPriority;
-      return matchesSubject && matchesPriority;
-    }).toList();
+    return assignmentsAsync.when(
+      loading: () => const Center(
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 60),
+          child: CircularProgressIndicator(color: AppColors.accent),
+        ),
+      ),
+      error: (e, _) => Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 60),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.error_outline, size: 48, color: Colors.red),
+              const SizedBox(height: 12),
+              Text('Failed to load assignments',
+                  style: TextStyle(color: AppColors.getBodyColor(context))),
+              const SizedBox(height: 12),
+              ElevatedButton.icon(
+                onPressed: () => ref.invalidate(allAssignmentsProvider),
+                icon: const Icon(Icons.refresh, size: 16),
+                label: const Text('Retry'),
+                style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.accent,
+                    foregroundColor: Colors.white),
+              ),
+            ],
+          ),
+        ),
+      ),
+      data: (assignments) {
+        // Convert AssignmentModel → TaskModel for display
+        final allTasks = assignments.map(_assignmentToTask).toList();
 
-    final isMobile = Responsive.isMobile(context);
+        // Apply filters
+        final filteredTasks = allTasks.where((task) {
+          final matchesSubject =
+              selectedSubject == null || task.subject == selectedSubject;
+          final matchesPriority =
+              selectedPriority == null || task.priority == selectedPriority;
+          return matchesSubject && matchesPriority;
+        }).toList();
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Header
-        Padding(
-          padding: EdgeInsets.fromLTRB(
-              isMobile ? 16 : 24, isMobile ? 16 : 24, isMobile ? 16 : 24, 0),
-          child: isMobile
-              ? Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Assignments',
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.getHeadingColor(context),
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Manage and track your academic assignments',
-                      style: TextStyle(
-                          color: AppColors.getBodyColor(context), fontSize: 12),
-                    ),
-                    const SizedBox(height: 12),
-                    _buildViewToggler(context, ref, viewType),
-                  ],
-                )
-              : Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
+        final isMobile = Responsive.isMobile(context);
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header
+            Padding(
+              padding: EdgeInsets.fromLTRB(
+                  isMobile ? 16 : 24, isMobile ? 16 : 24, isMobile ? 16 : 24, 0),
+              child: isMobile
+                  ? Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           'Assignments',
                           style: TextStyle(
-                            fontSize: 28,
+                            fontSize: 22,
                             fontWeight: FontWeight.bold,
                             color: AppColors.getHeadingColor(context),
                           ),
                         ),
+                        const SizedBox(height: 4),
                         Text(
                           'Manage and track your academic assignments',
                           style: TextStyle(
-                              color: AppColors.getBodyColor(context),
-                              fontSize: 14),
+                              color: AppColors.getBodyColor(context), fontSize: 12),
                         ),
+                        const SizedBox(height: 12),
+                        _buildViewToggler(context, ref, viewType),
+                      ],
+                    )
+                  : Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Assignments',
+                              style: TextStyle(
+                                fontSize: 28,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.getHeadingColor(context),
+                              ),
+                            ),
+                            Text(
+                              'Manage and track your academic assignments',
+                              style: TextStyle(
+                                  color: AppColors.getBodyColor(context),
+                                  fontSize: 14),
+                            ),
+                          ],
+                        ),
+                        _buildViewToggler(context, ref, viewType),
                       ],
                     ),
-                    _buildViewToggler(context, ref, viewType),
-                  ],
-                ),
-        ),
-
-        // Filter Bar
-        Container(
-          padding: EdgeInsets.symmetric(
-              horizontal: isMobile ? 16 : 24, vertical: 12),
-          color: Theme.of(context).scaffoldBackgroundColor,
-          child: _buildFilterBar(
-              context, ref, tasks, selectedSubject, selectedPriority,
-              isMobile: isMobile),
-        ),
-
-        Expanded(
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: isMobile ? 12 : 24),
-            child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 300),
-              child: viewType == AssignmentViewType.kanban
-                  ? const KanbanBoardWidget()
-                  : _buildListView(context, filteredTasks),
             ),
-          ),
-        ),
-      ],
+
+            // Filter Bar
+            Container(
+              padding: EdgeInsets.symmetric(
+                  horizontal: isMobile ? 16 : 24, vertical: 12),
+              color: Theme.of(context).scaffoldBackgroundColor,
+              child: _buildFilterBar(
+                  context, ref, allTasks, selectedSubject, selectedPriority,
+                  isMobile: isMobile),
+            ),
+
+            Expanded(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: isMobile ? 12 : 24),
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 300),
+                  child: viewType == AssignmentViewType.kanban
+                      ? const KanbanBoardWidget()
+                      : _buildListView(context, filteredTasks),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  /// Maps an [AssignmentModel] from the API to a [TaskModel] for the list/Kanban UI.
+  static TaskModel _assignmentToTask(AssignmentModel a) {
+    TaskStatus status;
+    if (a.isSubmitted) {
+      status = TaskStatus.done;
+    } else if (a.isOverdue) {
+      status = TaskStatus.inProgress;
+    } else {
+      status = TaskStatus.todo;
+    }
+    return TaskModel(
+      id: a.id.toString(),
+      title: a.title,
+      description: a.description ?? '',
+      subject: a.createdByName ?? 'Subject',
+      status: status,
+      priority: TaskPriority.medium,
+      dueDate: a.dueDate,
     );
   }
 

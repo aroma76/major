@@ -86,8 +86,20 @@ class ApiService {
       dio.delete('/channels/$channelId/announcements/$announcementId');
 
   // ── Notes ─────────────────────────────────────────────────────────────────
-  Future<Response> getNotes(int channelId) =>
-      dio.get('/channels/$channelId/notes');
+  Future<Response> getNotes(int channelId, {String? type}) =>
+      dio.get('/channels/$channelId/notes',
+          queryParameters: type != null ? {'type': type} : null);
+
+  Future<Response> createNote(
+          int channelId, String title, String content, String noteType) =>
+      dio.post('/channels/$channelId/notes', data: {
+        'title': title,
+        'content': content,
+        'note_type': noteType,
+      });
+
+  Future<Response> deleteNote(int channelId, int noteId) =>
+      dio.delete('/channels/$channelId/notes/$noteId');
 
   // ── Notifications ─────────────────────────────────────────────────────────
   Future<Response> getNotifications() => dio.get('/notifications');

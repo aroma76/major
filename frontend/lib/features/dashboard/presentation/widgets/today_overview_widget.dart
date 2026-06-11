@@ -7,6 +7,7 @@ import '../../../../features/auth/auth_provider.dart';
 import '../providers/task_provider.dart';
 import '../providers/api_providers.dart';
 import '../../data/models/task_model.dart';
+import '../../data/models/assignment_model.dart';
 import 'subject_color_manager.dart';
 import 'kanban_board_widget.dart';
 import 'announcements_panel.dart';
@@ -92,24 +93,35 @@ class _TodayOverviewWidgetState extends ConsumerState<TodayOverviewWidget>
 
   @override
   Widget build(BuildContext context) {
-    final tasks = ref.watch(taskProvider);
+    final assignmentsAsync = ref.watch(allAssignmentsProvider);
     final channelsAsync = ref.watch(channelsProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isMobile = Responsive.isMobile(context);
 
-    final pendingCount = tasks.where((t) => t.status != TaskStatus.done).length;
-    final urgentCount = tasks
-        .where((t) =>
-            t.priority == TaskPriority.high && t.status != TaskStatus.done)
+    // Derive real stats from API assignments
+    final assignments = assignmentsAsync.value ?? [];
+    final now = DateTime.now();
+
+    final pendingCount = assignments.where((a) => !a.isSubmitted).length;
+    final urgentCount = assignments
+        .where((a) => !a.isSubmitted && a.dueDate.difference(now).inDays <= 2)
         .length;
 
-    // Today's deadlines: tasks due within 7 days
-    final now = DateTime.now();
-    final upcomingTasks = tasks
-        .where((t) =>
-            t.dueDate.isAfter(now) &&
-            t.dueDate.isBefore(now.add(const Duration(days: 7))) &&
-            t.status != TaskStatus.done)
+    // Upcoming: due within 7 days, not yet submitted — convert to TaskModel for DeadlineCard
+    final upcomingTasks = assignments
+        .where((a) =>
+            !a.isSubmitted &&
+            a.dueDate.isAfter(now) &&
+            a.dueDate.isBefore(now.add(const Duration(days: 7))))
+        .map((a) => TaskModel(
+              id: a.id.toString(),
+              title: a.title,
+              description: a.description ?? '',
+              subject: a.createdByName ?? 'Assignment',
+              status: TaskStatus.todo,
+              priority: TaskPriority.medium,
+              dueDate: a.dueDate,
+            ))
         .toList()
       ..sort((a, b) => a.dueDate.compareTo(b.dueDate));
 

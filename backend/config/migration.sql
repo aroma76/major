@@ -48,3 +48,13 @@ CREATE INDEX IF NOT EXISTS idx_project_members_user   ON project_members(user_id
 CREATE INDEX IF NOT EXISTS idx_project_members_proj   ON project_members(project_id);
 CREATE INDEX IF NOT EXISTS idx_project_tasks_project  ON project_tasks(project_id);
 CREATE INDEX IF NOT EXISTS idx_project_tasks_assigned ON project_tasks(assigned_to);
+
+-- ============================================================
+-- Migration: Add note_type to notes (supports 'note' and 'question')
+-- ============================================================
+
+ALTER TABLE notes
+  ADD COLUMN IF NOT EXISTS note_type VARCHAR(20) DEFAULT 'note'
+    CHECK (note_type IN ('note', 'question'));
+
+CREATE INDEX IF NOT EXISTS idx_notes_type ON notes(note_type);
