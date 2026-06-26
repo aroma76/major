@@ -1,4 +1,5 @@
 require('dotenv').config();
+const path = require('path');
 require('express-async-errors');
 
 const express   = require('express');
@@ -63,6 +64,9 @@ socketHandler(io);
 setIO(io); // allow REST controllers to broadcast via socket
 
 app.use(compression()); // gzip all JSON responses (~80% size reduction)
+
+// ── Local file storage (used when STORAGE_PROVIDER=local or Supabase is down) ─
+app.use('/api/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
